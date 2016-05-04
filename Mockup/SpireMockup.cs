@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
+using System.Text;
 using System.Windows.Forms;
 
 public class MockupWindow : Form
@@ -78,7 +79,7 @@ public class MockupWindow : Form
 	{
 		System.Windows.Forms.Panel panel = new System.Windows.Forms.Panel();
 		panel.AutoScroll = true;
-		panel.Size = new Size(this.Width, this.Height + 500);
+		panel.Size = new Size(this.Width, this.Height + 800);
 		//panel.Location = new Point(10, 10);
 		panel.BorderStyle = BorderStyle.Fixed3D;
 		panel.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
@@ -86,13 +87,14 @@ public class MockupWindow : Form
 		
 //		panel.Paint += new PaintEventHandler(PaintTextLayoutDemo);
 //		panel.Paint += new PaintEventHandler(PaintGraphs);
+		panel.Paint += new PaintEventHandler(PaintFootnotesDemo);
 
 //		SetupFormulaDemo(panel);
-		SetupPDFDemo(panel);
+//		SetupPDFDemo(panel);
 
 		return panel;
 	}
-	
+		
 	private TextBox formulaTextBox;
 	
 	private void SetupFormulaDemo(Panel parent)
@@ -107,7 +109,6 @@ public class MockupWindow : Form
 		textBox.KeyUp += new KeyEventHandler(TextBoxKeyUp);
 		textBox.Parent = parent;
 		
-		//textBox.Text = "\tThe main winding was of the normal lodusodelta-type plate placed in panendermic semiboloid slots of the stator, every seventh conductor being connected by a non-reversible turmy pipe to the differential girdle spring on the upper end of the grammies.";
 		textBox.Text = "\tThe goal is that the user may type continuously to create text and formulas. The mouse should not be required. This can be achieved with configurable replacement text, such as \"pi\" to π, and layout support for complex forms such as integrals.";
 		textBox.SelectionStart = textBox.Text.Length;
 		
@@ -646,6 +647,52 @@ public class MockupWindow : Form
 		PaintTextBox(g, new Rectangle(10,415,715,200), null);
 		PaintTextBox(g, new Rectangle(10,630,350,310), null);
 		PaintTextBox(g, new Rectangle(375,630,350,310), null);
+		g.Dispose();
+		pea.Graphics.DrawImageUnscaled(graphicsBuffer, 0, 0);
+	}
+
+	private void PaintFootnotesDemo(object sender, PaintEventArgs pea)
+	{
+		Bitmap graphicsBuffer = new Bitmap(790, 1500);
+		Graphics g = Graphics.FromImage(graphicsBuffer);
+		g.Clear(Color.White);
+		g.SmoothingMode = SmoothingMode.AntiAlias;
+		
+		Brush brush = new SolidBrush(Color.Black);
+		Font normalFont = new Font("Times New Roman", 16);
+		int lineHeight = (int)(g.MeasureString("TEST", normalFont).Height);
+		int y = 0;
+		using(StreamReader reader = new StreamReader("footnotesText1.txt"))
+		{
+			int lineNumber = 0;
+			int charsPerLine = 70;
+			while(reader.Peek() >= 0)
+			{
+				char[] c = new char[charsPerLine];
+				reader.Read(c, 0, c.Length);
+				g.DrawString(new string(c), normalFont, brush, 15, lineHeight*lineNumber);
+				lineNumber++;
+				y = lineNumber * lineHeight;
+			}
+		}
+		Pen pen = new Pen(Color.Black, 1.0F);
+		y += 15;
+		g.DrawLine(pen, 15, y, 650, y);
+		y += 10;
+		
+		Font footnoteFont = new Font("Times New Roman", 13);
+		lineHeight = (int)(g.MeasureString("TEST", footnoteFont).Height);
+		using(StreamReader reader = new StreamReader("footnotesText2.txt"))
+		{
+			int lineNumber = 0;
+			string line;
+			while((line = reader.ReadLine()) != null)
+			{
+				g.DrawString(line, footnoteFont, brush, 25, y + lineHeight*lineNumber);
+				lineNumber++;
+			}
+		}
+	
 		g.Dispose();
 		pea.Graphics.DrawImageUnscaled(graphicsBuffer, 0, 0);
 	}
