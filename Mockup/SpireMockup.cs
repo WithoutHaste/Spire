@@ -87,7 +87,8 @@ public class MockupWindow : Form
 		
 //		panel.Paint += new PaintEventHandler(PaintTextLayoutDemo);
 //		panel.Paint += new PaintEventHandler(PaintGraphs);
-		panel.Paint += new PaintEventHandler(PaintFootnotesDemo);
+//		panel.Paint += new PaintEventHandler(PaintFootnotesDemo);
+		//panel.Paint += new PaintEventHandler(PaintCSSDemo);
 
 //		SetupFormulaDemo(panel);
 //		SetupPDFDemo(panel);
@@ -633,7 +634,7 @@ public class MockupWindow : Form
 	
 	private void OpenModalStyles(object sender, EventArgs e)
 	{
-		Console.WriteLine("todo: styles modal");
+		StyleDialog dialog = new StyleDialog();
 	}
 	
 	private void PaintTextLayoutDemo(object sender, PaintEventArgs pea)
