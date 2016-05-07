@@ -1,7 +1,36 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.IO;
+using System.Text;
+using System.Windows.Forms;
+
+public static class GraphsDemo
+{
+	public static void Paint(object sender, PaintEventArgs pea)
+	{
+		Bitmap graphicsBuffer = new Bitmap(400, 600);
+		Graphics g = Graphics.FromImage(graphicsBuffer);
+//		(new ScatterPlot()).Draw(g, graphicsBuffer.Width, graphicsBuffer.Height);
+		PaintImage(g, new Rectangle(0,0,400,300), "PieChartSmallMultiples.png");
+		PaintImage(g, new Rectangle(0,300,400,300), "PieChartSmallMultiples_grayscale.png");
+		g.Dispose();
+		pea.Graphics.DrawImageUnscaled(graphicsBuffer, 10, 10);
+	}
+	
+	private static void PaintImage(Graphics g, Rectangle rect, string filename)
+	{
+		if(!File.Exists(filename)) return;
+			
+		using (Image src = Image.FromFile(filename))
+		{
+			g.DrawImage(src, rect.X, rect.Y, rect.Width, rect.Height);
+		}
+	}
+
+}
 
 public class ScatterPlot
 {
