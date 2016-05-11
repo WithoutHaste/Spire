@@ -17,14 +17,25 @@ public static class StylesDemo
 			return;
 		Styles = new List<SpireStyle>();
 		Styles.Add(new SpireStyle() {
-			Name = "Header 1", FontFamily = "Times New Roman", FontSize = 18, ForeColor = Color.Black, FontStyle = FontStyle.Bold, Alignment = ContentAlignment.TopCenter, MarginLeft = 0
+			Name = "Header 1", FontFamily = "Times New Roman", FontSize = 12, ForeColor = Color.Black, FontStyle = FontStyle.Regular, Alignment = ContentAlignment.TopCenter, Indent = 0
 		});
 		Styles.Add(new SpireStyle() {
-			Name = "Text", FontFamily = "Times New Roman", FontSize = 12, ForeColor = Color.Black, FontStyle = FontStyle.Regular, Alignment = ContentAlignment.TopLeft, MarginLeft = 0
+			Name = "Text", FontFamily = "Times New Roman", FontSize = 12, ForeColor = Color.Black, FontStyle = FontStyle.Regular, Alignment = ContentAlignment.TopCenter, Indent = 0
 		});
 		Styles.Add(new SpireStyle() {
-			Name = "Quotes", FontFamily = "Arial", FontSize = 12, ForeColor = Color.Gray, FontStyle = FontStyle.Italic, Alignment = ContentAlignment.TopLeft, MarginLeft = 1
+			Name = "Quotes", FontFamily = "Times New Roman", FontSize = 12, ForeColor = Color.Black, FontStyle = FontStyle.Regular, Alignment = ContentAlignment.TopCenter, Indent = 0
 		});
+		/*
+		Styles.Add(new SpireStyle() {
+			Name = "Header 1", FontFamily = "Times New Roman", FontSize = 18, ForeColor = Color.Black, FontStyle = FontStyle.Bold, Alignment = ContentAlignment.TopCenter, Indent = 0
+		});
+		Styles.Add(new SpireStyle() {
+			Name = "Text", FontFamily = "Times New Roman", FontSize = 12, ForeColor = Color.Black, FontStyle = FontStyle.Regular, Alignment = ContentAlignment.TopLeft, Indent = 0
+		});
+		Styles.Add(new SpireStyle() {
+			Name = "Quotes", FontFamily = "Arial", FontSize = 12, ForeColor = Color.Gray, FontStyle = FontStyle.Italic, Alignment = ContentAlignment.TopLeft, Indent = 1
+		});
+		*/
 	}
 
 	public static void Paint(object sender, PaintEventArgs pea)
@@ -43,19 +54,20 @@ public static class StylesDemo
 		Brush quoteBrush = new SolidBrush(quoteStyle.ForeColor);
 		
 		Font headerFont = new Font(headerStyle.FontFamily, headerStyle.FontSize, headerStyle.FontStyle);
-		Font textFont = new Font("Times New Roman", 12);
-		Font quoteFont = new Font("Arial", 12, FontStyle.Italic);
+		Font textFont = new Font(textStyle.FontFamily, textStyle.FontSize, textStyle.FontStyle);
+		Font quoteFont = new Font(quoteStyle.FontFamily, quoteStyle.FontSize, quoteStyle.FontStyle);
 
 		int lineHeight = (int)(g.MeasureString("TEST", headerFont).Height);
 		int y = 15;
 		int x = 15;
+		int indent = 30;
 
-		g.DrawString("Classification", headerFont, headerBrush, x, y);
+		g.DrawString("Classification", headerFont, headerBrush, x+(indent*headerStyle.Indent), y);
 		y += lineHeight + 5;
 
-		y = WriteText(g, textFont, textBrush, x, y, fullText) + 5;
-		y = WriteText(g, quoteFont, quoteBrush, x+30, y, quoteText) + 5;
-		y = WriteText(g, textFont, textBrush, x, y, secondText) + 5;
+		y = WriteText(g, textFont, textBrush, x+(indent*textStyle.Indent), y, fullText) + 5;
+		y = WriteText(g, quoteFont, quoteBrush, x+(indent*quoteStyle.Indent), y, quoteText) + 5;
+		y = WriteText(g, textFont, textBrush, x+(indent*textStyle.Indent), y, secondText) + 5;
 	
 		g.Dispose();
 		pea.Graphics.DrawImageUnscaled(graphicsBuffer, 0, 0);	
@@ -69,7 +81,7 @@ public static class StylesDemo
 		while(index < text.Length-1)
 		{
 			int endIndex = index + charsPerLine;
-			while(endIndex < text.Length && text[endIndex] != ' ')
+			while(endIndex < text.Length && text[endIndex-1] != ' ')
 				endIndex++;
 			if(endIndex >= text.Length)
 				endIndex = text.Length - 1;
@@ -110,7 +122,7 @@ public class StyleDialog : Form
 		this.previewPanel = previewPanel;
 	
 		Width = 400;
-		Height = 400;
+		Height = 300;
 		Text = "Styles";
 		Icon = new Icon("SpireIcon1.ico");
 		
@@ -142,11 +154,11 @@ public class StyleDialog : Form
 		
 		fontFamilyBox = new ComboBox();
 		fontFamilyBox.DataSource = new List<string>() { "Arial", "Courier", "Times New Roman" };
-//		fontFamilyBox.SelectedIndex = 2;
 		fontFamilyBox.Left = leftInputs;
 		fontFamilyBox.Top = fontFamilyLabel.Top - 2;
 		fontFamilyBox.Height = 25;
 		fontFamilyBox.Parent = this;
+		fontFamilyBox.SelectedIndexChanged += new EventHandler(FontFamilyChanged);
 		
 		Label fontSizeLabel = new Label();
 		fontSizeLabel.Left = leftLabels;
@@ -161,6 +173,7 @@ public class StyleDialog : Form
 		fontSizeInput.Top = fontSizeLabel.Top - 2;
 		fontSizeInput.Height = 25;
 		fontSizeInput.Width = 40;
+		fontSizeInput.LostFocus += new EventHandler(FontSizeChanged);
 		fontSizeInput.Parent = this;
 		
 		Label foreColorLabel = new Label();
@@ -176,6 +189,7 @@ public class StyleDialog : Form
 		foreColorInput.Top = foreColorLabel.Top - 2;
 		foreColorInput.Height = 25;
 		foreColorInput.Width = 120;
+		foreColorInput.LostFocus += new EventHandler(ForeColorStyleChanged);
 		foreColorInput.Parent = this;
 		
 		foreColorPreview = new Button();
@@ -198,6 +212,7 @@ public class StyleDialog : Form
 		boldCheckBox.Left = boldLabel.Left + boldLabel.Width + 3;
 		boldCheckBox.Top = boldLabel.Top - 4;
 		boldCheckBox.Width = 10;
+		boldCheckBox.CheckedChanged += new EventHandler(BoldChanged);
 		boldCheckBox.Parent = this;
 		
 		Label italicLabel = new Label();
@@ -211,6 +226,7 @@ public class StyleDialog : Form
 		italicCheckBox = new CheckBox();
 		italicCheckBox.Left = italicLabel.Left + italicLabel.Width + 3;
 		italicCheckBox.Top = boldCheckBox.Top;
+		italicCheckBox.CheckedChanged += new EventHandler(ItalicChanged);
 		italicCheckBox.Parent = this;
 		
 		Label alignmentLabel = new Label();
@@ -241,6 +257,7 @@ public class StyleDialog : Form
 		indentInput.Top = indentLabel.Top - 2;
 		indentInput.Height = 25;
 		indentInput.Width = 30;
+		indentInput.LostFocus += new EventHandler(IndentChanged);
 		indentInput.Parent = this;		
 		
 		Button close = new Button();
@@ -275,7 +292,99 @@ public class StyleDialog : Form
 		boldCheckBox.Checked = ((style.FontStyle & FontStyle.Bold) == FontStyle.Bold);
 		italicCheckBox.Checked = ((style.FontStyle & FontStyle.Italic) == FontStyle.Italic);
 		
-		indentInput.Text = style.MarginLeft.ToString();
+		indentInput.Text = style.Indent.ToString();
+	}
+	
+	private void FontFamilyChanged(object sender, EventArgs e)
+	{
+		SpireStyle style = FindStyle(styleBox.SelectedItem.ToString());
+		if(style == null)
+			throw new Exception("No style selected");
+		style.FontFamily = (sender as ComboBox).SelectedItem.ToString();
+		previewPanel.Invalidate();
+	}
+	
+	private void FontSizeChanged(object sender, EventArgs e)
+	{
+		SpireStyle style = FindStyle(styleBox.SelectedItem.ToString());
+		if(style == null)
+			throw new Exception("No style selected");
+		float fontSize = style.FontSize;
+		if(Single.TryParse((sender as TextBox).Text, out fontSize))
+		{
+			style.FontSize = fontSize;
+		}
+		else
+		{
+			(sender as TextBox).Text = style.FontSize.ToString();
+		}
+		previewPanel.Invalidate();
+	}
+	
+	private void ForeColorStyleChanged(object sender, EventArgs e)
+	{
+		SpireStyle style = FindStyle(styleBox.SelectedItem.ToString());
+		if(style == null)
+			throw new Exception("No style selected");
+		try
+		{
+			style.ForeColor = RGBToColor((sender as TextBox).Text);
+			foreColorPreview.BackColor = style.ForeColor;
+		}
+		catch(Exception)
+		{
+			foreColorInput.Text = ColorToRGB(style.ForeColor);
+		}
+		previewPanel.Invalidate();
+	}
+	
+	private void BoldChanged(object sender, EventArgs e)
+	{
+		SpireStyle style = FindStyle(styleBox.SelectedItem.ToString());
+		if(style == null)
+			throw new Exception("No style selected");
+		if((sender as CheckBox).Checked)
+		{
+			style.FontStyle = style.FontStyle | FontStyle.Bold;
+		}
+		else
+		{
+			style.FontStyle = style.FontStyle & ~FontStyle.Bold;
+		}
+		previewPanel.Invalidate();
+	}
+	
+	private void ItalicChanged(object sender, EventArgs e)
+	{
+		SpireStyle style = FindStyle(styleBox.SelectedItem.ToString());
+		if(style == null)
+			throw new Exception("No style selected");
+		if((sender as CheckBox).Checked)
+		{
+			style.FontStyle = style.FontStyle | FontStyle.Italic;
+		}
+		else
+		{
+			style.FontStyle = style.FontStyle & ~FontStyle.Italic;
+		}
+		previewPanel.Invalidate();
+	}
+	
+	private void IndentChanged(object sender, EventArgs e)
+	{
+		SpireStyle style = FindStyle(styleBox.SelectedItem.ToString());
+		if(style == null)
+			throw new Exception("No style selected");
+		int indent = style.Indent;
+		if(Int32.TryParse((sender as TextBox).Text, out indent))
+		{
+			style.Indent = indent;
+		}
+		else
+		{
+			(sender as TextBox).Text = style.Indent.ToString();
+		}
+		previewPanel.Invalidate();
 	}
 	
 	private SpireStyle FindStyle(string name)
@@ -295,7 +404,15 @@ public class StyleDialog : Form
 	
 	private string ColorToRGB(Color color)
 	{
-		return String.Format("rgb({0},{1},{2})", color.R, color.G, color.B);
+		return String.Format("{0} {1} {2}", color.R, color.G, color.B);
+	}
+
+	private Color RGBToColor(string s)
+	{
+		string[] rgb = s.Split(new char[] {' ',',','.','-'});
+		if(rgb.Length == 3)
+			return Color.FromArgb(255, Int32.Parse(rgb[0]), Int32.Parse(rgb[1]), Int32.Parse(rgb[2]));
+		throw new Exception("String is not formatted as a color");
 	}
 
 }
@@ -312,6 +429,6 @@ public class SpireStyle
 	public Color ForeColor { get; set; }
 	public FontStyle FontStyle { get; set; }
 	public ContentAlignment Alignment { get; set; }
-	public int MarginLeft { get; set; }
+	public int Indent { get; set; }
 }
 

@@ -20,6 +20,7 @@ public static class FormulasDemo
 	};
 	
 	private static TextBox formulaTextBox;
+	private static Label showType;
 	private static TextBox integralFromTextBox;
 	private static TextBox integralToTextBox;
 	private static TextBox squareRootTextBox;
@@ -36,18 +37,29 @@ public static class FormulasDemo
 	public static void InitializeDemo(Panel parent)
 	{
 		int margin = 10;
+		
 		formulaTextBox = MockupWindow.BuildTextInput();
 		formulaTextBox.Left = margin;
-		formulaTextBox.Top = margin;
-		formulaTextBox.Height = parent.Height - 4*margin;
+		formulaTextBox.Top = 0;
+		formulaTextBox.Height = 250;
 		formulaTextBox.Width = parent.Width - 4*margin;
-		formulaTextBox.Font = new Font(new FontFamily("Times New Roman"), 18);
+		formulaTextBox.Font = new Font(new FontFamily("Times New Roman"), 28);
 		formulaTextBox.KeyUp += new KeyEventHandler(TextBoxKeyUp);
+		formulaTextBox.Text = "    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi non gravida augue. Duis ut eleifend odio. Nullam scelerisque lobortis ipsum at laoreet. Praesent bibendum pellentesque sapien, in sodales odio";
+		formulaTextBox.SelectionStart = formulaTextBox.Text.Length;
 		formulaTextBox.Parent = parent;
 		
-		formulaTextBox.Text = "\tThe goal is that the user may type continuously to create text and formulas. The mouse should not be required. This can be achieved with configurable replacement text, such as \"pi\" to π, and layout support for complex forms such as integrals.";
-		formulaTextBox.SelectionStart = formulaTextBox.Text.Length;
-
+		showType = MockupWindow.BuildLabel(ContentAlignment.MiddleCenter);
+		showType.Left = formulaTextBox.Left;
+		showType.Top = formulaTextBox.Top + formulaTextBox.Height + margin;
+		showType.Height = 100;
+		showType.Width = parent.Width - 4*margin;
+		showType.Font = new Font(new FontFamily("Times New Roman"), 28, FontStyle.Bold);
+		showType.BackColor = Color.DarkGray;
+		showType.ForeColor = Color.White;
+		showType.Parent = parent;
+		showType.BringToFront();
+		
 		inSquareRoot = false;
 		squareRootStartIndex = 0;
 		formulaStartIndex = 0;
@@ -55,8 +67,25 @@ public static class FormulasDemo
 		lineNumber = 0;
 	}
 	
+	private static void UpdateShowType(KeyEventArgs e)
+	{
+		if(e.KeyValue == '6' && e.Shift)
+			showType.Text += '^';
+		else if(e.KeyValue == '3' && e.Shift)
+			showType.Text += '#';
+		else if(e.KeyValue == 187 && e.Shift)
+			showType.Text += '+';
+		else if(e.KeyValue == '\t')
+			showType.Text += "\t";
+		else
+			showType.Text += ((char)e.KeyValue).ToString().ToLower();
+		Console.WriteLine(e.KeyValue+" "+e.KeyCode+" "+e.KeyData);
+	}
+	
 	public static void TextBoxKeyUp(object sender, KeyEventArgs e)
 	{
+		UpdateShowType(e);
+	
 		TextBox textBox = (sender as TextBox);
 		int endIndex = textBox.SelectionStart;
 		
