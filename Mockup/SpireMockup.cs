@@ -101,6 +101,7 @@ public class MockupWindow : Form
 	{
 		mainPanel.Paint -= FootnotesDemo.Paint;
 		mainPanel.Paint -= TextLayoutDemo.Paint;
+		mainPanel.Paint -= StylesDemo.Paint;
 		mainPanel.Controls.Clear();
 	}
 	
@@ -142,8 +143,10 @@ public class MockupWindow : Form
 	private void SetupStylesDemo(object sender, EventArgs e)
 	{
 		RemoveAllDemos();
+		StylesDemo.Init();
+		mainPanel.Paint += new PaintEventHandler(StylesDemo.Paint);
 		mainPanel.Invalidate();
-		StyleDialog dialog = new StyleDialog();
+		StyleDialog dialog = new StyleDialog(mainPanel);
 	}
 
 	public static TextBox BuildTextInput()

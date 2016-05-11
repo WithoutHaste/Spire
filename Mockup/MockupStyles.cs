@@ -4,26 +4,18 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
-public class StyleDialog : Form
+public static class StylesDemo
 {
-	public List<SpireStyle> Styles = new List<SpireStyle>();
+	public static List<SpireStyle> Styles;
+	private static string fullText = @"The Sphagnopsida, the peat-mosses, comprise the two living genera Ambuchanania and Sphagnum, as well as fossil taxa. However, the genus Sphagnum is a diverse, widespread, and economically important one. These large mosses form extensive acidic bogs in peat swamps. The leaves of Sphagnum have large dead cells alternating with living photosynthetic cells. The dead cells help to store water. Aside from this character, the unique branching, thallose (flat and expanded) protonema, and explosively rupturing sporangium place it apart from other mosses.";
+	private static string quoteText = @"Andreaeopsida and Andreaeobryopsida are distinguished by the biseriate (two rows of cells) rhizoids, multiseriate (many rows of cells) protonema, and sporangium that splits along longitudinal lines. Most mosses have capsules that open at the top.";
+	private static string secondText = @"Polytrichopsida have leaves with sets of parallel lamellae, flaps of chloroplast-containing cells that look like the fins on a heat sink. These carry out photosynthesis and may help to conserve moisture by partially enclosing the gas exchange surfaces. The Polytrichopsida differ from other mosses in other details of their development and anatomy too, and can also become larger than most other mosses, with e.g. Polytrichum commune forming cushions up to 40 cm (16 in) high. The tallest land moss, a member of the Polytrichidae is probably Dawsonia superba, a native to New Zealand and other parts of Australasia.";
 	
-	private ListBox styleBox;
-	private Label styleHeader;
-	private ComboBox fontFamilyBox;
-	private TextBox fontSizeInput;
-	private TextBox foreColorInput;
-	private Button foreColorPreview;
-	private CheckBox boldCheckBox;
-	private CheckBox italicCheckBox;
-	private ComboBox alignmentBox;
-	
-	public StyleDialog()
+	public static void Init()
 	{
-		Width = 400;
-		Height = 400;
-		Text = "Styles";
-		
+		if(Styles != null)
+			return;
+		Styles = new List<SpireStyle>();
 		Styles.Add(new SpireStyle() {
 			Name = "Header 1", FontFamily = "Times New Roman", FontSize = 18, ForeColor = Color.Black, FontStyle = FontStyle.Bold, Alignment = ContentAlignment.TopCenter, MarginLeft = 0
 		});
@@ -31,8 +23,96 @@ public class StyleDialog : Form
 			Name = "Text", FontFamily = "Times New Roman", FontSize = 12, ForeColor = Color.Black, FontStyle = FontStyle.Regular, Alignment = ContentAlignment.TopLeft, MarginLeft = 0
 		});
 		Styles.Add(new SpireStyle() {
-			Name = "Quotes", FontFamily = "Arial", FontSize = 12, ForeColor = Color.Gray, FontStyle = FontStyle.Italic, Alignment = ContentAlignment.TopLeft, MarginLeft = 25
+			Name = "Quotes", FontFamily = "Arial", FontSize = 12, ForeColor = Color.Gray, FontStyle = FontStyle.Italic, Alignment = ContentAlignment.TopLeft, MarginLeft = 1
 		});
+	}
+
+	public static void Paint(object sender, PaintEventArgs pea)
+	{
+		Bitmap graphicsBuffer = new Bitmap(790, 1500);
+		Graphics g = Graphics.FromImage(graphicsBuffer);
+		g.Clear(Color.White);
+		g.SmoothingMode = SmoothingMode.AntiAlias;
+		
+		SpireStyle headerStyle = FindStyle("Header 1");
+		SpireStyle textStyle = FindStyle("Text");
+		SpireStyle quoteStyle = FindStyle("Quotes");
+		
+		Brush headerBrush = new SolidBrush(headerStyle.ForeColor);
+		Brush textBrush = new SolidBrush(textStyle.ForeColor);
+		Brush quoteBrush = new SolidBrush(quoteStyle.ForeColor);
+		
+		Font headerFont = new Font(headerStyle.FontFamily, headerStyle.FontSize, headerStyle.FontStyle);
+		Font textFont = new Font("Times New Roman", 12);
+		Font quoteFont = new Font("Arial", 12, FontStyle.Italic);
+
+		int lineHeight = (int)(g.MeasureString("TEST", headerFont).Height);
+		int y = 15;
+		int x = 15;
+
+		g.DrawString("Classification", headerFont, headerBrush, x, y);
+		y += lineHeight + 5;
+
+		y = WriteText(g, textFont, textBrush, x, y, fullText) + 5;
+		y = WriteText(g, quoteFont, quoteBrush, x+30, y, quoteText) + 5;
+		y = WriteText(g, textFont, textBrush, x, y, secondText) + 5;
+	
+		g.Dispose();
+		pea.Graphics.DrawImageUnscaled(graphicsBuffer, 0, 0);	
+	}
+	
+	private static int WriteText(Graphics g, Font font, Brush brush, int x, int y, string text)
+	{
+		int lineHeight = (int)(g.MeasureString("TEST", font).Height);
+		int index = 0;
+		int charsPerLine = 70;
+		while(index < text.Length-1)
+		{
+			int endIndex = index + charsPerLine;
+			while(endIndex < text.Length && text[endIndex] != ' ')
+				endIndex++;
+			if(endIndex >= text.Length)
+				endIndex = text.Length - 1;
+			g.DrawString(text.Substring(index, endIndex-index), font, brush, x, y);
+			y += lineHeight;
+			index = endIndex;
+		}
+		return y;
+	}
+
+	private static SpireStyle FindStyle(string name)
+	{
+		foreach(SpireStyle style in Styles)
+		{
+			if(style.Name == name)
+				return style;
+		}
+		return null;
+	}
+	
+}
+
+public class StyleDialog : Form
+{
+	private ListBox styleBox;
+	private ComboBox fontFamilyBox;
+	private TextBox fontSizeInput;
+	private TextBox foreColorInput;
+	private Button foreColorPreview;
+	private CheckBox boldCheckBox;
+	private CheckBox italicCheckBox;
+	private ComboBox alignmentBox;
+	private TextBox indentInput;
+	private Panel previewPanel;
+	
+	public StyleDialog(Panel previewPanel)
+	{
+		this.previewPanel = previewPanel;
+	
+		Width = 400;
+		Height = 400;
+		Text = "Styles";
+		Icon = new Icon("SpireIcon1.ico");
 		
 		styleBox = new ListBox();
 		styleBox.DataSource = new List<string>() { "Header 1", "Header 2", "Header 3", "Text", "Section Start", "Paragraph Start", "Quotes", "Footnotes", "Sidenotes", "Formula" };
@@ -50,19 +130,11 @@ public class StyleDialog : Form
 		addStyle.Parent = this;
 		
 		int leftLabels = styleBox.Left + styleBox.Width + 25;
-		int leftInputs = leftLabels + 35;
-		
-		styleHeader = new Label();
-		styleHeader.Left = leftInputs;
-		styleHeader.Top = styleBox.Top;
-		styleHeader.Width = 100;
-		styleHeader.Text = "";
-		styleHeader.TextAlign = ContentAlignment.TopLeft;
-		styleHeader.Parent = this;
+		int leftInputs = leftLabels + 40;
 		
 		Label fontFamilyLabel = new Label();
 		fontFamilyLabel.Left = leftLabels;
-		fontFamilyLabel.Top = styleHeader.Top + styleHeader.Height + 5;
+		fontFamilyLabel.Top = styleBox.Top;
 		fontFamilyLabel.Width = 30;
 		fontFamilyLabel.Text = "Font";
 		fontFamilyLabel.TextAlign = ContentAlignment.TopLeft;
@@ -70,6 +142,7 @@ public class StyleDialog : Form
 		
 		fontFamilyBox = new ComboBox();
 		fontFamilyBox.DataSource = new List<string>() { "Arial", "Courier", "Times New Roman" };
+//		fontFamilyBox.SelectedIndex = 2;
 		fontFamilyBox.Left = leftInputs;
 		fontFamilyBox.Top = fontFamilyLabel.Top - 2;
 		fontFamilyBox.Height = 25;
@@ -102,7 +175,7 @@ public class StyleDialog : Form
 		foreColorInput.Left = leftInputs;
 		foreColorInput.Top = foreColorLabel.Top - 2;
 		foreColorInput.Height = 25;
-		foreColorInput.Width = 60;
+		foreColorInput.Width = 120;
 		foreColorInput.Parent = this;
 		
 		foreColorPreview = new Button();
@@ -155,6 +228,21 @@ public class StyleDialog : Form
 		alignmentBox.Height = 25;
 		alignmentBox.Parent = this;		
 		
+		Label indentLabel = new Label();
+		indentLabel.Left = leftLabels;
+		indentLabel.Top = alignmentLabel.Top + alignmentLabel.Height + 5;
+		indentLabel.Width = 40;
+		indentLabel.Text = "Indent";
+		indentLabel.TextAlign = ContentAlignment.TopLeft;
+		indentLabel.Parent = this;		
+		
+		indentInput = new TextBox();
+		indentInput.Left = leftInputs;
+		indentInput.Top = indentLabel.Top - 2;
+		indentInput.Height = 25;
+		indentInput.Width = 30;
+		indentInput.Parent = this;		
+		
 		Button close = new Button();
 		close.Text = "Close";
 		close.Left = leftInputs;
@@ -162,32 +250,37 @@ public class StyleDialog : Form
 		close.Width = 75;
 		close.Click += (sender, e) => { this.Close(); };
 		close.Parent = this;
-		
-		DisplayStyle("Header 1");
+
+		this.Load += new EventHandler(StyleSelectedChanged);
 		
 		ShowDialog();
 	}
 	
 	private void StyleSelectedChanged(object sender, EventArgs e)
 	{
-		DisplayStyle((sender as ListBox).SelectedItem.ToString());
+		DisplayStyle();
 	}
 	
-	private void DisplayStyle(string name)
+	private void DisplayStyle()
 	{
-		SpireStyle style = FindStyle(name);
-		styleHeader.Text = style.Name;
+		SpireStyle style = FindStyle(styleBox.SelectedItem.ToString());
+		if(style == null)
+			return;
 		SetValue(fontFamilyBox, style.FontFamily);
 		fontSizeInput.Text = style.FontSize.ToString();
+		
+		foreColorInput.Text = ColorToRGB(style.ForeColor);
+		foreColorPreview.BackColor = style.ForeColor;
 		
 		boldCheckBox.Checked = ((style.FontStyle & FontStyle.Bold) == FontStyle.Bold);
 		italicCheckBox.Checked = ((style.FontStyle & FontStyle.Italic) == FontStyle.Italic);
 		
+		indentInput.Text = style.MarginLeft.ToString();
 	}
 	
 	private SpireStyle FindStyle(string name)
 	{
-		foreach(SpireStyle style in Styles)
+		foreach(SpireStyle style in StylesDemo.Styles)
 		{
 			if(style.Name == name)
 				return style;
@@ -199,6 +292,12 @@ public class StyleDialog : Form
 	{
 		box.SelectedIndex = box.FindString(value);
 	}
+	
+	private string ColorToRGB(Color color)
+	{
+		return String.Format("rgb({0},{1},{2})", color.R, color.G, color.B);
+	}
+
 }
 
 public class SpireStyle
