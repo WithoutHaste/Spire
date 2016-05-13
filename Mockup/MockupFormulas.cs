@@ -340,14 +340,6 @@ public static class FormulasDemo
 			suffixTextBox.Left = xy.X + 20;
 	}
 	
-	private static void OverlayPanelPaint(object sender, PaintEventArgs e)
-	{
-		Brush brush = new SolidBrush(Color.FromArgb(0,213,224,243));
-		Font font = new Font("Times New Roman", 18);
-		e.Graphics.DrawString("##", font, brush, 15, 15);
-
-	}
-	
 	private static void SquareRootPanelPaint(object sender, PaintEventArgs e)
 	{
 		Pen pen = new Pen(Color.Black, 1.5F);
