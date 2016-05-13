@@ -39,25 +39,25 @@ public static class StylesDemo
 		SpireStyle textStyle = FindStyle("Text");
 		SpireStyle quoteStyle = FindStyle("Quotes");
 		
-		Brush headerBrush = new SolidBrush(headerStyle.ForeColor.Value);
-		Brush textBrush = new SolidBrush(textStyle.ForeColor.Value);
-		Brush quoteBrush = new SolidBrush(quoteStyle.ForeColor.Value);
+		Brush headerBrush = new SolidBrush(headerStyle.ForeColor);
+		Brush textBrush = new SolidBrush(textStyle.ForeColor);
+		Brush quoteBrush = new SolidBrush(quoteStyle.ForeColor);
 		
-		Font headerFont = new Font(headerStyle.FontFamily, headerStyle.FontSize.Value, headerStyle.FontStyle.Value);
-		Font textFont = new Font(textStyle.FontFamily, textStyle.FontSize.Value, textStyle.FontStyle.Value);
-		Font quoteFont = new Font(quoteStyle.FontFamily, quoteStyle.FontSize.Value, quoteStyle.FontStyle.Value);
+		Font headerFont = new Font(headerStyle.FontFamily, headerStyle.FontSize, headerStyle.FontStyle);
+		Font textFont = new Font(textStyle.FontFamily, textStyle.FontSize, textStyle.FontStyle);
+		Font quoteFont = new Font(quoteStyle.FontFamily, quoteStyle.FontSize, quoteStyle.FontStyle);
 
 		int lineHeight = (int)(g.MeasureString("TEST", headerFont).Height);
 		int y = 15;
 		int x = 15;
 		int indent = 30;
 
-		g.DrawString("Classification", headerFont, headerBrush, x+(indent*headerStyle.Indent.Value), y);
+		g.DrawString("Classification", headerFont, headerBrush, x+(indent*headerStyle.Indent), y);
 		y += lineHeight + 5;
 
-		y = WriteText(g, textFont, textBrush, x+(indent*textStyle.Indent.Value), y, fullText) + 5;
-		y = WriteText(g, quoteFont, quoteBrush, x+(indent*quoteStyle.Indent.Value), y, quoteText) + 5;
-		y = WriteText(g, textFont, textBrush, x+(indent*textStyle.Indent.Value), y, secondText) + 5;
+		y = WriteText(g, textFont, textBrush, x+(indent*textStyle.Indent), y, fullText) + 5;
+		y = WriteText(g, quoteFont, quoteBrush, x+(indent*quoteStyle.Indent), y, quoteText) + 5;
+		y = WriteText(g, textFont, textBrush, x+(indent*textStyle.Indent), y, secondText) + 5;
 	
 		g.Dispose();
 		pea.Graphics.DrawImageUnscaled(graphicsBuffer, 0, 0);	
@@ -276,11 +276,11 @@ public class StyleDialog : Form
 		SetValue(fontFamilyBox, style.FontFamily);
 		fontSizeInput.Text = style.FontSize.ToString();
 		
-		foreColorInput.Text = SpireStyle.ColorToRGB(style.ForeColor.Value);
-		foreColorPreview.BackColor = style.ForeColor.Value;
+		foreColorInput.Text = ColorToRGB(style.ForeColor);
+		foreColorPreview.BackColor = style.ForeColor;
 		
-		boldCheckBox.Checked = ((style.FontStyle.Value & FontStyle.Bold) == FontStyle.Bold);
-		italicCheckBox.Checked = ((style.FontStyle.Value & FontStyle.Italic) == FontStyle.Italic);
+		boldCheckBox.Checked = ((style.FontStyle & FontStyle.Bold) == FontStyle.Bold);
+		italicCheckBox.Checked = ((style.FontStyle & FontStyle.Italic) == FontStyle.Italic);
 		
 		indentInput.Text = style.Indent.ToString();
 	}
@@ -299,7 +299,7 @@ public class StyleDialog : Form
 		SpireStyle style = FindStyle(styleBox.SelectedItem.ToString());
 		if(style == null)
 			throw new Exception("No style selected");
-		float fontSize = style.FontSize.Value;
+		float fontSize = style.FontSize;
 		if(Single.TryParse((sender as TextBox).Text, out fontSize))
 		{
 			style.FontSize = fontSize;
@@ -318,12 +318,12 @@ public class StyleDialog : Form
 			throw new Exception("No style selected");
 		try
 		{
-			style.ForeColor = SpireStyle.RGBToColor((sender as TextBox).Text);
-			foreColorPreview.BackColor = style.ForeColor.Value;
+			style.ForeColor = RGBToColor((sender as TextBox).Text);
+			foreColorPreview.BackColor = style.ForeColor;
 		}
 		catch(Exception)
 		{
-			foreColorInput.Text = SpireStyle.ColorToRGB(style.ForeColor.Value);
+			foreColorInput.Text = ColorToRGB(style.ForeColor);
 		}
 		previewPanel.Invalidate();
 	}
@@ -365,7 +365,7 @@ public class StyleDialog : Form
 		SpireStyle style = FindStyle(styleBox.SelectedItem.ToString());
 		if(style == null)
 			throw new Exception("No style selected");
-		int indent = style.Indent.Value;
+		int indent = style.Indent;
 		if(Int32.TryParse((sender as TextBox).Text, out indent))
 		{
 			style.Indent = indent;
@@ -392,128 +392,6 @@ public class StyleDialog : Form
 		box.SelectedIndex = box.FindString(value);
 	}
 	
-}
-
-public class SpireStyle
-{
-	public SpireStyle()
-	{
-	}
-	
-	public string Name { get; set; }
-	public string FontFamily { get; set; }
-	public float? FontSize { get; set; }
-	public Color? ForeColor { get; set; }
-	public FontStyle? FontStyle { get; set; }
-	public ContentAlignment? Alignment { get; set; }
-	public int? Indent { get; set; }
-
-	public SpireStyle Combine(SpireStyle baseStyle)
-	{
-		SpireStyle combined = Clone();
-		if(String.IsNullOrEmpty(FontFamily))
-			combined.FontFamily = baseStyle.FontFamily;
-		if(FontSize == null)
-			combined.FontSize = baseStyle.FontSize;
-		if(ForeColor == null)
-			combined.ForeColor = baseStyle.ForeColor;
-		if(FontStyle == null)
-			combined.FontStyle = baseStyle.FontStyle;
-		if(Alignment == null)
-			combined.Alignment = baseStyle.Alignment;
-		if(Indent == null)
-			combined.Indent = baseStyle.Indent;
-		return combined;
-	}
-	
-	public SpireStyle Clone()
-	{
-		return new SpireStyle() {
-			Name = Name
-			, FontFamily = FontFamily
-			, FontSize = FontSize
-			, ForeColor = ForeColor
-			, FontStyle = FontStyle
-			, Alignment = Alignment
-			, Indent = Indent
-		};
-	}
-	
-	public string ToText()
-	{
-		List<string> lines = new List<string>();
-		if(!String.IsNullOrEmpty(FontFamily))
-			lines.Add("Font="+FontFamily);
-		if(FontSize != null)
-			lines.Add("FontSize="+FontSize);
-		if(ForeColor != null)
-			lines.Add("TextColor="+SpireStyle.ColorToRGB(ForeColor.Value));
-		if(FontStyle != null)
-			lines.Add("FontStyle="+SpireStyle.FontStyleToString(FontStyle.Value));
-		if(Indent != null)
-			lines.Add("Indent="+Indent);
-		return String.Join("\n", lines.ToArray());
-	}
-	
-	public void ApplyField(string fieldName, string fieldValue)
-	{
-		fieldName = fieldName.ToLower();
-		fieldValue = fieldValue.Trim();
-		switch(fieldName)
-		{
-			case "fontfamily": 
-				FontFamily = fieldValue;
-				break;
-			case "fontsize":
-				float fontSize;
-				if(Single.TryParse(fieldValue, out fontSize))
-					FontSize = fontSize;
-				else
-					FontSize = null;
-				break;	
-			case "fontcolor":
-			case "textcolor": 
-				try
-				{
-					ForeColor = SpireStyle.RGBToColor(fieldValue);
-				}
-				catch(Exception)
-				{
-					ForeColor = null;
-				}
-				break;
-			case "fontstyle":
-				FontStyle = System.Drawing.FontStyle.Regular;
-				fieldValue = fieldValue.ToLower();
-				if(fieldValue.IndexOf("bold") > -1)
-					FontStyle = FontStyle | System.Drawing.FontStyle.Bold;
-				if(fieldValue.IndexOf("italic") > -1)
-					FontStyle = FontStyle | System.Drawing.FontStyle.Italic;
-				if(fieldValue.IndexOf("none") > -1 || fieldValue.IndexOf("regular") > -1)
-					FontStyle = System.Drawing.FontStyle.Regular;
-				break;
-			case "indent":
-				int indent;
-				if(Int32.TryParse(fieldValue, out indent))
-					Indent = indent;
-				else
-					Indent = null;
-				break;	
-		}
-	}
-	
-	public static string FontStyleToString(FontStyle style)
-	{
-		List<string> terms = new List<string>();
-		if((style & System.Drawing.FontStyle.Bold) == System.Drawing.FontStyle.Bold)
-			terms.Add("bold");
-		if((style & System.Drawing.FontStyle.Italic) == System.Drawing.FontStyle.Italic)
-			terms.Add("italic");
-		if(terms.Count == 0)
-			terms.Add("none");
-		return String.Join(" ", terms.ToArray());
-	}
-
 	public static string ColorToRGB(Color color)
 	{
 		return String.Format("{0} {1} {2}", color.R, color.G, color.B);
@@ -526,6 +404,21 @@ public class SpireStyle
 			return Color.FromArgb(255, Int32.Parse(rgb[0]), Int32.Parse(rgb[1]), Int32.Parse(rgb[2]));
 		throw new Exception("String is not formatted as a color");
 	}
+}
+
+public class SpireStyle
+{
+	public SpireStyle()
+	{
+	}
+	
+	public string Name { get; set; }
+	public string FontFamily { get; set; }
+	public float FontSize { get; set; }
+	public Color ForeColor { get; set; }
+	public FontStyle FontStyle { get; set; }
+	public ContentAlignment Alignment { get; set; }
+	public int Indent { get; set; }
 
 }
 
