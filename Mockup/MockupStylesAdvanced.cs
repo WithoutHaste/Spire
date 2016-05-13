@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 public static class StylesDemoAdvanced
 {
-	public static List<SpireStyle> Styles;
+	public static List<SpireStyleAdvanced> Styles;
 	private static string fullText = @"The Sphagnopsida, the peat-mosses, comprise the two living genera Ambuchanania and Sphagnum, as well as fossil taxa. However, the genus Sphagnum is a diverse, widespread, and economically important one. These large mosses form extensive acidic bogs in peat swamps. The leaves of Sphagnum have large dead cells alternating with living photosynthetic cells. The dead cells help to store water. Aside from this character, the unique branching, thallose (flat and expanded) protonema, and explosively rupturing sporangium place it apart from other mosses.";
 	private static string quoteText = @"Andreaeopsida and Andreaeobryopsida are distinguished by the biseriate (two rows of cells) rhizoids, multiseriate (many rows of cells) protonema, and sporangium that splits along longitudinal lines. Most mosses have capsules that open at the top.";
 	private static string secondText = @"Polytrichopsida have leaves with sets of parallel lamellae, flaps of chloroplast-containing cells that look like the fins on a heat sink. These carry out photosynthesis and may help to conserve moisture by partially enclosing the gas exchange surfaces. The Polytrichopsida differ from other mosses in other details of their development and anatomy too, and can also become larger than most other mosses, with e.g. Polytrichum commune forming cushions up to 40 cm (16 in) high. The tallest land moss, a member of the Polytrichidae is probably Dawsonia superba, a native to New Zealand and other parts of Australasia.";
@@ -16,17 +16,17 @@ public static class StylesDemoAdvanced
 	{
 		if(Styles != null)
 			return;
-		Styles = new List<SpireStyle>();
-		Styles.Add(new SpireStyle() {
-			Name = "Global", FontFamily = "Times New Roman", FontSize = 12, ForeColor = Color.Black, FontStyle = FontStyle.Regular, Alignment = ContentAlignment.TopCenter, Indent = 0
+		Styles = new List<SpireStyleAdvanced>();
+		Styles.Add(new SpireStyleAdvanced() {
+			Name = "Global", FontFamily = "Times New Roman", FontSize = 12, ForeColor = Color.Black, FontStyle = FontStyle.Regular, Indent = 0
 		});
-		Styles.Add(new SpireStyle() {
+		Styles.Add(new SpireStyleAdvanced() {
 			Name = "Header 1"
 		});
-		Styles.Add(new SpireStyle() {
+		Styles.Add(new SpireStyleAdvanced() {
 			Name = "Text"
 		});
-		Styles.Add(new SpireStyle() {
+		Styles.Add(new SpireStyleAdvanced() {
 			Name = "Quotes"
 		});
 	}
@@ -38,29 +38,29 @@ public static class StylesDemoAdvanced
 		g.Clear(Color.White);
 		g.SmoothingMode = SmoothingMode.AntiAlias;
 		
-		SpireStyle headerStyle = LoadStyle("Header 1");
-		SpireStyle textStyle = LoadStyle("Text");
-		SpireStyle quoteStyle = LoadStyle("Quotes");
+		SpireStyleAdvanced headerStyle = LoadStyle("Header 1");
+		SpireStyleAdvanced textStyle = LoadStyle("Text");
+		SpireStyleAdvanced quoteStyle = LoadStyle("Quotes");
 		
-		Brush headerBrush = new SolidBrush(headerStyle.ForeColor.Value);
-		Brush textBrush = new SolidBrush(textStyle.ForeColor.Value);
-		Brush quoteBrush = new SolidBrush(quoteStyle.ForeColor.Value);
+		Brush headerBrush = new SolidBrush(headerStyle.GetForeColor());
+		Brush textBrush = new SolidBrush(textStyle.GetForeColor());
+		Brush quoteBrush = new SolidBrush(quoteStyle.GetForeColor());
 		
-		Font headerFont = new Font(headerStyle.FontFamily, headerStyle.FontSize.Value, headerStyle.FontStyle.Value);
-		Font textFont = new Font(textStyle.FontFamily, textStyle.FontSize.Value, textStyle.FontStyle.Value);
-		Font quoteFont = new Font(quoteStyle.FontFamily, quoteStyle.FontSize.Value, quoteStyle.FontStyle.Value);
+		Font headerFont = new Font(headerStyle.GetFontFamily(), headerStyle.GetFontSize(), headerStyle.GetFontStyle());
+		Font textFont = new Font(textStyle.GetFontFamily(), textStyle.GetFontSize(), textStyle.GetFontStyle());
+		Font quoteFont = new Font(quoteStyle.GetFontFamily(), quoteStyle.GetFontSize(), quoteStyle.GetFontStyle());
 
 		int lineHeight = (int)(g.MeasureString("TEST", headerFont).Height);
 		int y = 15;
 		int x = 15;
 		int indent = 30;
 
-		g.DrawString("Classification", headerFont, headerBrush, x+(indent*headerStyle.Indent.Value), y);
+		g.DrawString("Classification", headerFont, headerBrush, x+(indent*headerStyle.GetIndent()), y);
 		y += lineHeight + 5;
 
-		y = WriteText(g, textFont, textBrush, x+(indent*textStyle.Indent.Value), y, fullText) + 5;
-		y = WriteText(g, quoteFont, quoteBrush, x+(indent*quoteStyle.Indent.Value), y, quoteText) + 5;
-		y = WriteText(g, textFont, textBrush, x+(indent*textStyle.Indent.Value), y, secondText) + 5;
+		y = WriteText(g, textFont, textBrush, x+(indent*textStyle.GetIndent()), y, fullText) + 5;
+		y = WriteText(g, quoteFont, quoteBrush, x+(indent*quoteStyle.GetIndent()), y, quoteText) + 5;
+		y = WriteText(g, textFont, textBrush, x+(indent*textStyle.GetIndent()), y, secondText) + 5;
 	
 		g.Dispose();
 		pea.Graphics.DrawImageUnscaled(graphicsBuffer, 0, 0);	
@@ -85,9 +85,9 @@ public static class StylesDemoAdvanced
 		return y;
 	}
 
-	private static SpireStyle FindStyle(string name)
+	private static SpireStyleAdvanced FindStyle(string name)
 	{
-		foreach(SpireStyle style in Styles)
+		foreach(SpireStyleAdvanced style in Styles)
 		{
 			if(style.Name == name)
 				return style;
@@ -95,10 +95,10 @@ public static class StylesDemoAdvanced
 		return null;
 	}
 
-	private static SpireStyle LoadStyle(string name)
+	private static SpireStyleAdvanced LoadStyle(string name)
 	{
-		SpireStyle global = FindStyle("Global");
-		SpireStyle local = FindStyle(name);
+		SpireStyleAdvanced global = FindStyle("Global");
+		SpireStyleAdvanced local = FindStyle(name);
 		return local.Combine(global);
 	}
 	
@@ -146,6 +146,7 @@ public class StyleDialogAdvanced : Form
 		applyVariables.Left = variablesControl.Left;
 		applyVariables.Top = EasyLayout.Below(variablesControl, 5);
 		applyVariables.Width = variablesControl.Width;
+		applyVariables.Click += new EventHandler(ApplyVariables);
 		applyVariables.Parent = this;
 		
 		Label styleListLabel = new Label();
@@ -210,9 +211,22 @@ public class StyleDialogAdvanced : Form
 		ShowDialog();
 	}
 	
+	private void ApplyVariables(object sender, EventArgs e)
+	{
+		foreach(string line in variablesControl.Text.Split('\n'))
+		{
+			string[] fields = line.Split('=');
+			if(fields.Length < 2) continue;
+			string fieldName = Regex.Replace(fields[0], @"[\s\t]+", "");
+			fields[0] = "";
+			SpireStyleAdvanced.Variables[fieldName] = (String.Join(" ", fields)).Trim();
+		}
+		previewPanel.Invalidate();
+	}
+	
 	private void ApplyStyle(object sender, EventArgs e)
 	{
-		SpireStyle style = FindSelectedStyle();
+		SpireStyleAdvanced style = FindSelectedStyle();
 		foreach(string line in styleControl.Text.Split('\n'))
 		{
 			string[] fields = line.Split('=');
@@ -232,7 +246,7 @@ public class StyleDialogAdvanced : Form
 	
 	private void DisplayStyle()
 	{
-		SpireStyle style = FindSelectedStyle();
+		SpireStyleAdvanced style = FindSelectedStyle();
 		styleLabel.Text = "Style: ";
 		styleControl.Text = "";
 		if(style == null)
@@ -241,14 +255,14 @@ public class StyleDialogAdvanced : Form
 		styleControl.Text = style.ToText();
 	}
 	
-	private SpireStyle FindSelectedStyle()
+	private SpireStyleAdvanced FindSelectedStyle()
 	{
 		return FindStyle(styleListControl.SelectedItem.ToString());
 	}
 		
-	private SpireStyle FindStyle(string name)
+	private SpireStyleAdvanced FindStyle(string name)
 	{
-		foreach(SpireStyle style in StylesDemoAdvanced.Styles)
+		foreach(SpireStyleAdvanced style in StylesDemoAdvanced.Styles)
 		{
 			if(style.Name == name)
 				return style;
@@ -258,3 +272,319 @@ public class StyleDialogAdvanced : Form
 
 }
 
+
+public class SpireStyleAdvanced
+{
+	public SpireStyleAdvanced()
+	{
+	}
+	
+	public static Dictionary<string, string> Variables = new Dictionary<string, string>();
+	
+	public string Name { get; set; }
+	
+	public string FontFamily { get; set; }
+	public float? FontSize { get; set; }
+	public Color? ForeColor { get; set; }
+	public FontStyle? FontStyle { get; set; }
+	public int? Indent { get; set; }
+
+	public string FontFamilyVariable { get; set; }
+	public string FontSizeVariable { get; set; }
+	public string ForeColorVariable { get; set; }
+	public string FontStyleVariable { get; set; }
+	public string IndentVariable { get; set; }
+	
+	private static Dictionary<string, Color> Colors = new Dictionary<string, Color>() {
+		{"red", Color.Red}, {"blue", Color.Blue}, {"yellow", Color.Yellow}, {"green", Color.Green}, {"purple", Color.Purple}, {"orange",Color.Orange}, {"white", Color.White}, {"gray", Color.Gray}, {"grey", Color.Gray}, {"black", Color.Black}
+	};
+
+	public string GetFontFamily()
+	{
+		if(!String.IsNullOrEmpty(FontFamily))
+			return FontFamily;
+		if(!String.IsNullOrEmpty(FontFamilyVariable))
+			return Variables[FontFamilyVariable];
+		return null;
+	}
+	
+	public float GetFontSize()
+	{
+		if(FontSize != null)
+			return FontSize.Value;
+		if(!String.IsNullOrEmpty(FontSizeVariable))
+			return ParseFloat(Variables[FontSizeVariable]).Value;
+		return 0;
+	}
+	
+	public Color GetForeColor()
+	{
+		if(ForeColor != null)
+			return ForeColor.Value;
+		if(!String.IsNullOrEmpty(ForeColorVariable))
+			return ParseColor(Variables[ForeColorVariable]).Value;
+		return Color.White;
+	}
+	
+	public FontStyle GetFontStyle()
+	{
+		if(FontStyle != null)
+			return FontStyle.Value;
+		if(!String.IsNullOrEmpty(FontStyleVariable))
+			return ParseFontStyle(Variables[FontStyleVariable]).Value;
+		return System.Drawing.FontStyle.Regular;
+	}
+	
+	public int GetIndent()
+	{
+		if(Indent != null)
+			return Indent.Value;
+		if(!String.IsNullOrEmpty(IndentVariable))
+			return ParseInt(Variables[IndentVariable]).Value;
+		return 0;
+	}
+		
+	public SpireStyleAdvanced Combine(SpireStyleAdvanced baseStyle)
+	{
+		SpireStyleAdvanced combined = Clone();
+		if(String.IsNullOrEmpty(FontFamily) && String.IsNullOrEmpty(FontFamilyVariable))
+		{
+			combined.FontFamily = baseStyle.FontFamily;
+			combined.FontFamilyVariable = baseStyle.FontFamilyVariable;
+		}
+		if(FontSize == null && String.IsNullOrEmpty(FontSizeVariable))
+		{
+			combined.FontSize = baseStyle.FontSize;
+			combined.FontSizeVariable = baseStyle.FontSizeVariable;
+		}
+		if(ForeColor == null && String.IsNullOrEmpty(ForeColorVariable))
+		{
+			combined.ForeColor = baseStyle.ForeColor;
+			combined.ForeColorVariable = baseStyle.ForeColorVariable;
+		}
+		if(FontStyle == null && String.IsNullOrEmpty(FontStyleVariable))
+		{
+			combined.FontStyle = baseStyle.FontStyle;
+			combined.FontStyleVariable = baseStyle.FontStyleVariable;
+		}
+		if(Indent == null && String.IsNullOrEmpty(IndentVariable))
+		{
+			combined.Indent = baseStyle.Indent;
+			combined.IndentVariable = baseStyle.IndentVariable;
+		}
+
+		return combined;
+	}
+	
+	public SpireStyleAdvanced Clone()
+	{
+		return new SpireStyleAdvanced() {
+			Name = Name
+			, FontFamily = FontFamily
+			, FontSize = FontSize
+			, ForeColor = ForeColor
+			, FontStyle = FontStyle
+			, Indent = Indent
+			, FontFamilyVariable = FontFamilyVariable
+			, FontSizeVariable = FontSizeVariable
+			, ForeColorVariable = ForeColorVariable
+			, FontStyleVariable = FontStyleVariable
+			, IndentVariable = IndentVariable
+		};
+	}
+	
+	public string ToText()
+	{
+		List<string> lines = new List<string>();
+		if(!String.IsNullOrEmpty(FontFamily))
+			lines.Add("Font="+FontFamily);
+		else if(!String.IsNullOrEmpty(FontFamilyVariable))
+			lines.Add("Font="+FontFamilyVariable);
+			
+		if(FontSize != null)
+			lines.Add("FontSize="+FontSize);
+		else if(!String.IsNullOrEmpty(FontSizeVariable))
+			lines.Add("FontSize="+FontSizeVariable);
+
+		if(ForeColor != null)
+			lines.Add("FontColor="+SpireStyleAdvanced.ColorToRGB(ForeColor.Value));
+		else if(!String.IsNullOrEmpty(ForeColorVariable))
+			lines.Add("FontColor="+ForeColorVariable);
+
+		if(FontStyle != null)
+			lines.Add("FontStyle="+SpireStyleAdvanced.FontStyleToString(FontStyle.Value));
+		else if(!String.IsNullOrEmpty(FontStyleVariable))
+			lines.Add("FontStyle="+FontStyleVariable);
+			
+		if(Indent != null)
+			lines.Add("Indent="+Indent);
+		else if(!String.IsNullOrEmpty(IndentVariable))
+			lines.Add("Indent="+IndentVariable);
+			
+		return String.Join(Environment.NewLine, lines.ToArray());
+	}
+	
+	public void ApplyField(string fieldName, string fieldValue)
+	{
+		fieldName = fieldName.ToLower();
+		fieldValue = fieldValue.Trim();
+		
+		switch(fieldName)
+		{
+			case "fontfamily": 
+				if(Variables.ContainsKey(fieldValue))
+				{
+					FontFamilyVariable = fieldValue;
+					FontFamily = null;
+				}
+				else
+				{
+					FontFamilyVariable = null;
+					FontFamily = fieldValue;
+				}
+				break;
+			case "fontsize":
+				if(Variables.ContainsKey(fieldValue))
+				{
+					FontSizeVariable = fieldValue;
+					FontSize = null;
+				}
+				else
+				{
+					float? fontSize = ParseFloat(fieldValue);
+					if(fontSize != null)
+					{
+						FontSizeVariable = null;
+						FontSize = fontSize;
+					}
+				}
+				break;	
+			case "fontcolor":
+			case "textcolor":
+				if(Variables.ContainsKey(fieldValue))
+				{
+					ForeColorVariable = fieldValue;
+					ForeColor = null;
+				}
+				else
+				{
+					Color? color = ParseColor(fieldValue);
+					if(color != null)
+					{
+						ForeColor = color;
+						ForeColorVariable = null;
+					}
+				}
+				break;
+			case "fontstyle":
+				if(Variables.ContainsKey(fieldValue))
+				{
+					FontStyleVariable = fieldValue;
+					FontStyle = null;
+				}
+				else
+				{
+					FontStyle? fontStyle = ParseFontStyle(fieldValue);
+					if(fontStyle != null)
+					{
+						FontStyle = fontStyle;
+						FontStyleVariable = null;
+					}
+				}
+				break;
+			case "indent":
+				if(Variables.ContainsKey(fieldValue))
+				{
+					IndentVariable = fieldValue;
+					Indent = null;
+				}
+				else
+				{
+					int? indent = ParseInt(fieldValue);
+					if(indent != null)
+					{
+						Indent = indent;
+						IndentVariable = null;
+					}
+				}
+				break;	
+		}
+	}
+	
+	public static string FontStyleToString(FontStyle style)
+	{
+		List<string> terms = new List<string>();
+		if((style & System.Drawing.FontStyle.Bold) == System.Drawing.FontStyle.Bold)
+			terms.Add("bold");
+		if((style & System.Drawing.FontStyle.Italic) == System.Drawing.FontStyle.Italic)
+			terms.Add("italic");
+		if(terms.Count == 0)
+			terms.Add("none");
+		return String.Join(" ", terms.ToArray());
+	}
+
+	public static string ColorToRGB(Color color)
+	{
+		return String.Format("{0} {1} {2}", color.R, color.G, color.B);
+	}
+
+	public static Color RGBToColor(string s)
+	{
+		string[] rgb = s.Split(new char[] {' ',',','.','-'});
+		if(rgb.Length == 3)
+			return Color.FromArgb(255, Int32.Parse(rgb[0]), Int32.Parse(rgb[1]), Int32.Parse(rgb[2]));
+		throw new Exception("String is not formatted as a color");
+	}
+	
+	private int? ParseInt(string value)
+	{
+		int i;
+		if(Int32.TryParse(value, out i))
+		{
+			return i;
+		}
+		return null;
+	}
+	
+	private float? ParseFloat(string value)
+	{
+		float f;
+		if(Single.TryParse(value, out f))
+		{
+			return f;
+		}
+		return null;
+	}
+	
+	private Color? ParseColor(string value)
+	{
+		Color? c = null;
+		try
+		{
+			c = SpireStyleAdvanced.RGBToColor(value);
+		}
+		catch(Exception)
+		{
+			value = value.ToLower();
+			if(Colors.ContainsKey(value))
+			{	
+				c = Colors[value];
+			}
+		}
+		return c;
+	}
+	
+	private FontStyle? ParseFontStyle(string value)
+	{
+		FontStyle s = System.Drawing.FontStyle.Regular;
+		value = value.ToLower();
+		if(value.IndexOf("bold") > -1)
+			s = s | System.Drawing.FontStyle.Bold;
+		if(value.IndexOf("italic") > -1)
+			s = s | System.Drawing.FontStyle.Italic;
+		if(value.IndexOf("none") > -1 || value.IndexOf("regular") > -1)
+			s = System.Drawing.FontStyle.Regular;
+		return s;
+	}
+
+}
