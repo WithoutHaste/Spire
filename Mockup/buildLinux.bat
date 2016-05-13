@@ -1,0 +1,1 @@
+gmcs -out:SpireMockup_Linux.exe SpireMockup.cs MockupGraphs.cs MockupStyles.cs MockupFootnotes.cs MockupFormulas.cs MockupPDF.cs MockupTextLayout.cs DoubleBufferedPanel.cs /r:System.Drawing.dll /r:System.Windows.Forms.dll /r:System.Data.dll
