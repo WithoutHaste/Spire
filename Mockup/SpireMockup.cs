@@ -106,7 +106,7 @@ public class MockupWindow : Form
 		mainPanel.Paint -= CustomLayoutDemo.Paint;
 		mainPanel.Paint -= StylesDemo.Paint;
 		mainPanel.Paint -= StylesDemoAdvanced.Paint;
-		CustomLayoutDemo.RemoveListeners(mainPanel);
+		CustomLayoutDemo.RemovePanel();
 		mainPanel.Controls.Clear();
 	}
 	
@@ -141,7 +141,7 @@ public class MockupWindow : Form
 	private void SetupCustomLayoutDemo(object sender, EventArgs e)
 	{
 		RemoveAllDemos();
-		CustomLayoutDemo.AddListeners(mainPanel);
+		CustomLayoutDemo.SetPanel(mainPanel);
 		mainPanel.Paint += new PaintEventHandler(CustomLayoutDemo.Paint);
 		mainPanel.Invalidate();
 	}

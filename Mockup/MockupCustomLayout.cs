@@ -9,34 +9,83 @@ using System.Windows.Forms;
 
 public static class CustomLayoutDemo
 {
+	private enum Mode { AddBox, MoveBox, ResizeBox };
+
+	private static Mode mode = Mode.AddBox;
 	private static Panel drawPanel;
+	
 	private static Point? mouseDownPoint;
 	private static Point? mouseDragPoint;
-	private static List<Rectangle> boxes;
 
-	public static void AddListeners(Panel panel)
+	private static List<Rectangle> boxes;
+	private static Rectangle selectedBox;
+	private static Point? selectedCorner;
+	private static Point? oppositeSelectedCorner;
+
+	public static void SetPanel(Panel panel)
 	{
+		if(drawPanel != null)
+		{
+			RemovePanel();
+		}
 		drawPanel = panel;
 		boxes = new List<Rectangle>();
-		panel.MouseDown += new MouseEventHandler(MouseDown);
-		panel.MouseUp += new MouseEventHandler(MouseUp);
-		panel.MouseMove += new MouseEventHandler(MouseMove);
+		ApplyMode(Mode.AddBox);
 	}
 	
-	public static void RemoveListeners(Panel panel)
+	public static void RemovePanel()
 	{
+		if(drawPanel == null)
+			return;
+		RemoveListeners();
 		drawPanel = null;
-		panel.MouseDown -= MouseDown;
-		panel.MouseUp -= MouseUp;
-		panel.MouseMove -= MouseMove;
 	}
 	
-	private static void MouseDown(object sender, MouseEventArgs e)
+	private static void RemoveListeners()
 	{
-		mouseDownPoint = new Point(e.X, e.Y);
+		drawPanel.MouseDown -= AddMouseDown;
+		drawPanel.MouseUp -= AddMouseUp;
+		drawPanel.MouseMove -= AddMouseMove;
+		drawPanel.MouseDown -= MoveMouseDown;
+		drawPanel.MouseUp -= MoveMouseUp;
+		drawPanel.MouseMove -= MoveMouseMove;
 	}
 	
-	private static void MouseUp(object sender, MouseEventArgs e)
+	private static void ApplyMode(Mode m)
+	{
+		mode = m;
+		RemoveListeners();
+		switch(mode)
+		{
+			case Mode.AddBox:
+				drawPanel.MouseDown += new MouseEventHandler(AddMouseDown);
+				drawPanel.MouseUp += new MouseEventHandler(AddMouseUp);
+				drawPanel.MouseMove += new MouseEventHandler(AddMouseMove);
+				break;
+			case Mode.MoveBox:
+				drawPanel.MouseDown += new MouseEventHandler(MoveMouseDown);
+				drawPanel.MouseUp += new MouseEventHandler(MoveMouseUp);
+				drawPanel.MouseMove += new MouseEventHandler(MoveMouseMove);
+				break;
+			case Mode.ResizeBox:
+				break;
+		}
+	}
+	
+	private static void AddMouseDown(object sender, MouseEventArgs e)
+	{
+		if(CheckOverCorners(e.X, e.Y))
+		{
+			ApplyMode(Mode.MoveBox);
+			MoveMouseDown(sender, e);
+		}
+		else
+		{
+			mouseDownPoint = new Point(e.X, e.Y);
+		}
+	}
+	
+	private static void AddMouseUp(object sender, MouseEventArgs e)
 	{
 		boxes.Add(new Rectangle(
 			Math.Min(mouseDownPoint.Value.X, e.X)
@@ -48,47 +97,96 @@ public static class CustomLayoutDemo
 		drawPanel.Invalidate();
 	}
 	
-	private static void MouseMove(object sender, MouseEventArgs e)
+	private static void AddMouseMove(object sender, MouseEventArgs e)
 	{
 		if(mouseDownPoint == null) 
 		{
-			CheckOverCorners(e.X, e.Y);
+			if(CheckOverCorners(e.X, e.Y))
+			{
+				if(selectedCorner.Value.X == selectedBox.X && selectedCorner.Value.Y == selectedBox.Y)
+					drawPanel.Cursor = Cursors.SizeNWSE;
+				else if(selectedCorner.Value.X == selectedBox.X+selectedBox.Width && selectedCorner.Value.Y == selectedBox.Y)
+					drawPanel.Cursor = Cursors.SizeNESW;
+				else if(selectedCorner.Value.X == selectedBox.X && selectedCorner.Value.Y == selectedBox.Y+selectedBox.Height)
+					drawPanel.Cursor = Cursors.SizeNESW;		
+				else if(selectedCorner.Value.X == selectedBox.X+selectedBox.Width && selectedCorner.Value.Y == selectedBox.Y+selectedBox.Height)
+					drawPanel.Cursor = Cursors.SizeNWSE;
+			}
+			else if(CheckOverSide(e.X, e.Y)
+			{
+				drawPanel.Cursor = Cursors.Hand;
+			}
+			else
+			{
+				drawPanel.Cursor = Cursors.Arrow;
+			}
 			return;
 		}
 		mouseDragPoint = new Point(e.X, e.Y);
 		drawPanel.Invalidate();
 	}
 	
-	private static Rectangle CheckOverCorners(int x, int y)
+	private static void MoveMouseDown(object sender, MouseEventArgs e)
 	{
-		bool overCorner = false;
-		Rectangle overBox = null;
+	}
+	
+	private static void MoveMouseUp(object sender, MouseEventArgs e)
+	{
+		selectedBox.X = Math.Min(oppositeSelectedCorner.Value.X, e.X);
+		selectedBox.Y = Math.Min(oppositeSelectedCorner.Value.Y, e.Y);
+		selectedBox.Width = Math.Abs(oppositeSelectedCorner.Value.X - e.X);
+		selectedBox.Height = Math.Abs(oppositeSelectedCorner.Value.Y - e.Y);
+		drawPanel.Cursor = Cursors.Arrow;
+		ApplyMode(Mode.AddBox);
+		drawPanel.Invalidate();
+	}
+	
+	private static void MoveMouseMove(object sender, MouseEventArgs e)
+	{
+		mouseDragPoint = new Point(e.X, e.Y);
+		drawPanel.Invalidate();
+	}
+	
+	private static bool CheckOverSide(int x, int y)
+	{
+		return false;
+	}
+	
+	private static bool CheckOverCorners(int x, int y)
+	{
+		selectedBox = null;
+		selectedCorner = null;
+		oppositeSelectedCorner = null;
 		foreach(Rectangle box in boxes)
 		{
 			if(CheckOverCorner(box.X, box.Y, x, y))
-				overCorner = true;
-			else if(CheckOverCorner(box.X+box.Width, box.Y, x, y))
-				overCorner = true;
-			else if(CheckOverCorner(box.X, box.Y+box.Height, x, y))
-				overCorner = true;
-			else if(CheckOverCorner(box.X+box.Width, box.Y+box.Height, x, y))
-				overCorner = true;
-				
-			if(overCorner)
 			{
-				overBox = box;
+				selectedCorner = new Point(box.X, box.Y);
+				oppositeSelectedCorner = new Point(box.X+box.Width, box.Y+box.Height);
+			}
+			else if(CheckOverCorner(box.X+box.Width, box.Y, x, y))
+			{
+				selectedCorner = new Point(box.X+box.Width, box.Y);
+				oppositeSelectedCorner = new Point(box.X, box.Y+box.Height);
+			}
+			else if(CheckOverCorner(box.X, box.Y+box.Height, x, y))
+			{
+				selectedCorner = new Point(box.X, box.Y+box.Height);
+				oppositeSelectedCorner = new Point(box.X+box.Width, box.Y);
+			}
+			else if(CheckOverCorner(box.X+box.Width, box.Y+box.Height, x, y))
+			{
+				selectedCorner = new Point(box.X+box.Width, box.Y+box.Height);
+				oppositeSelectedCorner = new Point(box.X, box.Y);
+			}
+				
+			if(selectedCorner != null)
+			{
+				selectedBox = box;
 				break;
 			}
 		}
-		if(overCorner)
-		{
-			drawPanel.Cursor = Cursors.Hand;
-		}
-		else
-		{
-			drawPanel.Cursor = Cursors.Arrow;
-		}
-		return overBox;
+		return (selectedBox != null);
 	}
 	
 	private static bool CheckOverCorner(int cornerX, int cornerY, int x, int y)
@@ -110,9 +208,19 @@ public static class CustomLayoutDemo
 		g.Clear(Color.LightGray);
 		//g.SmoothingMode = SmoothingMode.AntiAlias;
 		PaintPage(g, new Rectangle(15,15,600-30,graphicsBuffer.Height-30));
-		if(mouseDownPoint != null && mouseDragPoint != null)
+		if(mode == Mode.AddBox)
 		{
-			PaintDragBox(g, mouseDownPoint.Value, mouseDragPoint.Value);
+			if(mouseDownPoint != null && mouseDragPoint != null)
+			{
+				PaintDragBox(g, mouseDownPoint.Value, mouseDragPoint.Value);
+			}
+		}
+		else if(mode == Mode.MoveBox)
+		{
+			if(mouseDragPoint != null)
+			{
+				PaintDragBox(g, oppositeSelectedCorner.Value, mouseDragPoint.Value);
+			}
 		}
 		foreach(Rectangle box in boxes)
 		{
@@ -129,6 +237,11 @@ public static class CustomLayoutDemo
 		
 		g.FillRectangle(brush, rect.X, rect.Y, rect.Width, rect.Height);
 		g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
+	}
+	
+	private static void PaintDragBox(Graphics g, int x, int y, int width, int height)
+	{
+		PaintDragBox(g, new Point(x, y), new Point(x+width, y+height));
 	}
 	
 	private static void PaintDragBox(Graphics g, Point a, Point b)
