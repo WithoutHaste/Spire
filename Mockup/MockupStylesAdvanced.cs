@@ -198,6 +198,15 @@ public class StyleDialogAdvanced : Form
 		applyStyle.Click += new EventHandler(ApplyStyle);
 		applyStyle.Parent = this;
 		
+		Button showHelp = new Button();
+		showHelp.Text = "?";
+		showHelp.Width = 30;
+		showHelp.Height = styleLabel.Height;
+		showHelp.Left = styleControl.Left + styleControl.Width - showHelp.Width;
+		showHelp.Top = styleLabel.Top;
+		showHelp.Click += new EventHandler(ShowHelp);
+		showHelp.Parent = this;
+		
 		Button close = new Button();
 		close.Text = "Close";
 		close.Left = applyStyle.Left;
@@ -211,6 +220,11 @@ public class StyleDialogAdvanced : Form
 		ShowDialog();
 	}
 	
+	private void ShowHelp(object sender, EventArgs e)
+	{
+		
+	}
+	
 	private void ApplyVariables(object sender, EventArgs e)
 	{
 		foreach(string line in variablesControl.Text.Split('\n'))
@@ -221,7 +235,18 @@ public class StyleDialogAdvanced : Form
 			fields[0] = "";
 			SpireStyleAdvanced.Variables[fieldName] = (String.Join(" ", fields)).Trim();
 		}
+		variablesControl.Text = FormatVariables();
 		previewPanel.Invalidate();
+	}
+	
+	private string FormatVariables()
+	{
+		List<string> lines = new List<string>();
+		foreach(KeyValuePair<string, string> pair in SpireStyleAdvanced.Variables)
+		{
+			lines.Add(String.Format("{0} = {1}", pair.Key, pair.Value));
+		}
+		return String.Join(Environment.NewLine, lines.ToArray());
 	}
 	
 	private void ApplyStyle(object sender, EventArgs e)
@@ -397,29 +422,29 @@ public class SpireStyleAdvanced
 	{
 		List<string> lines = new List<string>();
 		if(!String.IsNullOrEmpty(FontFamily))
-			lines.Add("Font="+FontFamily);
+			lines.Add("Font = "+FontFamily);
 		else if(!String.IsNullOrEmpty(FontFamilyVariable))
-			lines.Add("Font="+FontFamilyVariable);
+			lines.Add("Font = "+FontFamilyVariable);
 			
 		if(FontSize != null)
-			lines.Add("FontSize="+FontSize);
+			lines.Add("FontSize = "+FontSize);
 		else if(!String.IsNullOrEmpty(FontSizeVariable))
-			lines.Add("FontSize="+FontSizeVariable);
+			lines.Add("FontSize = "+FontSizeVariable);
 
 		if(ForeColor != null)
-			lines.Add("FontColor="+SpireStyleAdvanced.ColorToRGB(ForeColor.Value));
+			lines.Add("FontColor = "+SpireStyleAdvanced.ColorToRGB(ForeColor.Value));
 		else if(!String.IsNullOrEmpty(ForeColorVariable))
-			lines.Add("FontColor="+ForeColorVariable);
+			lines.Add("FontColor = "+ForeColorVariable);
 
 		if(FontStyle != null)
-			lines.Add("FontStyle="+SpireStyleAdvanced.FontStyleToString(FontStyle.Value));
+			lines.Add("FontStyle = "+SpireStyleAdvanced.FontStyleToString(FontStyle.Value));
 		else if(!String.IsNullOrEmpty(FontStyleVariable))
-			lines.Add("FontStyle="+FontStyleVariable);
+			lines.Add("FontStyle = "+FontStyleVariable);
 			
 		if(Indent != null)
-			lines.Add("Indent="+Indent);
+			lines.Add("Indent = "+Indent);
 		else if(!String.IsNullOrEmpty(IndentVariable))
-			lines.Add("Indent="+IndentVariable);
+			lines.Add("Indent = "+IndentVariable);
 			
 		return String.Join(Environment.NewLine, lines.ToArray());
 	}
@@ -431,6 +456,7 @@ public class SpireStyleAdvanced
 		
 		switch(fieldName)
 		{
+			case "font": 
 			case "fontfamily": 
 				if(Variables.ContainsKey(fieldValue))
 				{
@@ -443,6 +469,7 @@ public class SpireStyleAdvanced
 					FontFamily = fieldValue;
 				}
 				break;
+			case "size":
 			case "fontsize":
 				if(Variables.ContainsKey(fieldValue))
 				{
@@ -458,7 +485,8 @@ public class SpireStyleAdvanced
 						FontSize = fontSize;
 					}
 				}
-				break;	
+				break;
+			case "color":
 			case "fontcolor":
 			case "textcolor":
 				if(Variables.ContainsKey(fieldValue))
@@ -476,6 +504,7 @@ public class SpireStyleAdvanced
 					}
 				}
 				break;
+			case "style":
 			case "fontstyle":
 				if(Variables.ContainsKey(fieldValue))
 				{

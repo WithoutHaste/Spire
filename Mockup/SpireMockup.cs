@@ -69,6 +69,7 @@ public class MockupWindow : Form
 		configMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Language"));
 
 		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Text Layout", new EventHandler(SetupTextLayoutDemo)));
+		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Custom Layout", new EventHandler(SetupCustomLayoutDemo)));
 		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Styles Basic", new EventHandler(SetupStylesDemo)));
 		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Styles Advanced", new EventHandler(SetupStylesDemoAdvanced)));
 		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Formulas", new EventHandler(SetupFormulasDemo)));
