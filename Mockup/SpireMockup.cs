@@ -103,8 +103,10 @@ public class MockupWindow : Form
 	{
 		mainPanel.Paint -= FootnotesDemo.Paint;
 		mainPanel.Paint -= TextLayoutDemo.Paint;
+		mainPanel.Paint -= CustomLayoutDemo.Paint;
 		mainPanel.Paint -= StylesDemo.Paint;
 		mainPanel.Paint -= StylesDemoAdvanced.Paint;
+		CustomLayoutDemo.RemoveListeners(mainPanel);
 		mainPanel.Controls.Clear();
 	}
 	
@@ -133,6 +135,14 @@ public class MockupWindow : Form
 	{
 		RemoveAllDemos();
 		mainPanel.Paint += new PaintEventHandler(TextLayoutDemo.Paint);
+		mainPanel.Invalidate();
+	}
+	
+	private void SetupCustomLayoutDemo(object sender, EventArgs e)
+	{
+		RemoveAllDemos();
+		CustomLayoutDemo.AddListeners(mainPanel);
+		mainPanel.Paint += new PaintEventHandler(CustomLayoutDemo.Paint);
 		mainPanel.Invalidate();
 	}
 	
