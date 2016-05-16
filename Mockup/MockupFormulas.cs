@@ -21,6 +21,7 @@ public static class FormulasDemo
 	
 	private static TextBox formulaTextBox;
 	private static Label showType;
+	private static bool inIntegral = false;
 	private static TextBox integralFromTextBox;
 	private static TextBox integralToTextBox;
 	private static TextBox squareRootTextBox;
@@ -30,9 +31,11 @@ public static class FormulasDemo
 	private static TextBox suffixTextBox;
 	private static int formulaStartIndex = 0;
 	private static bool inFraction = false;
+	private static bool afterFraction = false;
 	private static TextBox fractionOverTextBox;
 	private static TextBox fractionUnderTextBox;
-	private static int lineNumber = 0;
+	
+	private static int baseFontSize = 28;
 	
 	public static void InitializeDemo(Panel parent)
 	{
@@ -40,12 +43,12 @@ public static class FormulasDemo
 		
 		formulaTextBox = MockupWindow.BuildTextInput();
 		formulaTextBox.Left = margin;
-		formulaTextBox.Top = 0;
-		formulaTextBox.Height = 250;
+		formulaTextBox.Top = 30;
+		formulaTextBox.Height = 70;
 		formulaTextBox.Width = parent.Width - 4*margin;
-		formulaTextBox.Font = new Font(new FontFamily("Times New Roman"), 28);
+		formulaTextBox.Font = new Font(new FontFamily("Times New Roman"), baseFontSize);
 		formulaTextBox.KeyUp += new KeyEventHandler(TextBoxKeyUp);
-		formulaTextBox.Text = "    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi non gravida augue. Duis ut eleifend odio. Nullam scelerisque lobortis ipsum at laoreet. Praesent bibendum pellentesque sapien, in sodales odio";
+		formulaTextBox.Text = "Formula demo: ";
 		formulaTextBox.SelectionStart = formulaTextBox.Text.Length;
 		formulaTextBox.Parent = parent;
 		
@@ -54,29 +57,36 @@ public static class FormulasDemo
 		showType.Top = formulaTextBox.Top + formulaTextBox.Height + margin;
 		showType.Height = 100;
 		showType.Width = parent.Width - 4*margin;
-		showType.Font = new Font(new FontFamily("Times New Roman"), 28, FontStyle.Bold);
+		showType.Font = new Font(new FontFamily("Times New Roman"), baseFontSize, FontStyle.Bold);
 		showType.BackColor = Color.DarkGray;
 		showType.ForeColor = Color.White;
 		showType.Parent = parent;
 		showType.BringToFront();
 		
+		inIntegral = false;
 		inSquareRoot = false;
 		squareRootStartIndex = 0;
 		formulaStartIndex = 0;
 		inFraction = false;
-		lineNumber = 0;
+		afterFraction = false;
 	}
 	
 	private static void UpdateShowType(KeyEventArgs e)
 	{
 		if(e.KeyValue == '6' && e.Shift)
 			showType.Text += '^';
+		else if(e.KeyValue == '9' && e.Shift)
+			showType.Text += '(';
+		else if(e.KeyValue == '0' && e.Shift)
+			showType.Text += ')';
 		else if(e.KeyValue == '3' && e.Shift)
 			showType.Text += '#';
 		else if(e.KeyValue == 187 && e.Shift)
 			showType.Text += '+';
-		else if(e.KeyValue == '\t')
-			showType.Text += "\t";
+		else if(e.KeyValue == 189)
+			showType.Text += '-';
+		else if(e.KeyValue == '\t' || e.KeyValue == 9)
+			showType.Text += " \\t ";
 		else
 			showType.Text += ((char)e.KeyValue).ToString().ToLower();
 		Console.WriteLine(e.KeyValue+" "+e.KeyCode+" "+e.KeyData);
@@ -118,7 +128,7 @@ public static class FormulasDemo
 				return;
 			}
 			int squareRootCharCount = formulaTextBox.Text.Substring(squareRootStartIndex).Length;
-			squareRootPanel.Width = 8*squareRootCharCount;
+			squareRootPanel.Width = 12*squareRootCharCount;
 		}
 		if(inFraction)
 		{
@@ -127,7 +137,7 @@ public static class FormulasDemo
 				textBox.KeyUp -= TextBoxKeyUp;
 				textBox.Text = TextSplice(textBox.Text, endIndex-1, 1, "");
 				textBox.SelectionStart = endIndex-1;
-				fractionOverTextBox.Width = 47;
+				fractionOverTextBox.Width = 55;
 				textBox.KeyUp += new KeyEventHandler(TextBoxKeyUp);
 				
 				fractionUnderTextBox.Focus();
@@ -140,6 +150,7 @@ public static class FormulasDemo
 			else if(JustTyped(textBox, ")"))
 			{
 				inFraction = false;
+				afterFraction = true;
 				textBox.KeyUp -= TextBoxKeyUp;
 				textBox.Text = TextSplice(textBox.Text, endIndex-1, 1, "");
 				textBox.SelectionStart = endIndex-1;
@@ -147,15 +158,30 @@ public static class FormulasDemo
 				
 				suffixTextBox.Text = "##";
 
-				formulaTextBox.Text += "      ";
+				formulaTextBox.Text += "        ";
 				formulaTextBox.SelectionStart = formulaTextBox.Text.Length;
 				formulaTextBox.Focus();
 				
 				return;
 			}
 		}
+		if(inIntegral)
+		{
+			if(JustTyped(textBox, ")"))
+			{
+				inIntegral = false;
+				textBox.KeyUp -= TextBoxKeyUp;
+				textBox.Text = TextSplice(textBox.Text, endIndex-1, 1, "");
+				textBox.SelectionStart = endIndex-1;
+				textBox.KeyUp += new KeyEventHandler(TextBoxKeyUp);
+				
+				suffixTextBox.Text = "##";
+				
+				return;
+			}
+		}
 
-		if(JustTyped(textBox, "integral "))
+		if(JustTyped(textBox, "integral("))
 		{
 			textBox.KeyUp -= TextBoxKeyUp;
 			textBox.Text = TextSplice(textBox.Text, endIndex-9, 9, "∫");
@@ -165,27 +191,30 @@ public static class FormulasDemo
 			integralToTextBox = MockupWindow.BuildTextInput();
 			
 			//integralFromTextBox.BackColor = Color.Yellow;
-			integralFromTextBox.Left = 232;
-			integralFromTextBox.Top = 158;
-			integralFromTextBox.Height = 12;
-			integralFromTextBox.Width = 15;
-			integralFromTextBox.Font = new Font(new FontFamily("Times New Roman"), 10);
+			integralFromTextBox.Left = 264;
+			integralFromTextBox.Top = 50;
+			integralFromTextBox.Height = 18;
+			integralFromTextBox.Width = 22;
+			integralFromTextBox.Font = new Font(new FontFamily("Times New Roman"), 14);
 			integralFromTextBox.KeyUp += new KeyEventHandler(TextBoxKeyUp);
 			integralFromTextBox.Parent = textBox.Parent;
 			integralFromTextBox.Focus();
 			integralFromTextBox.SelectionStart = 0;
 			integralFromTextBox.BringToFront();
 		
-			//integralToTextBox.BackColor = Color.Yellow;
-			integralToTextBox.Left = 232;
-			integralToTextBox.Top = 140;
-			integralToTextBox.Height = 15;
-			integralToTextBox.Width = 15;
-			integralToTextBox.Font = new Font(new FontFamily("Times New Roman"), 12);
+			//integralToTextBox.BackColor = Color.Green;
+			integralToTextBox.Left = integralFromTextBox.Left;
+			integralToTextBox.Top = 30;
+			integralToTextBox.Height = integralFromTextBox.Height;
+			integralToTextBox.Width = integralFromTextBox.Width;
+			integralToTextBox.Font = integralFromTextBox.Font;
 			integralToTextBox.KeyUp += new KeyEventHandler(TextBoxKeyUp);
 			integralToTextBox.Parent = textBox.Parent;
 			integralToTextBox.BringToFront();
 			
+			inIntegral = true;
+			suffixTextBox.Text = ")##";
+
 			textBox.KeyUp += new KeyEventHandler(TextBoxKeyUp);
 		}
 		else if(JustTyped(textBox, "sqrt("))
@@ -198,8 +227,8 @@ public static class FormulasDemo
 			squareRootTextBox.Font = new Font(new FontFamily("Times New Roman"), 18);
 			
 			squareRootPanel = new Panel();
-			squareRootPanel.Left = 236;
-			squareRootPanel.Top = 171;
+			squareRootPanel.Left = 269;
+			squareRootPanel.Top = 29;
 			squareRootPanel.Height = 5;
 			squareRootPanel.Width = 3;
 			squareRootPanel.Parent = textBox.Parent;
@@ -221,22 +250,22 @@ public static class FormulasDemo
 
 			fractionUnderTextBox = MockupWindow.BuildTextInput();
 			//fractionUnderTextBox.BackColor = Color.Yellow;
-			fractionUnderTextBox.Left = 220;
-			fractionUnderTextBox.Top = 213;
-			fractionUnderTextBox.Height = 20;
-			fractionUnderTextBox.Width = 47;
-			fractionUnderTextBox.Font = new Font(new FontFamily("Times New Roman"), 12);
+			fractionUnderTextBox.Left = 255;
+			fractionUnderTextBox.Top = 51;
+			fractionUnderTextBox.Height = 25;
+			fractionUnderTextBox.Width = 65;
+			fractionUnderTextBox.Font = new Font(new FontFamily("Times New Roman"), 18);
 			fractionUnderTextBox.KeyUp += new KeyEventHandler(TextBoxKeyUp);
 			fractionUnderTextBox.Parent = textBox.Parent;
 			fractionUnderTextBox.BringToFront();
 			
 			fractionOverTextBox = MockupWindow.BuildTextInput();
 			//fractionOverTextBox.BackColor = Color.Green;
-			fractionOverTextBox.Left = 220;
-			fractionOverTextBox.Top = 195;
-			fractionOverTextBox.Height = 20;
+			fractionOverTextBox.Left = fractionUnderTextBox.Left;
+			fractionOverTextBox.Top = fractionUnderTextBox.Top - fractionUnderTextBox.Height;
+			fractionOverTextBox.Height = fractionUnderTextBox.Height;
 			fractionOverTextBox.Width = 100;
-			fractionOverTextBox.Font = new Font(new FontFamily("Times New Roman"), 12, FontStyle.Underline);
+			fractionOverTextBox.Font = new Font(new FontFamily("Times New Roman"), 18, FontStyle.Underline);
 			fractionOverTextBox.KeyUp += new KeyEventHandler(TextBoxKeyUp);
 			fractionOverTextBox.Parent = textBox.Parent;
 			fractionOverTextBox.Focus();
@@ -266,6 +295,7 @@ public static class FormulasDemo
 		}
 		else if(JustTyped(textBox, "##"))
 		{
+			afterFraction = false;
 			formulaStartIndex = endIndex - 2;
 		
 			textBox.KeyUp -= TextBoxKeyUp;
@@ -275,22 +305,15 @@ public static class FormulasDemo
 
 			if(suffixTextBox == null)
 			{
-				lineNumber++;
-			
 				Point xy = XYCharPositionInTextBox(textBox, textBox.GetFirstCharIndexFromLine(textBox.GetLineFromCharIndex(textBox.SelectionStart)), textBox.SelectionStart);
 
 				suffixTextBox = MockupWindow.BuildTextInput();
-				suffixTextBox.Left = xy.X + 25;
-					switch(lineNumber)
-					{
-						case 1: suffixTextBox.Top = 146; break;
-						case 2: suffixTextBox.Top = 172; break;
-						case 3: suffixTextBox.Top = 199; break;
-					}				
+				suffixTextBox.Left = xy.X + 30;
+				suffixTextBox.Top = 28;
 				suffixTextBox.Width = 150;
-				suffixTextBox.Height = 25;
+				suffixTextBox.Height = 40;
 				suffixTextBox.Text = "##";
-				suffixTextBox.Font = new Font("Times New Roman", 18);
+				suffixTextBox.Font = formulaTextBox.Font;
 				suffixTextBox.ForeColor = Color.LightGray;
 				suffixTextBox.Parent = textBox.Parent;
 				suffixTextBox.BringToFront();
@@ -334,10 +357,14 @@ public static class FormulasDemo
 		if(suffixTextBox == null)
 			return;
 		Point xy = XYCharPositionInTextBox(textBox, textBox.GetFirstCharIndexFromLine(textBox.GetLineFromCharIndex(textBox.SelectionStart)), textBox.SelectionStart);
-		if(lineNumber == 3)
-			suffixTextBox.Left = Math.Max(xy.X + 20, suffixTextBox.Left);
+		if(inFraction || afterFraction)
+		{
+			suffixTextBox.Left = Math.Max(xy.X + 30, suffixTextBox.Left);
+		}
 		else
-			suffixTextBox.Left = xy.X + 20;
+		{
+			suffixTextBox.Left = xy.X + 30;
+		}
 	}
 	
 	private static void SquareRootPanelPaint(object sender, PaintEventArgs e)
