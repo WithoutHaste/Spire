@@ -14,6 +14,7 @@ public class MockupWindow : Form
 		Application.Run(new MockupWindow());
 	}
 	
+	private DoubleBufferedPanel scrollPanel;
 	private DoubleBufferedPanel mainPanel;
 	
 	public MockupWindow()
@@ -26,7 +27,7 @@ public class MockupWindow : Form
 		
 		this.Menu = BuildMenuBar();
 		
-		DoubleBufferedPanel scrollPanel = BuildScrollPanel();
+		scrollPanel = BuildScrollPanel();
 		this.Controls.Add(scrollPanel);
 
 		mainPanel = BuildMainPanel();
@@ -141,6 +142,10 @@ public class MockupWindow : Form
 	private void SetupCustomLayoutDemo(object sender, EventArgs e)
 	{
 		RemoveAllDemos();
+		this.Width = 1000;
+		scrollPanel.Width = this.Width - 20;
+		mainPanel.Width = this.Width;
+		mainPanel.Left = 0;
 		CustomLayoutDemo.SetPanel(mainPanel);
 		mainPanel.Paint += new PaintEventHandler(CustomLayoutDemo.Paint);
 		mainPanel.Invalidate();
