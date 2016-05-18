@@ -77,6 +77,7 @@ public class MockupWindow : Form
 		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Footnotes", new EventHandler(SetupFootnotesDemo)));
 		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("PDF", new EventHandler(SetupPDFDemo)));
 		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Graphs", new EventHandler(SetupGraphsDemo)));
+		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Data Graphics", new EventHandler(SetupDataGraphicsDemo)));
 
 		mainMenu.MenuItems.Add(fileMenuItem);
 		mainMenu.MenuItems.Add(configMenuItem);
@@ -107,6 +108,7 @@ public class MockupWindow : Form
 		mainPanel.Paint -= CustomLayoutDemo.Paint;
 		mainPanel.Paint -= StylesDemo.Paint;
 		mainPanel.Paint -= StylesDemoAdvanced.Paint;
+		mainPanel.Paint -= DataGraphicsDemo.Paint;
 		CustomLayoutDemo.RemovePanel();
 		mainPanel.Controls.Clear();
 	}
@@ -149,6 +151,16 @@ public class MockupWindow : Form
 		CustomLayoutDemo.SetPanel(mainPanel);
 		mainPanel.Paint += new PaintEventHandler(CustomLayoutDemo.Paint);
 		mainPanel.Invalidate();
+	}
+	
+	private void SetupDataGraphicsDemo(object sender, EventArgs e)
+	{
+		RemoveAllDemos();
+		DataGraphicsDemo.SetPanel(mainPanel);
+		mainPanel.Paint += new PaintEventHandler(DataGraphicsDemo.Paint);
+		mainPanel.Invalidate();
+		
+		this.ContextMenu = DataGraphicsDemo.BuildContextMenu();
 	}
 	
 	private void SetupGraphsDemo(object sender, EventArgs e)
