@@ -9,6 +9,7 @@ using System.Windows.Forms;
 
 public class MockupWindow : Form
 {
+	[STAThread] //required to use OpenFileDialog - research more
 	public static void Main(string[] args)
 	{
 		Application.Run(new MockupWindow());

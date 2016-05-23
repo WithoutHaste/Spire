@@ -458,15 +458,15 @@ public static class DataGraphicsDemo
 
 public class DataGraphicsDialog : Form
 {
-	private ListBox styleBox;
-	private ComboBox fontFamilyBox;
-	private TextBox fontSizeInput;
-	private TextBox foreColorInput;
-	private Button foreColorPreview;
-	private CheckBox boldCheckBox;
-	private CheckBox italicCheckBox;
-	private ComboBox alignmentBox;
-	private TextBox indentInput;
+	private TextBox dataSourceControl;
+	private ListBox graphTypeControl;
+	private OpenFileDialog openFileDialog;
+
+	private PictureBox sampleGraphA;
+	private PictureBox sampleGraphB;
+	private PictureBox sampleGraphC;
+	private PictureBox sampleGraphD;
+	private Dictionary<string, List<Bitmap>> sampleGraphImages;
 	
 	public DataGraphicsDialog()
 	{
@@ -474,151 +474,216 @@ public class DataGraphicsDialog : Form
 		Height = 500;
 		Text = "Data Graphics";
 		Icon = new Icon("SpireIcon1.ico");
-		/*
-		styleBox = new ListBox();
-		styleBox.DataSource = new List<string>() { "Header 1", "Header 2", "Header 3", "Text", "Section Start", "Paragraph Start", "Quotes", "Footnotes", "Sidenotes", "Formula" };
-		styleBox.Left = 15;
-		styleBox.Top = 15;
-		styleBox.Height = 200;
-		styleBox.SelectedIndexChanged += new EventHandler(StyleSelectedChanged);
-		styleBox.Parent = this;
-		
-		Button addStyle = new Button();
-		addStyle.Text = "Add Style";
-		addStyle.Left = styleBox.Left;
-		addStyle.Top = styleBox.Top + styleBox.Height + 5;
-		addStyle.Width = styleBox.Width;
-		addStyle.Parent = this;
-		
-		int leftLabels = styleBox.Left + styleBox.Width + 25;
-		int leftInputs = leftLabels + 40;
-		
-		Label fontFamilyLabel = new Label();
-		fontFamilyLabel.Left = leftLabels;
-		fontFamilyLabel.Top = styleBox.Top;
-		fontFamilyLabel.Width = 30;
-		fontFamilyLabel.Text = "Font";
-		fontFamilyLabel.TextAlign = ContentAlignment.TopLeft;
-		fontFamilyLabel.Parent = this;		
-		
-		fontFamilyBox = new ComboBox();
-		fontFamilyBox.DataSource = new List<string>() { "Arial", "Courier", "Times New Roman" };
-		fontFamilyBox.Left = leftInputs;
-		fontFamilyBox.Top = fontFamilyLabel.Top - 2;
-		fontFamilyBox.Height = 25;
-		fontFamilyBox.Parent = this;
-		fontFamilyBox.SelectedIndexChanged += new EventHandler(FontFamilyChanged);
-		
-		Label fontSizeLabel = new Label();
-		fontSizeLabel.Left = leftLabels;
-		fontSizeLabel.Top = fontFamilyLabel.Top + fontFamilyLabel.Height + 5;
-		fontSizeLabel.Width = 30;
-		fontSizeLabel.Text = "Size";
-		fontSizeLabel.TextAlign = ContentAlignment.TopLeft;
-		fontSizeLabel.Parent = this;		
-		
-		fontSizeInput = new TextBox();
-		fontSizeInput.Left = leftInputs;
-		fontSizeInput.Top = fontSizeLabel.Top - 2;
-		fontSizeInput.Height = 25;
-		fontSizeInput.Width = 40;
-		fontSizeInput.LostFocus += new EventHandler(FontSizeChanged);
-		fontSizeInput.Parent = this;
-		
-		Label foreColorLabel = new Label();
-		foreColorLabel.Left = leftLabels;
-		foreColorLabel.Top = fontSizeLabel.Top + fontSizeLabel.Height + 5;
-		foreColorLabel.Width = 35;
-		foreColorLabel.Text = "Color";
-		foreColorLabel.TextAlign = ContentAlignment.TopLeft;
-		foreColorLabel.Parent = this;		
-		
-		foreColorInput = new TextBox();
-		foreColorInput.Left = leftInputs;
-		foreColorInput.Top = foreColorLabel.Top - 2;
-		foreColorInput.Height = 25;
-		foreColorInput.Width = 120;
-		foreColorInput.LostFocus += new EventHandler(ForeColorStyleChanged);
-		foreColorInput.Parent = this;
-		
-		foreColorPreview = new Button();
-		foreColorPreview.Left = foreColorInput.Left + foreColorInput.Width + 5;
-		foreColorPreview.Top = foreColorInput.Top;
-		foreColorPreview.Height = 20;
-		foreColorPreview.Width = 40;
-		foreColorPreview.FlatStyle = FlatStyle.Flat;
-		foreColorPreview.Parent = this;
-		
-		Label boldLabel = new Label();
-		boldLabel.Left = leftLabels;
-		boldLabel.Top = foreColorLabel.Top + foreColorLabel.Height + 5;
-		boldLabel.Width = 35;
-		boldLabel.Text = "Bold";
-		boldLabel.TextAlign = ContentAlignment.TopLeft;
-		boldLabel.Parent = this;		
-		
-		boldCheckBox = new CheckBox();
-		boldCheckBox.Left = boldLabel.Left + boldLabel.Width + 3;
-		boldCheckBox.Top = boldLabel.Top - 4;
-		boldCheckBox.Width = 10;
-		boldCheckBox.CheckedChanged += new EventHandler(BoldChanged);
-		boldCheckBox.Parent = this;
-		
-		Label italicLabel = new Label();
-		italicLabel.Left = boldCheckBox.Left + boldCheckBox.Width + 10;
-		italicLabel.Top = boldLabel.Top;
-		italicLabel.Width = 35;
-		italicLabel.Text = "Italic";
-		italicLabel.TextAlign = ContentAlignment.TopLeft;
-		italicLabel.Parent = this;		
-		
-		italicCheckBox = new CheckBox();
-		italicCheckBox.Left = italicLabel.Left + italicLabel.Width + 3;
-		italicCheckBox.Top = boldCheckBox.Top;
-		italicCheckBox.CheckedChanged += new EventHandler(ItalicChanged);
-		italicCheckBox.Parent = this;
-		
-		Label alignmentLabel = new Label();
-		alignmentLabel.Left = leftLabels;
-		alignmentLabel.Top = boldLabel.Top + boldLabel.Height + 5;
-		alignmentLabel.Width = 30;
-		alignmentLabel.Text = "Align";
-		alignmentLabel.TextAlign = ContentAlignment.TopLeft;
-		alignmentLabel.Parent = this;		
-		
-		alignmentBox = new ComboBox();
-		alignmentBox.DataSource = new List<string>() { "Left", "Center", "Right" };
-		alignmentBox.Left = leftInputs;
-		alignmentBox.Top = alignmentLabel.Top - 2;
-		alignmentBox.Height = 25;
-		alignmentBox.Parent = this;		
-		
-		Label indentLabel = new Label();
-		indentLabel.Left = leftLabels;
-		indentLabel.Top = alignmentLabel.Top + alignmentLabel.Height + 5;
-		indentLabel.Width = 40;
-		indentLabel.Text = "Indent";
-		indentLabel.TextAlign = ContentAlignment.TopLeft;
-		indentLabel.Parent = this;		
-		
-		indentInput = new TextBox();
-		indentInput.Left = leftInputs;
-		indentInput.Top = indentLabel.Top - 2;
-		indentInput.Height = 25;
-		indentInput.Width = 30;
-		indentInput.LostFocus += new EventHandler(IndentChanged);
-		indentInput.Parent = this;		
-		
-		Button close = new Button();
-		close.Text = "Close";
-		close.Left = leftInputs;
-		close.Top = addStyle.Top;
-		close.Width = 75;
-		close.Click += (sender, e) => { this.Close(); };
-		close.Parent = this;
 
-		this.Load += new EventHandler(StyleSelectedChanged);
-	*/	
+		Label dataSourceLabel = new Label();
+		dataSourceLabel.Left = 15;
+		dataSourceLabel.Top = 15;
+		dataSourceLabel.Width = 100;
+		dataSourceLabel.Text = "Data Source";
+		dataSourceLabel.TextAlign = ContentAlignment.TopLeft;
+		dataSourceLabel.Parent = this;		
+		
+		dataSourceControl = new TextBox();
+		dataSourceControl.Left = dataSourceLabel.Left;
+		dataSourceControl.Top = EasyLayout.Below(dataSourceLabel, 0);
+		dataSourceControl.Height = 25;
+		dataSourceControl.Width = 300;
+		dataSourceControl.Parent = this;
+
+		Button selectFileButton = new Button();
+		selectFileButton.Text = "Select File";
+		selectFileButton.Left = EasyLayout.LeftOf(dataSourceControl, 5);
+		selectFileButton.Top = dataSourceControl.Top - 2;
+		selectFileButton.Width = 100;
+		selectFileButton.Click += new EventHandler(SelectFile);
+		selectFileButton.Parent = this;
+
+		Label graphTypeLabel = new Label();
+		graphTypeLabel.Left = dataSourceLabel.Left;
+		graphTypeLabel.Top = EasyLayout.Below(dataSourceControl, 15);
+		graphTypeLabel.Width = 100;
+		graphTypeLabel.Text = "Graph Type";
+		graphTypeLabel.TextAlign = ContentAlignment.TopLeft;
+		graphTypeLabel.Parent = this;		
+		
+		graphTypeControl = new ListBox();
+		graphTypeControl.DataSource = new List<string>() { "Line Graph", "Scatterplot", "Rug Plot", "Geographical Map", "Heat Map", "Bar Graph", "Histogram", "Box Plot", "Stem and Leaf", "Sparkline", "Slant Graph", "Tree Map", "Cosmograph" };
+		graphTypeControl.Left = graphTypeLabel.Left;
+		graphTypeControl.Top = EasyLayout.Below(graphTypeLabel, 0);
+		graphTypeControl.Height = 200;
+		graphTypeControl.Width = 100;
+		graphTypeControl.SelectedIndexChanged += new EventHandler(GraphTypeChanged);
+		graphTypeControl.Parent = this;
+		
+		int imageBuffer = 15;
+		
+		sampleGraphA = new PictureBox();
+		sampleGraphA.SizeMode = PictureBoxSizeMode.Zoom;
+		sampleGraphA.Width = 200;
+		sampleGraphA.Height = 150;
+		sampleGraphA.Left = EasyLayout.LeftOf(graphTypeControl, imageBuffer);
+		sampleGraphA.Top = graphTypeControl.Top + imageBuffer;
+		sampleGraphA.Parent = this;
+		
+		sampleGraphB = new PictureBox();
+		sampleGraphB.SizeMode = PictureBoxSizeMode.Zoom;
+		sampleGraphB.Width = sampleGraphA.Width;
+		sampleGraphB.Height = sampleGraphA.Height;
+		sampleGraphB.Left = EasyLayout.LeftOf(sampleGraphA, imageBuffer);
+		sampleGraphB.Top = sampleGraphA.Top;
+		sampleGraphB.Parent = this;
+		
+		sampleGraphC = new PictureBox();
+		sampleGraphC.SizeMode = PictureBoxSizeMode.Zoom;
+		sampleGraphC.Width = sampleGraphA.Width;
+		sampleGraphC.Height = sampleGraphA.Height;
+		sampleGraphC.Left = sampleGraphA.Left;
+		sampleGraphC.Top = EasyLayout.Below(sampleGraphA, imageBuffer);
+		sampleGraphC.Parent = this;
+		
+		sampleGraphD = new PictureBox();
+		sampleGraphD.SizeMode = PictureBoxSizeMode.Zoom;
+		sampleGraphD.Width = sampleGraphA.Width;
+		sampleGraphD.Height = sampleGraphA.Height;
+		sampleGraphD.Left = sampleGraphB.Left;
+		sampleGraphD.Top = sampleGraphC.Top;
+		sampleGraphD.Parent = this;
+		
+		LoadSampleGraphImages();
+		
+		this.Load += new EventHandler(GraphTypeChanged);
+
 		ShowDialog();
+	}
+	
+	private void BuildOpenFileDialog()
+	{
+		if(openFileDialog != null) return;
+		openFileDialog = new OpenFileDialog();
+		openFileDialog.Filter = "Excel files (*.xls)|*.xls|Comma Separated Values (*.csv)|*.csv" ;
+		openFileDialog.FilterIndex = 2;
+		string defaultDirectory = "E:\\GitHub\\Spire\\Mockup\\";
+		if(Directory.Exists(defaultDirectory))
+		{
+			openFileDialog.InitialDirectory = defaultDirectory;
+		}
+//		openFileDialog.RestoreDirectory = true;
+	}
+	
+	private void SelectFile(object sender, EventArgs e)
+	{
+		BuildOpenFileDialog();
+		if(openFileDialog.ShowDialog() == DialogResult.OK)
+		{
+			dataSourceControl.Text = openFileDialog.FileName;
+		}
+	}
+	
+	private void LoadSampleGraphImages()
+	{
+		if(sampleGraphImages != null) return;
+		sampleGraphImages = new Dictionary<string, List<Bitmap>>();
+		sampleGraphImages["Histogram"] = new List<Bitmap>() { 
+			LoadImage("reference\\histogramRange.png") 
+		};
+		sampleGraphImages["Line Graph"] = new List<Bitmap>() { 
+			LoadImage("reference\\line.png") 
+			, LoadImage("reference\\lineStacked.png") 
+		};
+		sampleGraphImages["Geographical Map"] = new List<Bitmap>() { 
+			LoadImage("reference\\mapUSA.png") 
+			, LoadImage("reference\\mapAfrica.png") 
+		};
+		sampleGraphImages["Scatterplot"] = new List<Bitmap>() { 
+			LoadImage("reference\\scatterPlot.png") 
+			, LoadImage("reference\\scatterPlot_bubble.png") 
+			, LoadImage("reference\\scatterPlot_dashFrame.png") 
+			, LoadImage("reference\\scatterPlot_dashFrame_icon.png") 
+			, LoadImage("reference\\scatterPlot_heatMap.png") 
+			, LoadImage("reference\\scatterPlot_PhillipsCurve.png") 
+		};
+		sampleGraphImages["Slant"] = new List<Bitmap>() { 
+			LoadImage("reference\\slant.png") 
+		};
+		sampleGraphImages["Stem and Leaf"] = new List<Bitmap>() { 
+			LoadImage("reference\\stemAndLeaf.png") 
+			, LoadImage("reference\\stemAndLeaf_Double.png") 
+		};
+	}
+	
+	private Bitmap LoadImage(string filename)
+	{
+		if(File.Exists(filename))
+		{
+			return new Bitmap(filename);
+		}
+		Console.WriteLine(filename + " not found");
+		return null;
+	}
+	
+	private void GraphTypeChanged(object sender, EventArgs e)
+	{
+		string selectedGraphType = graphTypeControl.SelectedItem.ToString();
+		sampleGraphA.Visible = false;
+		sampleGraphB.Visible = false;
+		sampleGraphC.Visible = false;
+		sampleGraphD.Visible = false;
+		if(sampleGraphImages.ContainsKey(selectedGraphType))
+		{
+		Console.WriteLine("A");
+			List<Bitmap> bitmaps = sampleGraphImages[selectedGraphType];
+			if(bitmaps.Count > 0 && bitmaps[0] != null)
+			{
+		Console.WriteLine("B");
+				sampleGraphA.Image = bitmaps[0];
+				sampleGraphA.Visible = true;
+			}
+			if(bitmaps.Count > 1 && bitmaps[1] != null)
+			{
+				sampleGraphB.Image = bitmaps[1];
+				sampleGraphB.Visible = true;
+			}
+			if(bitmaps.Count > 2 && bitmaps[2] != null)
+			{
+				sampleGraphC.Image = bitmaps[2];
+				sampleGraphC.Visible = true;
+			}
+			if(bitmaps.Count > 3 && bitmaps[3] != null)
+			{
+				sampleGraphD.Image = bitmaps[3];
+				sampleGraphD.Visible = true;
+			}
+		}
+		/*
+		switch(box.SelectedItem.ToString())
+		{
+			case "Line Graph":
+				break;
+			case "Scatterplot":
+				break;
+			case "Rug Plot":
+				break;
+			case "Geographical Map":
+				break;
+			case "Heat Map":
+				break;
+			case "Bar Graph":
+				break;
+			case "Histogram":
+				break;
+			case "Box Plot":
+				break;
+			case "Stem and Leaf":
+				break;
+			case "Sparkline":
+				break;
+			case "Slant Graph":
+				break;
+			case "Tree Map":
+				break;
+			case "Cosmograph":
+				break;
+		}
+		*/
 	}
 }
