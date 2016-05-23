@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -24,6 +25,8 @@ public static class DataGraphicsDemo
 	private static Point? selectedCorner;
 	private static Point? oppositeSelectedCorner;
 	private static Side? selectedSide;
+	
+	private static TextBox text1;
 
 	public static void SetPanel(Panel panel)
 	{
@@ -38,7 +41,7 @@ public static class DataGraphicsDemo
 		int margin = 50;
 		int middleSpacer = 25;
 		
-		TextBox text1 = MockupWindow.BuildTextInput();
+		text1 = MockupWindow.BuildTextInput();
 		text1.Font = new Font("Times New Roman", 12);
 		text1.Text = "      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis ornare mauris id venenatis pretium. Quisque ac consequat justo, pretium laoreet mi. Ut pharetra, felis a porttitor porttitor, tortor nisi ultrices nisl, nec vehicula turpis erat ut ante. Donec maximus blandit felis eget cursus. Nunc dignissim feugiat purus, id maximus elit. Fusce eleifend dolor eu ante interdum pellentesque. Quisque malesuada congue ligula, at scelerisque risus convallis vitae. Pellentesque gravida laoreet consequat.";
 		text1.Top = margin;
@@ -68,7 +71,7 @@ public static class DataGraphicsDemo
 		TextBox text4 = MockupWindow.BuildTextInput();
 		text4.Font = text1.Font;
 		text4.Text = "ligula, in tristique libero tristique a. Nullam eget sapien mi. Aenean pretium, magna sed dictum hendrerit, libero ipsum venenatis lorem, non fringilla metus tortor in nibh. Aenean tempus, justo a sollicitudin tristique, libero dolor faucibus nisi, eget ullamcorper justo tortor ut arcu. Donec quis nisi id turpis feugiat ornare tempus a elit. Vestibulum eu lorem consequat, lacinia velit eu, maximus ex. Quisque dictum nibh ac libero tempor, eu congue sem viverra. Aliquam feugiat, felis quis consequat elementum, erat lacus tincidunt purus, at rhoncus purus justo eget nulla. Donec sed ipsum egestas, aliquet nibh sed, mollis mauris. Sed fermentum sodales velit ut malesuada. Morbi sed est neque.";
-		text4.Top = text1.Top + 150;
+		text4.Top = text1.Top + 200;
 		text4.Left = EasyLayout.LeftOf(text1, middleSpacer);
 		text4.Width = text1.Width - 15;
 		text4.Height = 175;
@@ -146,6 +149,16 @@ public static class DataGraphicsDemo
 	private static void OpenDataGraphicsModal(object sender, EventArgs e)
 	{
 		DataGraphicsDialog dialog = new DataGraphicsDialog();
+		dialog.FormClosed += new FormClosedEventHandler(DialogClosed);
+	}
+	
+	public static void DialogClosed(object sender, FormClosedEventArgs e)
+	{
+		if(boxes.Count == 0) return;
+		text1.SelectionStart = 0;
+		text1.SelectionLength = 0;
+		(boxes[0] as Spire.ImageBox).Filename = "reference\\avgBirthsPerMonth_large.png";
+		drawPanel.Invalidate();
 	}
 	
 	private static void AddMouseDown(object sender, MouseEventArgs e)
@@ -170,7 +183,7 @@ public static class DataGraphicsDemo
 	
 	private static void AddMouseUp(object sender, MouseEventArgs e)
 	{
-		boxes.Add(new Spire.TextBox() {
+		boxes.Add(new Spire.ImageBox() {
 			X = Math.Min(mouseDownPoint.Value.X, e.X)
 			, Y = Math.Min(mouseDownPoint.Value.Y, e.Y)
 			, Width = Math.Abs(mouseDownPoint.Value.X - e.X)
@@ -397,16 +410,16 @@ public static class DataGraphicsDemo
 
 	private static void PaintImage(Graphics g, Spire.ImageBox box)
 	{
-		if(!File.Exists(box.Filename)) return;
+		if(!File.Exists(box.Filename))
+		{
+			Pen pen = new Pen(Color.Gray, 1);
+			g.DrawRectangle(pen, box.X, box.Y, box.Width, box.Height);
+			return;
+		}
 			
 		using (Image src = Image.FromFile(box.Filename))
 		{
-			g.DrawImage(src, box.X, box.Y, box.Width, box.Height);
-			if(boxes.Count < 11)
-			{
-				Pen pen = new Pen(Color.Gray, 1);
-				g.DrawRectangle(pen, box.X, box.Y, box.Width, box.Height);
-			}
+			g.DrawImage(src, box.X, box.Y, 300, 225);
 		}
 	}
 
@@ -476,7 +489,7 @@ public class DataGraphicsDialog : Form
 	public DataGraphicsDialog()
 	{
 		Width = 800;
-		Height = 700;
+		Height = 720;
 		Text = "Data Graphics";
 		Icon = new Icon("SpireIcon1.ico");
 
@@ -760,7 +773,7 @@ public class DataGraphicsDialog : Form
 		yAxisShowFrameLabel.Width = 85;
 		yAxisShowFrameLabel.Text = "Show Y Frame";
 		yAxisShowFrameLabel.TextAlign = ContentAlignment.TopLeft;
-		yAxisShowFrameLabel.Parent = this;		
+		yAxisShowFrameLabel.Parent = this;
 		
 		CheckBox yAxisShowFrameControl = new CheckBox();
 		yAxisShowFrameControl.Left = EasyLayout.LeftOf(yAxisShowFrameLabel, 5);
@@ -768,6 +781,14 @@ public class DataGraphicsDialog : Form
 		yAxisShowFrameControl.Width = 10;
 		yAxisShowFrameControl.Checked = true;
 		yAxisShowFrameControl.Parent = this;
+
+		Button doneButton = new Button();
+		doneButton.Text = "Done";
+		doneButton.Width = 75;
+		doneButton.Left = previewGraph.Left + previewGraph.Width - doneButton.Width;
+		doneButton.Top = EasyLayout.Below(previewGraph, 5);
+		doneButton.Click += (sender, e) => { DataGraphicsDemo.DialogClosed(null, null); this.Close(); };
+		doneButton.Parent = this;
 
 		///////////////////////////////////////////////
 		
@@ -789,7 +810,6 @@ public class DataGraphicsDialog : Form
 		{
 			openFileDialog.InitialDirectory = defaultDirectory;
 		}
-//		openFileDialog.RestoreDirectory = true;
 	}
 	
 	private void SelectFile(object sender, EventArgs e)
@@ -852,14 +872,13 @@ public class DataGraphicsDialog : Form
 		sampleGraphD.Visible = false;
 		if(sampleGraphImages.ContainsKey(selectedGraphType))
 		{
-		Console.WriteLine("A");
 			List<Bitmap> bitmaps = sampleGraphImages[selectedGraphType];
 			if(bitmaps.Count > 0 && bitmaps[0] != null)
 			{
-		Console.WriteLine("B");
 				sampleGraphA.Image = bitmaps[0];
 				sampleGraphA.Visible = true;
 			}
+			/*
 			if(bitmaps.Count > 1 && bitmaps[1] != null)
 			{
 				sampleGraphB.Image = bitmaps[1];
