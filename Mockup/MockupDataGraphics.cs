@@ -492,6 +492,7 @@ public class DataGraphicsDialog : Form
 		Height = 720;
 		Text = "Data Graphics";
 		Icon = new Icon("SpireIcon1.ico");
+		StartPosition = FormStartPosition.CenterParent;
 
 		Label dataSourceLabel = new Label();
 		dataSourceLabel.Left = 15;
@@ -803,6 +804,7 @@ public class DataGraphicsDialog : Form
 	{
 		if(openFileDialog != null) return;
 		openFileDialog = new OpenFileDialog();
+		//openFileDialog.StartPosition = FormStartPosition.CenterParent;
 		openFileDialog.Filter = "Excel files (*.xls)|*.xls|Comma Separated Values (*.csv)|*.csv" ;
 		openFileDialog.FilterIndex = 2;
 		string defaultDirectory = "E:\\GitHub\\Spire\\Mockup\\";
