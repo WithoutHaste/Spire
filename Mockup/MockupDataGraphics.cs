@@ -468,10 +468,15 @@ public class DataGraphicsDialog : Form
 	private PictureBox sampleGraphD;
 	private Dictionary<string, List<Bitmap>> sampleGraphImages;
 	
+	private Label previewLabel;
+	private PictureBox previewGraph;
+	private Label plotWithColumnLabel;
+	private ComboBox plotWithColumnControl;
+	
 	public DataGraphicsDialog()
 	{
-		Width = 700;
-		Height = 500;
+		Width = 800;
+		Height = 700;
 		Text = "Data Graphics";
 		Icon = new Icon("SpireIcon1.ico");
 
@@ -548,6 +553,223 @@ public class DataGraphicsDialog : Form
 		sampleGraphD.Left = sampleGraphB.Left;
 		sampleGraphD.Top = sampleGraphC.Top;
 		sampleGraphD.Parent = this;
+		
+		///////////////////////////////////////////////
+		
+		Label xAxisColumnLabel = new Label();
+		xAxisColumnLabel.Left = graphTypeLabel.Left;
+		xAxisColumnLabel.Top = EasyLayout.Below(graphTypeControl, 15);
+		xAxisColumnLabel.Width = 115;
+		xAxisColumnLabel.Text = "X Axis Data Column";
+		xAxisColumnLabel.TextAlign = ContentAlignment.TopLeft;
+		xAxisColumnLabel.Parent = this;		
+		
+		ComboBox xAxisColumnControl = new ComboBox();
+		xAxisColumnControl.DataSource = new List<string>() { "", "Month", "Births", "Month Label", "100K Births" };
+		xAxisColumnControl.Left = EasyLayout.LeftOf(xAxisColumnLabel, 5);
+		xAxisColumnControl.Top = xAxisColumnLabel.Top - 2;
+		xAxisColumnControl.Height = 25;
+		xAxisColumnControl.Width = 150;
+		xAxisColumnControl.Parent = this;
+
+		Label yAxisColumnLabel = new Label();
+		yAxisColumnLabel.Left = xAxisColumnLabel.Left;
+		yAxisColumnLabel.Top = EasyLayout.Below(xAxisColumnLabel, 5);
+		yAxisColumnLabel.Width = 115;
+		yAxisColumnLabel.Text = "Y Axis Data Column";
+		yAxisColumnLabel.TextAlign = ContentAlignment.TopLeft;
+		yAxisColumnLabel.Parent = this;		
+		
+		ComboBox yAxisColumnControl = new ComboBox();
+		yAxisColumnControl.DataSource = new List<string>() { "", "Month", "Births", "Month Label", "100K Births" };
+		yAxisColumnControl.Left = EasyLayout.LeftOf(yAxisColumnLabel, 5);
+		yAxisColumnControl.Top = yAxisColumnLabel.Top - 2;
+		yAxisColumnControl.Height = 25;
+		yAxisColumnControl.Width = 150;
+		yAxisColumnControl.SelectedIndexChanged += new EventHandler(AxisColumnsSet);
+		yAxisColumnControl.Parent = this;
+
+		Label xAxisLabelLabel = new Label();
+		xAxisLabelLabel.Left = graphTypeLabel.Left;
+		xAxisLabelLabel.Top = EasyLayout.Below(yAxisColumnLabel, 15);
+		xAxisLabelLabel.Width = 75;
+		xAxisLabelLabel.Text = "X Axis Label";
+		xAxisLabelLabel.TextAlign = ContentAlignment.TopLeft;
+		xAxisLabelLabel.Parent = this;		
+		
+		TextBox xAxisLabelControl = new TextBox();
+		xAxisLabelControl.Left = EasyLayout.LeftOf(xAxisLabelLabel, 5);
+		xAxisLabelControl.Top = xAxisLabelLabel.Top - 2;
+		xAxisLabelControl.Height = 25;
+		xAxisLabelControl.Width = 150;
+		xAxisLabelControl.Parent = this;
+
+		Label yAxisLabelLabel = new Label();
+		yAxisLabelLabel.Left = graphTypeLabel.Left;
+		yAxisLabelLabel.Top = EasyLayout.Below(xAxisLabelLabel, 15);
+		yAxisLabelLabel.Width = 75;
+		yAxisLabelLabel.Text = "Y Axis Label";
+		yAxisLabelLabel.TextAlign = ContentAlignment.TopLeft;
+		yAxisLabelLabel.Parent = this;		
+		
+		TextBox yAxisLabelControl = new TextBox();
+		yAxisLabelControl.Left = EasyLayout.LeftOf(yAxisLabelLabel, 5);
+		yAxisLabelControl.Top = yAxisLabelLabel.Top - 2;
+		yAxisLabelControl.Height = 25;
+		yAxisLabelControl.Width = 150;
+		yAxisLabelControl.LostFocus += new EventHandler(AxisLabelsSet);
+		yAxisLabelControl.Parent = this;
+
+		previewLabel = new Label();
+		previewLabel.Left = EasyLayout.LeftOf(xAxisColumnControl, 20);
+		previewLabel.Top = xAxisColumnLabel.Top;
+		previewLabel.Width = 100;
+		previewLabel.Text = "Graph Preview";
+		previewLabel.TextAlign = ContentAlignment.TopLeft;
+		previewLabel.Visible = false;
+		previewLabel.Parent = this;
+		
+		previewGraph = new PictureBox();
+		previewGraph.SizeMode = PictureBoxSizeMode.Zoom;
+		previewGraph.Width = 400;
+		previewGraph.Height = 300;
+		previewGraph.Left = previewLabel.Left;
+		previewGraph.Top = EasyLayout.Below(previewLabel, 5);
+		previewGraph.Visible = false;
+		previewGraph.Parent = this;
+
+		Label plotWithLabel = new Label();
+		plotWithLabel.Left = yAxisLabelLabel.Left;
+		plotWithLabel.Top = EasyLayout.Below(yAxisLabelLabel, 5);
+		plotWithLabel.Width = 50;
+		plotWithLabel.Text = "Plot With";
+		plotWithLabel.TextAlign = ContentAlignment.TopLeft;
+		plotWithLabel.Parent = this;		
+		
+		ListBox plotWithControl = new ListBox();
+		plotWithControl.DataSource = new List<string>() { "Dot", "Label", "Image" };
+		plotWithControl.Left = graphTypeLabel.Left;
+		plotWithControl.Top = EasyLayout.Below(plotWithLabel, 0);
+		plotWithControl.Height = 50;
+		plotWithControl.Width = 100;
+		plotWithControl.SelectedIndexChanged += new EventHandler(PlotWithSet);
+		plotWithControl.Parent = this;
+		
+		plotWithColumnLabel = new Label();
+		plotWithColumnLabel.Left = EasyLayout.LeftOf(plotWithControl, 5);
+		plotWithColumnLabel.Top = plotWithLabel.Top;
+		plotWithColumnLabel.Width = 115;
+		plotWithColumnLabel.Text = "Plot Label Column";
+		plotWithColumnLabel.TextAlign = ContentAlignment.TopLeft;
+		plotWithColumnLabel.Visible = false;
+		plotWithColumnLabel.Parent = this;		
+		
+		plotWithColumnControl = new ComboBox();
+		plotWithColumnControl.DataSource = new List<string>() { "", "Month", "Births", "Month Label", "100K Births" };
+		plotWithColumnControl.Left = plotWithColumnLabel.Left;
+		plotWithColumnControl.Top = EasyLayout.Below(plotWithColumnLabel, 0);
+		plotWithColumnControl.Height = 25;
+		plotWithColumnControl.Width = 150;
+		plotWithColumnControl.SelectedIndexChanged += new EventHandler(PlotWithColumnSet);
+		plotWithColumnControl.Visible = false;
+		plotWithColumnControl.Parent = this;
+
+		Label yAxisRangeLabel = new Label();
+		yAxisRangeLabel.Left = plotWithLabel.Left;
+		yAxisRangeLabel.Top = EasyLayout.Below(plotWithControl, 5);
+		yAxisRangeLabel.Width = 75;
+		yAxisRangeLabel.Text = "Y Axis Range";
+		yAxisRangeLabel.TextAlign = ContentAlignment.TopLeft;
+		yAxisRangeLabel.Parent = this;		
+		
+		ListBox yAxisRangeControl = new ListBox();
+		yAxisRangeControl.DataSource = new List<string>() { "0 - Max", "Min - Max" };
+		yAxisRangeControl.Left = yAxisRangeLabel.Left;
+		yAxisRangeControl.Top = EasyLayout.Below(yAxisRangeLabel, 0);
+		yAxisRangeControl.Height = 40;
+		yAxisRangeControl.Width = 75;
+		yAxisRangeControl.SelectedIndexChanged += new EventHandler(YAxisRangeSet);
+		yAxisRangeControl.Parent = this;
+
+		Label yAxisTicksLabel = new Label();
+		yAxisTicksLabel.Left = EasyLayout.LeftOf(yAxisRangeControl, 10);
+		yAxisTicksLabel.Top = yAxisRangeLabel.Top;
+		yAxisTicksLabel.Width = 75;
+		yAxisTicksLabel.Text = "Y Axis Ticks";
+		yAxisTicksLabel.TextAlign = ContentAlignment.TopLeft;
+		yAxisTicksLabel.Parent = this;		
+		
+		ListBox yAxisTicksControl = new ListBox();
+		yAxisTicksControl.DataSource = new List<string>() { "Interval", "Exact" };
+		yAxisTicksControl.Left = yAxisTicksLabel.Left;
+		yAxisTicksControl.Top = yAxisRangeControl.Top;
+		yAxisTicksControl.Height = 40;
+		yAxisTicksControl.Width = 75;
+		yAxisTicksControl.SelectedIndexChanged += new EventHandler(YAxisTicksSet);
+		yAxisTicksControl.Parent = this;
+		
+		Label xAxisShowTicksLabel = new Label();
+		xAxisShowTicksLabel.Left = yAxisRangeLabel.Left;
+		xAxisShowTicksLabel.Top = EasyLayout.Below(yAxisRangeControl, 5);
+		xAxisShowTicksLabel.Width = 75;
+		xAxisShowTicksLabel.Text = "Show X Ticks";
+		xAxisShowTicksLabel.TextAlign = ContentAlignment.TopLeft;
+		xAxisShowTicksLabel.Parent = this;		
+		
+		CheckBox xAxisShowTicksControl = new CheckBox();
+		xAxisShowTicksControl.Left = EasyLayout.LeftOf(xAxisShowTicksLabel, 5);
+		xAxisShowTicksControl.Top = xAxisShowTicksLabel.Top - 4;
+		xAxisShowTicksControl.Width = 10;
+		xAxisShowTicksControl.Parent = this;
+		
+		Label yAxisShowTicksLabel = new Label();
+		yAxisShowTicksLabel.Left = xAxisShowTicksLabel.Left;
+		yAxisShowTicksLabel.Top = EasyLayout.Below(xAxisShowTicksLabel, 5);
+		yAxisShowTicksLabel.Width = 75;
+		yAxisShowTicksLabel.Text = "Show Y Ticks";
+		yAxisShowTicksLabel.TextAlign = ContentAlignment.TopLeft;
+		yAxisShowTicksLabel.Parent = this;		
+		
+		CheckBox yAxisShowTicksControl = new CheckBox();
+		yAxisShowTicksControl.Left = EasyLayout.LeftOf(yAxisShowTicksLabel, 5);
+		yAxisShowTicksControl.Top = yAxisShowTicksLabel.Top - 4;
+		yAxisShowTicksControl.Width = 10;
+		yAxisShowTicksControl.Checked = true;
+		yAxisShowTicksControl.CheckedChanged += new EventHandler(YAxisShowTicksSet);
+		yAxisShowTicksControl.Parent = this;
+		
+		Label xAxisShowFrameLabel = new Label();
+		xAxisShowFrameLabel.Left = EasyLayout.LeftOf(xAxisShowTicksLabel, 25);
+		xAxisShowFrameLabel.Top = xAxisShowTicksLabel.Top;
+		xAxisShowFrameLabel.Width = 85;
+		xAxisShowFrameLabel.Text = "Show X Frame";
+		xAxisShowFrameLabel.TextAlign = ContentAlignment.TopLeft;
+		xAxisShowFrameLabel.Parent = this;		
+		
+		CheckBox xAxisShowFrameControl = new CheckBox();
+		xAxisShowFrameControl.Left = EasyLayout.LeftOf(xAxisShowFrameLabel, 5);
+		xAxisShowFrameControl.Top = xAxisShowFrameLabel.Top - 4;
+		xAxisShowFrameControl.Width = 10;
+		xAxisShowFrameControl.Checked = true;
+		xAxisShowFrameControl.CheckedChanged += new EventHandler(XAxisShowFrameSet);
+		xAxisShowFrameControl.Parent = this;
+		
+		Label yAxisShowFrameLabel = new Label();
+		yAxisShowFrameLabel.Left = xAxisShowFrameLabel.Left;
+		yAxisShowFrameLabel.Top = EasyLayout.Below(xAxisShowFrameLabel, 5);
+		yAxisShowFrameLabel.Width = 85;
+		yAxisShowFrameLabel.Text = "Show Y Frame";
+		yAxisShowFrameLabel.TextAlign = ContentAlignment.TopLeft;
+		yAxisShowFrameLabel.Parent = this;		
+		
+		CheckBox yAxisShowFrameControl = new CheckBox();
+		yAxisShowFrameControl.Left = EasyLayout.LeftOf(yAxisShowFrameLabel, 5);
+		yAxisShowFrameControl.Top = yAxisShowFrameLabel.Top - 4;
+		yAxisShowFrameControl.Width = 10;
+		yAxisShowFrameControl.Checked = true;
+		yAxisShowFrameControl.Parent = this;
+
+		///////////////////////////////////////////////
 		
 		LoadSampleGraphImages();
 		
@@ -643,6 +865,7 @@ public class DataGraphicsDialog : Form
 				sampleGraphB.Image = bitmaps[1];
 				sampleGraphB.Visible = true;
 			}
+			/*
 			if(bitmaps.Count > 2 && bitmaps[2] != null)
 			{
 				sampleGraphC.Image = bitmaps[2];
@@ -653,6 +876,7 @@ public class DataGraphicsDialog : Form
 				sampleGraphD.Image = bitmaps[3];
 				sampleGraphD.Visible = true;
 			}
+			*/
 		}
 		/*
 		switch(box.SelectedItem.ToString())
@@ -685,5 +909,48 @@ public class DataGraphicsDialog : Form
 				break;
 		}
 		*/
+	}
+	
+	private void AxisColumnsSet(object sender, EventArgs e)
+	{
+		previewGraph.Image = LoadImage("reference\\avgBirthsPerMonthA.png");
+		previewLabel.Visible = true;
+		previewGraph.Visible = true;
+	}
+	
+	private void AxisLabelsSet(object sender, EventArgs e)
+	{
+		previewGraph.Image = LoadImage("reference\\avgBirthsPerMonthA2.png");
+	}
+	
+	private void PlotWithSet(object sender, EventArgs e)
+	{
+		plotWithColumnLabel.Visible = true;
+		plotWithColumnControl.Visible = true;
+	}
+	
+	private void PlotWithColumnSet(object sender, EventArgs e)
+	{
+		previewGraph.Image = LoadImage("reference\\avgBirthsPerMonthB.png");
+	}
+	
+	private void YAxisRangeSet(object sender, EventArgs e)
+	{
+		previewGraph.Image = LoadImage("reference\\avgBirthsPerMonthC.png");
+	}
+	
+	private void YAxisTicksSet(object sender, EventArgs e)
+	{
+		previewGraph.Image = LoadImage("reference\\avgBirthsPerMonthD.png");
+	}
+	
+	private void YAxisShowTicksSet(object sender, EventArgs e)
+	{
+		previewGraph.Image = LoadImage("reference\\avgBirthsPerMonthE.png");
+	}
+	
+	private void XAxisShowFrameSet(object sender, EventArgs e)
+	{
+		previewGraph.Image = LoadImage("reference\\avgBirthsPerMonthF.png");
 	}
 }
