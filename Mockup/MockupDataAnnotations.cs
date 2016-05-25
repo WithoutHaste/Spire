@@ -22,7 +22,6 @@ public static class DataAnnotationsDemo
 		}
 		drawPanel = panel;
 		boxes = new List<Spire.Box>();
-		ApplyMode(Mode.AddBox);
 		
 		int margin = 50;
 		int middleSpacer = 25;
@@ -84,20 +83,7 @@ public static class DataAnnotationsDemo
 	
 	public static void RemovePanel()
 	{
-		if(drawPanel == null)
-			return;
-		RemoveListeners();
 		drawPanel = null;
-	}
-	
-	private static void RemoveListeners()
-	{
-		drawPanel.MouseDown -= AddMouseDown;
-		drawPanel.MouseUp -= AddMouseUp;
-		drawPanel.MouseMove -= AddMouseMove;
-		drawPanel.MouseDown -= MoveMouseDown;
-		drawPanel.MouseUp -= MoveMouseUp;
-		drawPanel.MouseMove -= MoveMouseMove;
 	}
 	
 	public static ContextMenu BuildContextMenu()
@@ -143,13 +129,6 @@ public static class DataAnnotationsDemo
 				PaintImage(g, box as Spire.ImageBox);
 			else if(box is Spire.TextBox)
 				PaintTextBox(g, box as Spire.TextBox);
-		}
-		if(mode == Mode.AddBox)
-		{
-			if(mouseDownPoint != null && mouseDragPoint != null)
-			{
-				PaintDragBox(g, mouseDownPoint.Value, mouseDragPoint.Value);
-			}
 		}
 		g.Dispose();
 		pea.Graphics.DrawImageUnscaled(graphicsBuffer, 0, 0);
@@ -218,8 +197,14 @@ public static class DataAnnotationsDemo
 
 public class DataAnnotationsDialog : Form
 {
-	private enum Mode { Arrow, Text };
-	private Mode mode = Mode.Arrow;
+	private enum Mode { None, Arrow, Text };
+	
+	private static Mode mode = Mode.None;
+	private static DoubleBufferedPanel drawPanel;
+	private static TextBox textBox;
+	private static Point? arrowStartPoint;
+	private static Point? arrowEndPoint;
+	private static Point? mouseMovePoint;
 
 	public DataAnnotationsDialog()
 	{
@@ -275,6 +260,7 @@ public class DataAnnotationsDialog : Form
 		arrowButton.BackgroundImage = LoadImage("reference\\iconArrow.png");
 		arrowButton.Left = EasyLayout.LeftOf(lineButton, 0);
 		arrowButton.Top = lineButton.Top;
+		arrowButton.Click += (sender, e) => { mode = Mode.Arrow; };
 		arrowButton.Parent = this;
 
 		Button textButton = new Button();
@@ -295,18 +281,21 @@ public class DataAnnotationsDialog : Form
 		doneButton.Click += (sender, e) => { DataAnnotationsDemo.DialogClosed(null, null); this.Close(); };
 		doneButton.Parent = this;
 
-		PictureBox graph = new PictureBox();
-		graph.SizeMode = PictureBoxSizeMode.Zoom;
-		graph.Width = 400;
-		graph.Height = 300;
-		graph.Left = EasyLayout.LeftOf(circleFilledButton, 10);
-		graph.Top = circleButton.Top;
-		graph.Image = LoadImage("reference\\dataAnnotationModel.png");
-		graph.Parent = this;
+		drawPanel = new DoubleBufferedPanel();
+		drawPanel.Width = 400;
+		drawPanel.Height = 300;
+		drawPanel.Left = EasyLayout.LeftOf(circleFilledButton, 10);
+		drawPanel.Top = circleButton.Top;
+		drawPanel.Paint += new PaintEventHandler(PaintGraph);
+		drawPanel.MouseEnter += new EventHandler(PanelMouseEnter);
+		drawPanel.MouseDown += new MouseEventHandler(PanelMouseDown);
+		drawPanel.MouseUp += new MouseEventHandler(PanelMouseUp);
+		drawPanel.MouseMove += new MouseEventHandler(PanelMouseMove);
+		drawPanel.Parent = this;
 
-		this.MouseDown += new MouseEventHandler(MouseDown);
-		this.MouseUp += new MouseEventHandler(MouseUp);
-		this.MouseMove += new MouseEventHandler(MouseMove);
+		textBox = MockupWindow.BuildTextInput();
+		textBox.Visible = false;
+		textBox.Parent = this;
 		
 		ShowDialog();
 	}
@@ -320,19 +309,79 @@ public class DataAnnotationsDialog : Form
 		Console.WriteLine(filename + " not found");
 		return null;
 	}
-
-	private static void MouseDown(object sender, MouseEventArgs e)
+	
+	private static void PanelMouseEnter(object sender, EventArgs e)
 	{
+		drawPanel.Cursor = Cursors.Cross;
+		if(mode == Mode.Text)
+		{
+			drawPanel.Cursor = Cursors.IBeam;
+		}
 	}
 	
-	private static void MouseUp(object sender, MouseEventArgs e)
+	private static void PanelMouseDown(object sender, MouseEventArgs e)
 	{
+		if(mode == Mode.Arrow)
+		{
+			arrowStartPoint = new Point(e.X, e.Y);
+		}
+		else if(mode == Mode.Text)
+		{
+			textBox.Font = new Font("Times New Roman", 10);
+			textBox.Left = drawPanel.Left + e.X + 2;
+			textBox.Top = drawPanel.Top + e.Y - 5;
+			textBox.BringToFront();
+			textBox.Visible = true;
+			textBox.Focus();
+		}
 	}
 	
-	private static void MouseMove(object sender, MouseEventArgs e)
+	private static void PanelMouseUp(object sender, MouseEventArgs e)
 	{
+		if(mode == Mode.Arrow)
+		{
+			arrowEndPoint = new Point(e.X, e.Y);
+			mode = Mode.None;
+		}
 	}
 	
-		
+	private static void PanelMouseMove(object sender, MouseEventArgs e)
+	{
+		mouseMovePoint = new Point(e.X, e.Y);
+		drawPanel.Invalidate();
+	}
+	
+	private static void PaintGraph(object sender, PaintEventArgs e)
+	{
+		Bitmap graphicsBuffer = new Bitmap((sender as Control).Width, (sender as Control).Height);
+		Graphics g = Graphics.FromImage(graphicsBuffer);
+		g.SmoothingMode = SmoothingMode.AntiAlias;
+		g.Clear(Color.White);
+		using (Image src = Image.FromFile("reference\\dataAnnotationModel.png"))
+		{
+			g.DrawImage(src, 0, 0, graphicsBuffer.Width, graphicsBuffer.Height);
+		}
+		DrawArrow(g);
+		g.Dispose();
+		e.Graphics.DrawImageUnscaled(graphicsBuffer, 0, 0);
+	}
+	
+	private static void DrawArrow(Graphics g)
+	{
+		Pen pen = new Pen(Color.LightBlue, 2);
+		AdjustableArrowCap arrowCap = new AdjustableArrowCap(5, 5);
+		//pen.EndCap = LineCap.ArrowAnchor;
+		pen.CustomEndCap = arrowCap;
+		if(mode == Mode.Arrow && arrowStartPoint != null)
+		{
+			g.DrawLine(pen, arrowStartPoint.Value.X, arrowStartPoint.Value.Y, mouseMovePoint.Value.X, mouseMovePoint.Value.Y);
+		}
+		else if(arrowStartPoint != null && arrowEndPoint != null)
+		{
+			pen.Color = Color.Black;
+			g.DrawLine(pen, arrowStartPoint.Value.X, arrowStartPoint.Value.Y, arrowEndPoint.Value.X, arrowEndPoint.Value.Y);
+		}
+	}
+	
 }
 
