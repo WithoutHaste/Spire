@@ -19,8 +19,11 @@ public static class FormulasDemo
 		{'0','₀'}, {'1','₁'}, {'2','₂'}, {'3','₃'}, {'4','₄'}, {'5','₅'}, {'6','₆'}, {'7','₇'}, {'8','₈'}, {'9','₉'}
 	};
 	
+	private static int deltaX = -130;
+	
 	private static TextBox formulaTextBox;
 	private static Label showType;
+	private static bool startedFormula = false;
 	private static bool inIntegral = false;
 	private static TextBox integralFromTextBox;
 	private static TextBox integralToTextBox;
@@ -44,22 +47,23 @@ public static class FormulasDemo
 		formulaTextBox = MockupWindow.BuildTextInput();
 		formulaTextBox.Left = margin;
 		formulaTextBox.Top = 30;
-		formulaTextBox.Height = 70;
+		formulaTextBox.Height = 50;
 		formulaTextBox.Width = parent.Width - 4*margin;
 		formulaTextBox.Font = new Font(new FontFamily("Times New Roman"), baseFontSize);
 		formulaTextBox.KeyUp += new KeyEventHandler(TextBoxKeyUp);
-		formulaTextBox.Text = "Formula demo: ";
+		formulaTextBox.Text = "";
 		formulaTextBox.SelectionStart = formulaTextBox.Text.Length;
 		formulaTextBox.Parent = parent;
 		
-		showType = MockupWindow.BuildLabel(ContentAlignment.MiddleCenter);
+		showType = MockupWindow.BuildLabel(ContentAlignment.MiddleLeft);
 		showType.Left = formulaTextBox.Left;
 		showType.Top = formulaTextBox.Top + formulaTextBox.Height + margin;
-		showType.Height = 100;
+		showType.Height = 70;
 		showType.Width = parent.Width - 4*margin;
 		showType.Font = new Font(new FontFamily("Times New Roman"), baseFontSize, FontStyle.Bold);
-		showType.BackColor = Color.DarkGray;
-		showType.ForeColor = Color.White;
+		showType.BackColor = Color.LightGray;
+		showType.ForeColor = Color.Black;
+		showType.Text = "Typed: ";
 		showType.Parent = parent;
 		showType.BringToFront();
 		
@@ -73,6 +77,12 @@ public static class FormulasDemo
 	
 	private static void UpdateShowType(KeyEventArgs e)
 	{
+		if(e.KeyValue == 51 && e.Shift)
+			startedFormula = true;
+	
+		if(!startedFormula)
+			return;
+	
 		if(e.KeyValue == '6' && e.Shift)
 			showType.Text += '^';
 		else if(e.KeyValue == '9' && e.Shift)
@@ -158,7 +168,7 @@ public static class FormulasDemo
 				
 				suffixTextBox.Text = "##";
 
-				formulaTextBox.Text += "        ";
+				formulaTextBox.Text += "       ";
 				formulaTextBox.SelectionStart = formulaTextBox.Text.Length;
 				formulaTextBox.Focus();
 				
@@ -191,7 +201,7 @@ public static class FormulasDemo
 			integralToTextBox = MockupWindow.BuildTextInput();
 			
 			//integralFromTextBox.BackColor = Color.Yellow;
-			integralFromTextBox.Left = 264;
+			integralFromTextBox.Left = 264 + deltaX;
 			integralFromTextBox.Top = 50;
 			integralFromTextBox.Height = 18;
 			integralFromTextBox.Width = 22;
@@ -227,8 +237,8 @@ public static class FormulasDemo
 			squareRootTextBox.Font = new Font(new FontFamily("Times New Roman"), 18);
 			
 			squareRootPanel = new Panel();
-			squareRootPanel.Left = 269;
-			squareRootPanel.Top = 29;
+			squareRootPanel.Left = 273 + deltaX;
+			squareRootPanel.Top = 30;
 			squareRootPanel.Height = 5;
 			squareRootPanel.Width = 3;
 			squareRootPanel.Parent = textBox.Parent;
@@ -250,10 +260,10 @@ public static class FormulasDemo
 
 			fractionUnderTextBox = MockupWindow.BuildTextInput();
 			//fractionUnderTextBox.BackColor = Color.Yellow;
-			fractionUnderTextBox.Left = 255;
+			fractionUnderTextBox.Left = 255 + deltaX;
 			fractionUnderTextBox.Top = 51;
 			fractionUnderTextBox.Height = 25;
-			fractionUnderTextBox.Width = 65;
+			fractionUnderTextBox.Width = 70;
 			fractionUnderTextBox.Font = new Font(new FontFamily("Times New Roman"), 18);
 			fractionUnderTextBox.KeyUp += new KeyEventHandler(TextBoxKeyUp);
 			fractionUnderTextBox.Parent = textBox.Parent;
