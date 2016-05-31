@@ -65,7 +65,7 @@ public class MockupWindow : Form
 		fileMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("&Print"));
 		fileMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Exit"));
 
-		configMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Formula"));
+		configMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Formula", new EventHandler(SetupFormulaConfigurationDemo)));
 		configMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Plugins"));
 		configMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Default Styles"));
 		configMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Language"));
@@ -114,6 +114,11 @@ public class MockupWindow : Form
 		mainPanel.Paint -= DataAnnotationsDemo.Paint;
 		CustomLayoutDemo.RemovePanel();
 		mainPanel.Controls.Clear();
+	}
+	
+	private void SetupFormulaConfigurationDemo(object sender, EventArgs e)
+	{
+		FormulaDialog dialog = new FormulaDialog();
 	}
 	
 	private void SetupFootnotesDemo(object sender, EventArgs e)

@@ -419,3 +419,121 @@ public static class FormulasDemo
 	
 }
 
+
+public class FormulaDialog : Form
+{
+	private Color defaultPanelColor;
+
+	public FormulaDialog()
+	{
+		Width = 450;
+		Height = 550;
+		Text = "Formula";
+		Icon = new Icon("SpireIcon1.ico");
+		StartPosition = FormStartPosition.CenterParent;
+		
+		AddOption("reference\\iconIntegral.png", new string[] { "integral(A B C)", "i(A B C)" });
+		AddOption("reference\\iconSqrt.png", new string[] { "sqrt(A)" });
+		AddOption("reference\\iconFraction.png", new string[] { "fraction(A\\tB)", "frac(A\\tB)", "(A over B)" });
+		AddOption("reference\\iconChoose.png", new string[] { "choose(A,B)" });
+		AddOption("reference\\iconSummation.png", new string[] { "sum(A B C)" });
+				
+		ShowDialog();
+	}
+	
+	private void AddOption(string imageFilename, string[] formats)
+	{
+		int buffer = 15;
+		
+		Panel panel = new Panel();
+
+		PictureBox icon = new PictureBox();
+		icon.Left = buffer;
+		icon.Top = buffer;
+		icon.Width = 60;
+		icon.Height = 60;
+		icon.Image = new Bitmap(imageFilename);
+		icon.Parent = panel;
+		
+		int y = 10;
+		for(int i=0; i<formats.Length; i++)
+		{
+			Label label = new Label();
+			label.Font = new Font("Times New Roman", 14);
+			label.Text = (i == 0) ? "type" : "or";
+			label.Left = EasyLayout.LeftOf(icon, buffer);
+			label.Top = icon.Top + y;
+			label.Width = 50;
+			label.Height = 22;
+			label.Parent = panel;
+			
+			TextBox input = new TextBox();
+			input.Font = label.Font;
+			input.Text = formats[i];
+			input.Left = EasyLayout.LeftOf(label);
+			input.Top = label.Top;
+			input.Width = 250;
+			input.Height = label.Height;
+			input.Parent = panel;
+			
+			if(i == formats.Length-1)
+			{
+				Button addButton = new Button();
+				addButton.Width = 20;
+				addButton.Height = 20;
+				addButton.BackgroundImage = new Bitmap("reference\\iconPlus.png");
+				addButton.Left = EasyLayout.LeftOf(input, 5);
+				addButton.Top = input.Top;
+				addButton.Click += (sender, e) => { AddFormat(panel, label, input, sender as Button); };
+				addButton.Parent = panel;
+			}
+			
+			y += label.Height + 5;
+		}
+	
+		panel.Left = 0;
+		panel.Top = EasyLayout.Below(this.Controls, 5);
+		panel.Width = this.Width;
+		panel.Height = Math.Max(icon.Top + icon.Height, y) + buffer;
+//		panel.MouseEnter += new EventHandler(PanelEnter);
+//		panel.MouseLeave += new EventHandler(PanelLeave);
+		panel.Parent = this;
+		
+		defaultPanelColor = panel.BackColor;
+	}
+	
+	private void AddFormat(Panel panel, Label prevLabel, TextBox prevInput, Button addButton)
+	{
+		Label label = new Label();
+		label.Font = prevLabel.Font;
+		label.Text = "or";
+		label.Left = prevLabel.Left;
+		label.Top = EasyLayout.Below(prevLabel, 5);
+		label.Width = prevLabel.Width;
+		label.Height = prevLabel.Height;
+		label.Parent = panel;
+		
+		TextBox input = new TextBox();
+		input.Font = prevInput.Font;
+		input.Text = "";
+		input.Left = prevInput.Left;
+		input.Top = label.Top;
+		input.Width = prevInput.Width;
+		input.Height = prevInput.Height;
+		input.Parent = panel;
+		input.Focus();
+		
+		addButton.Top = input.Top;
+	}
+	
+	private void PanelEnter(object sender, EventArgs e)
+	{
+		(sender as Panel).BackColor = Color.White;
+	}
+	
+	private void PanelLeave(object sender, EventArgs e)
+	{
+		(sender as Panel).BackColor = defaultPanelColor;
+	}
+	
+}
