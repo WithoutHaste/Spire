@@ -74,6 +74,7 @@ public class MockupWindow : Form
 		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Custom Layout", new EventHandler(SetupCustomLayoutDemo)));
 		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Styles Basic", new EventHandler(SetupStylesDemo)));
 		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Styles Advanced", new EventHandler(SetupStylesDemoAdvanced)));
+		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Styles Toolbar", new EventHandler(SetupStylesToolbarDemo)));
 		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Formulas", new EventHandler(SetupFormulasDemo)));
 		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("Footnotes", new EventHandler(SetupFootnotesDemo)));
 		demosMenuItem.MenuItems.Add(new System.Windows.Forms.MenuItem("PDF", new EventHandler(SetupPDFDemo)));
@@ -113,6 +114,7 @@ public class MockupWindow : Form
 		mainPanel.Paint -= DataGraphicsDemo.Paint;
 		mainPanel.Paint -= DataAnnotationsDemo.Paint;
 		CustomLayoutDemo.RemovePanel();
+		StylesToolbarDemo.ClearDemo();
 		mainPanel.Controls.Clear();
 	}
 	
@@ -204,6 +206,12 @@ public class MockupWindow : Form
 		mainPanel.Paint += new PaintEventHandler(StylesDemoAdvanced.Paint);
 		mainPanel.Invalidate();
 		StyleDialogAdvanced dialog = new StyleDialogAdvanced(mainPanel);
+	}
+
+	private void SetupStylesToolbarDemo(object sender, EventArgs e)
+	{
+		RemoveAllDemos();
+		StylesToolbarDemo.Init(scrollPanel, mainPanel);
 	}
 
 	public static TextBox BuildTextInput()
