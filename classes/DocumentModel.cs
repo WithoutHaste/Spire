@@ -8,20 +8,26 @@ namespace Spire
 		public delegate void UpdateAtEventHandler(object sender, UpdateAtEventArgs e);
 		public event UpdateAtEventHandler OnUpdateAtEvent;
 
-		private List<DocumentChunk> chunks;
+		private List<DocumentChunk> chunks; //list is never left empty
 		//private static int maxChunkLength = 30;
 	
 		public DocumentModel()
 		{
 			chunks = new List<DocumentChunk>();
+			chunks.Add(new DocumentChunk());
+			UpdateChunksIndexesFrom(0);
+			CaretIndex = 0;
 		}
 		
 		public int Length
 		{
-			get {
-				if(chunks.Count == 0) return 0;
-				return LastChunk.EndCharIndex + 1;
-			}
+			get { return LastChunk.EndCharIndex + 1; }
+		}
+		
+		public int CaretIndex
+		{
+			get;
+			set;
 		}
 		
 		public string SubString(int startCharIndex, int endCharIndex)
@@ -59,53 +65,36 @@ namespace Spire
 		
 		private DocumentChunk LastChunk
 		{
-			get {
-				if(chunks.Count == 0) return null;
-				return chunks[chunks.Count-1];
-			}
+			get { return chunks[chunks.Count-1]; }
 		}
 		
 		public void OnTextEvent(object sender, TextEventArgs e)
 		{
-			if(chunks.Count == 0)
-			{
-				chunks.Add(new DocumentChunk(e.Text));
-				UpdateChunkStartIndexesFrom(0);
-				RaiseUpdateAtEvent(0);
-			}
-			else
-			{
-				InsertText(e.Text, chunks.Count-1, 0);
-			}
+			InsertText(new char[] { e.Text }, CaretIndex);
+			CaretIndex += 1;
 		}
 		
-		private void InsertText(char text, int chunkIndex, int stringIndex)
+		private void InsertText(char[] text, int charIndex)
 		{
-			if(chunkIndex < 0) throw new Exception("Chunk index out of lower bounds.");
-			if(chunkIndex >= chunks.Count) throw new Exception("Chunk index out of upper bounds.");
-			chunks[chunkIndex].InsertText(text, stringIndex);
-			UpdateChunkStartIndexesFrom(chunkIndex+1);
-			RaiseUpdateAtEvent(chunkIndex);
-		}
-
-		private void InsertText(string text, int chunkIndex, int stringIndex)
-		{
-			if(chunkIndex < 0) throw new Exception("Chunk index out of lower bounds.");
-			if(chunkIndex >= chunks.Count) throw new Exception("Chunk index out of upper bounds.");
-			chunks[chunkIndex].InsertText(text, stringIndex);
-			UpdateChunkStartIndexesFrom(chunkIndex+1);
-			RaiseUpdateAtEvent(chunkIndex);
+			DocumentChunk chunk = FindChunkByCharIndex(charIndex);
+			chunk.InsertText(text, charIndex);
+			UpdateChunksIndexesFrom(chunk);
+			RaiseUpdateAtEvent(charIndex);
 		}
 		
-		private void RaiseUpdateAtEvent(int chunkIndex)
+		private void RaiseUpdateAtEvent(int charIndex)
 		{
 			if(OnUpdateAtEvent == null) return;
-			OnUpdateAtEvent(this, new UpdateAtEventArgs(chunkIndex));
+			OnUpdateAtEvent(this, new UpdateAtEventArgs(charIndex));
 		}
 		
-		private void UpdateChunkStartIndexesFrom(int chunkIndex)
+		private void UpdateChunksIndexesFrom(DocumentChunk chunk)
 		{
-			if(chunks.Count == 0) return;
+			UpdateChunksIndexesFrom(chunks.IndexOf(chunk));
+		}
+		
+		private void UpdateChunksIndexesFrom(int chunkIndex)
+		{
 			if(chunkIndex == 0)
 			{
 				chunks[chunkIndex].StartCharIndex = 0;
@@ -116,6 +105,20 @@ namespace Spire
 				chunks[chunkIndex].StartCharIndex = chunks[chunkIndex-1].EndCharIndex + 1;
 				chunkIndex++;
 			}
+		}
+		
+		private DocumentChunk FindChunkByCharIndex(int charIndex)
+		{
+			int chunkIndex = 0;
+			while(chunkIndex < chunks.Count && chunks[chunkIndex].EndCharIndex != -1 && chunks[chunkIndex].EndCharIndex < charIndex)
+			{
+				chunkIndex++;
+			}
+			if(chunkIndex >= chunks.Count)
+			{
+				chunkIndex--; //insert at end of last chunk
+			}
+			return chunks[chunkIndex];
 		}
 	}
 }

@@ -9,17 +9,16 @@ namespace Spire
 		public DocumentView(DocumentModel model)
 		{
 			documentModel = model;
-			CaretIndex = 0;
 		}
 		
 		public int CaretIndex
 		{
-			get;
-			set;
+			get { return documentModel.CaretIndex; }
 		}
 		
 		public string Line(int lineIndex)
 		{
+			if(documentModel.Length == 0) return "";
 			return documentModel.SubString(0, documentModel.Length-1);
 		}
 		

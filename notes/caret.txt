@@ -1,0 +1,7 @@
+Is the caret part of the model or part of the view?
+
+Caret is the current insert/remove point on the document.
+The model must know the caret location so it knows where to edit.
+Editing the model will certainly change the caret location.
+
+Seems like more part of the model than the view.
