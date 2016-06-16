@@ -48,27 +48,21 @@ namespace Spire
 			get { return StartCharIndex + Length - 1; }
 		}
 		
-		public void InsertText(string text, int index)
+		public void InsertText(char[] text, int charIndex)
 		{
-			if(index < 0) throw new Exception("Chunk internal index out of lower bounds.");
-			if(index >= _length) throw new Exception("Chunk internal index out of upper bounds.");
+			int localIndex = LocalIndex(charIndex);
+			if(localIndex < 0) throw new Exception("Chunk internal index out of lower bounds.");
+			if(localIndex > _length) throw new Exception("Chunk internal index out of upper bounds.");
 			foreach(char c in text)
 			{
-				InsertChar(c, index);
-				index++;
+				InsertChar(c, localIndex);
+				localIndex++;
 			}
 		}
 		
-		public void InsertText(char text, int index)
+		private void InsertChar(char c, int localIndex)
 		{
-			if(index < 0) throw new Exception("Chunk internal index out of lower bounds.");
-			if(index >= _length) throw new Exception("Chunk internal index out of upper bounds.");
-			InsertChar(text, index);
-		}
-		
-		private void InsertChar(char c, int index)
-		{
-			_text.Insert(index, c);
+			_text.Insert(localIndex, c);
 			_length++;
 		}
 		
