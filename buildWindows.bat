@@ -1,0 +1,1 @@
+csc -out:Spire_Windows.exe Spire.cs classes\*.cs
