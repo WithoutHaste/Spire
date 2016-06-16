@@ -2,7 +2,7 @@ using System;
 //using System.Collections.Generic;
 //using System.Diagnostics;
 using System.Drawing;
-//using System.Drawing.Drawing2D;
+using System.Drawing.Drawing2D;
 using System.IO;
 //using System.Text;
 using System.Timers;
@@ -15,6 +15,7 @@ namespace Spire
 		public delegate void TextEventHandler(object sender, TextEventArgs e);
 		public event TextEventHandler OnTextEvent;
 	
+		private DocumentView documentView;
 		private System.Timers.Timer caretTimer;
 		private bool caretOn = false;
 		
@@ -26,6 +27,11 @@ namespace Spire
 			this.KeyPress += new KeyPressEventHandler(UserKeyPress);
 		}
 		
+		public void SetView(DocumentView view)
+		{
+			documentView = view;
+		}
+				
 		private void SetupDoubleBuffer()
 		{
 			this.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true);
@@ -68,7 +74,8 @@ namespace Spire
 				RaiseTextEvent(e.KeyChar);
 				e.Handled = true;
 			}
-			Console.WriteLine("Key Press: "+e.KeyChar+" = "+(int)e.KeyChar);
+			this.Invalidate();
+//			Console.WriteLine("Key Press: "+e.KeyChar+" = "+(int)e.KeyChar);
 		}
 		
 		private void RaiseTextEvent(char text)
@@ -81,7 +88,7 @@ namespace Spire
 		{
 			Bitmap graphicsBuffer = new Bitmap(this.Width, this.Height);
 			Graphics graphics = Graphics.FromImage(graphicsBuffer);
-			//graphics.SmoothingMode = SmoothingMode.AntiAlias;
+			graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
 			OnPaint(graphics);
 
@@ -92,7 +99,15 @@ namespace Spire
 		private void OnPaint(Graphics graphics)
 		{
 			graphics.Clear(Color.White);
+			DrawText(graphics);
 			DrawCaret(graphics);
+		}
+		
+		private void DrawText(Graphics graphics)
+		{
+			if(documentView == null) return;
+			Brush brush = new SolidBrush(Color.Black);
+			graphics.DrawString(documentView.Line(0), Application.GlobalFont, brush, new Point(30, 30));
 		}
 		
 		private void DrawCaret(Graphics graphics)

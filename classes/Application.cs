@@ -11,7 +11,11 @@ namespace Spire
 {
 	public class Application : Form
 	{
+		public static Font GlobalFont = new Font("Times New Roman", 12);
+		public static int DocumentWidth = 600;
+	
 		private DocumentModel documentModel;
+		private DocumentView documentView;
 		private Panel scrollPanel;
 		private Paper paper;
 		private string iconPath = Path.Combine("images", "SpireIcon1.ico");
@@ -37,6 +41,10 @@ namespace Spire
 			
 			documentModel = new DocumentModel();
 			paper.OnTextEvent += new Paper.TextEventHandler(documentModel.OnTextEvent);
+			
+			documentView = new DocumentView(documentModel);
+			documentModel.OnUpdateAtEvent += new DocumentModel.UpdateAtEventHandler(documentView.OnModelUpdateEvent);
+			paper.SetView(documentView);
 
 			ResumeLayout(false);
 		}
