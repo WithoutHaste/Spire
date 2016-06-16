@@ -32,9 +32,8 @@ namespace Spire
 			documentPanel = BuildDocumentPanel();
 			documentPanel.Anchor = AnchorStyles.Top;
 			documentPanel.Parent = scrollPanel;
+			documentPanel.Focus();
 
-			documentPanel.Invalidate();
-			
 			ResumeLayout(false);
 		}
 
@@ -50,7 +49,6 @@ namespace Spire
 		private Paper BuildDocumentPanel()
 		{
 			Paper panel = new Paper();
-			panel.AutoScroll = true;
 			panel.Size = new Size(600, 800);
 			panel.Left = 30;
 			panel.Top = 20;
