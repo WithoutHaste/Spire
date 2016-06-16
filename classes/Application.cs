@@ -11,8 +11,9 @@ namespace Spire
 {
 	public class Application : Form
 	{
+		private DocumentModel documentModel;
 		private Panel scrollPanel;
-		private Paper documentPanel;
+		private Paper paper;
 		private string iconPath = Path.Combine("images", "SpireIcon1.ico");
 		
 		public Application()
@@ -29,10 +30,13 @@ namespace Spire
 			scrollPanel = BuildScrollPanel();
 			scrollPanel.Parent = this;
 
-			documentPanel = BuildDocumentPanel();
-			documentPanel.Anchor = AnchorStyles.Top;
-			documentPanel.Parent = scrollPanel;
-			documentPanel.Focus();
+			paper = BuildPaper();
+			paper.Anchor = AnchorStyles.Top;
+			paper.Parent = scrollPanel;
+			paper.Focus();
+			
+			documentModel = new DocumentModel();
+			paper.OnTextEvent += new Paper.TextEventHandler(documentModel.OnTextEvent);
 
 			ResumeLayout(false);
 		}
@@ -46,15 +50,15 @@ namespace Spire
 			return panel;
 		}
 
-		private Paper BuildDocumentPanel()
+		private Paper BuildPaper()
 		{
-			Paper panel = new Paper();
-			panel.Size = new Size(600, 800);
-			panel.Left = 30;
-			panel.Top = 20;
-			panel.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
-			panel.BackColor = Color.White;
-			return panel;
+			Paper paper = new Paper();
+			paper.Size = new Size(600, 800);
+			paper.Left = 30;
+			paper.Top = 20;
+			paper.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
+			paper.BackColor = Color.White;
+			return paper;
 		}
 
 	}
