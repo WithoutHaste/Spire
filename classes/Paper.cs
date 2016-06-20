@@ -107,13 +107,14 @@ namespace Spire
 		{
 			if(documentView == null) return;
 			Brush brush = new SolidBrush(Color.Black);
-			graphics.DrawString(documentView.Line(0), Application.GlobalFont, brush, new Point(30, 30));
+			graphics.DrawString(documentView.Line(0), Application.GlobalFont, brush, new Point(0, 0));
 		}
 		
 		private void DrawCaret(Graphics graphics)
 		{
 			if(!this.Focused) return;
 			if(!caretOn) return;
+			
 			Pen pen = new Pen(Color.LightBlue, 0.75f);
 			graphics.DrawLine(pen, 10, 20, 10, 30);
 		}
