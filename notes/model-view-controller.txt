@@ -1,0 +1,41 @@
+Model
+=====
+
+A single string of text comprising the entire document. Indexed by character from 0 to end.
+
+Internal structure private, of course. Not actually a single string.
+
+Style start and end points saved here.
+
+	Save text in chunks.
+	Styles can start only at the beginning of a chunk.
+	Styles can end only at the end of a chunk.
+	For multiple styles starting or ending at the same point, use empty chunks.
+	
+	Will need special chunks for formulas. Later.
+
+Accept commands from Controller, Pass notice of changes to View.
+
+
+
+View
+====
+
+Determine line breaks, page breaks, flowing text around graphics.
+
+Note up to what character index this has been determined since last user edit.
+
+	On each edit, restart update delay.
+	Once delay runs out, begin propagating change forward.
+	Will have to always keep current visible page up to date.
+	
+Draw graphics object for GUI display and for printing.
+	
+Accept notice of changes from Model, Trigger Controller display update.
+	
+
+	
+Controller
+==========
+
+Interpret key and mouse commands, pass interpreted commands to Model.
