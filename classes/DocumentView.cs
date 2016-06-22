@@ -51,9 +51,10 @@ namespace Spire
 		{
 			Pen pen = new Pen(Color.LightBlue, 0.75f);
 			string textToCaret = Line(0).Substring(0, CaretIndex);
-			StringFormat stringFormat = new StringFormat(/*StringFormat.GenericTypographic*/) { FormatFlags = StringFormatFlags.MeasureTrailingSpaces };
+			StringFormat stringFormat = new StringFormat() { FormatFlags = StringFormatFlags.MeasureTrailingSpaces };
 			SizeF textSize = graphics.MeasureString(textToCaret, Application.GlobalFont, new PointF(0,0), stringFormat);
-			graphics.DrawLine(pen, textSize.Width, 0, textSize.Width, textSize.Height);
+			SizeF charSize = graphics.MeasureString("X", Application.GlobalFont, new PointF(0,0), stringFormat);
+			graphics.DrawLine(pen, Math.Max(1,textSize.Width), 0, Math.Max(1,textSize.Width), Math.Max(charSize.Height, textSize.Height));
 		}
 	}
 }
