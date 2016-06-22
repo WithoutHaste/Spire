@@ -60,23 +60,9 @@ namespace Spire
 		
 		private void UserKeyPress(object sender, KeyPressEventArgs e)
 		{
-//			if(e.KeyChar >= 'a' && e.KeyChar <= 'z')
-//			{
-				RaiseTextEvent(e.KeyChar);
-				e.Handled = true;
-/*			}
-			else if(e.KeyChar >= 'A' && e.KeyChar <= 'Z')
-			{
-				RaiseTextEvent(e.KeyChar);
-				e.Handled = true;
-			}
-			else if(e.KeyChar >= '0' && e.KeyChar <= '9')
-			{
-				RaiseTextEvent(e.KeyChar);
-				e.Handled = true;
-			}
-*/			this.Invalidate();
-//			Console.WriteLine("Key Press: "+e.KeyChar+" = "+(int)e.KeyChar);
+			RaiseTextEvent(e.KeyChar);
+			e.Handled = true;
+			this.Invalidate();
 		}
 		
 		private void RaiseTextEvent(char text)
