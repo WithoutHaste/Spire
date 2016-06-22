@@ -237,7 +237,7 @@ public static class FormulasDemo
 			squareRootTextBox.Font = new Font(new FontFamily("Times New Roman"), 18);
 			
 			squareRootPanel = new Panel();
-			squareRootPanel.Left = 273 + deltaX;
+			squareRootPanel.Left = 273 + deltaX + 102;
 			squareRootPanel.Top = 30;
 			squareRootPanel.Height = 5;
 			squareRootPanel.Width = 3;

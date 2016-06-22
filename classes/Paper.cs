@@ -3,6 +3,7 @@ using System;
 //using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 using System.IO;
 //using System.Text;
 using System.Timers;
@@ -59,11 +60,11 @@ namespace Spire
 		
 		private void UserKeyPress(object sender, KeyPressEventArgs e)
 		{
-			if(e.KeyChar >= 'a' && e.KeyChar <= 'z')
-			{
+//			if(e.KeyChar >= 'a' && e.KeyChar <= 'z')
+//			{
 				RaiseTextEvent(e.KeyChar);
 				e.Handled = true;
-			}
+/*			}
 			else if(e.KeyChar >= 'A' && e.KeyChar <= 'Z')
 			{
 				RaiseTextEvent(e.KeyChar);
@@ -74,7 +75,7 @@ namespace Spire
 				RaiseTextEvent(e.KeyChar);
 				e.Handled = true;
 			}
-			this.Invalidate();
+*/			this.Invalidate();
 //			Console.WriteLine("Key Press: "+e.KeyChar+" = "+(int)e.KeyChar);
 		}
 		
@@ -89,34 +90,17 @@ namespace Spire
 			Bitmap graphicsBuffer = new Bitmap(this.Width, this.Height);
 			Graphics graphics = Graphics.FromImage(graphicsBuffer);
 			graphics.SmoothingMode = SmoothingMode.AntiAlias;
+			graphics.TextRenderingHint = TextRenderingHint.AntiAlias;
 
-			OnPaint(graphics);
+			if(documentView != null)
+			{
+				bool drawCaret = (this.Focused && caretOn);
+				documentView.Paint(graphics, drawCaret);
+			}
 
 			graphics.Dispose();
 			e.Graphics.DrawImageUnscaled(graphicsBuffer, 0, 0);	
 		}
 		
-		private void OnPaint(Graphics graphics)
-		{
-			graphics.Clear(Color.White);
-			DrawText(graphics);
-			DrawCaret(graphics);
-		}
-		
-		private void DrawText(Graphics graphics)
-		{
-			if(documentView == null) return;
-			Brush brush = new SolidBrush(Color.Black);
-			graphics.DrawString(documentView.Line(0), Application.GlobalFont, brush, new Point(0, 0));
-		}
-		
-		private void DrawCaret(Graphics graphics)
-		{
-			if(!this.Focused) return;
-			if(!caretOn) return;
-			
-			Pen pen = new Pen(Color.LightBlue, 0.75f);
-			graphics.DrawLine(pen, 10, 20, 10, 30);
-		}
 	}
 }
