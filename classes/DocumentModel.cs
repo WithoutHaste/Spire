@@ -8,6 +8,7 @@ namespace Spire
 		public delegate void UpdateAtEventHandler(object sender, UpdateAtEventArgs e);
 		public event UpdateAtEventHandler OnUpdateAtEvent;
 
+		private int _caretIndex;
 		private List<DocumentChunk> chunks; //list is never left empty
 		//private static int maxChunkLength = 30;
 	
@@ -26,8 +27,16 @@ namespace Spire
 		
 		public int CaretIndex
 		{
-			get;
-			set;
+			get
+			{
+				return _caretIndex;
+			}
+			set 
+			{
+				if(value < 0) value = 0;
+				if(value > Length) value = Length;
+				_caretIndex = value;
+			}
 		}
 		
 		public string SubString(int startCharIndex, int endCharIndex)
@@ -72,6 +81,18 @@ namespace Spire
 		{
 			InsertText(new char[] { e.Text }, CaretIndex);
 			CaretIndex += 1;
+		}
+		
+		public void OnNavigationEvent(object sender, NavigationEventArgs e)
+		{
+			switch(e.Unit)
+			{
+				case NavigationEventArgs.Units.Character:
+					CaretIndex += e.Amount;
+					break;
+				case NavigationEventArgs.Units.Word:
+					throw new Exception("navigation by word not implemented");
+			}
 		}
 		
 		private void InsertText(char[] text, int charIndex)

@@ -15,6 +15,9 @@ namespace Spire
 	{
 		public delegate void TextEventHandler(object sender, TextEventArgs e);
 		public event TextEventHandler OnTextEvent;
+		
+		public delegate void NavigationEventHandler(object sender, NavigationEventArgs e);
+		public event NavigationEventHandler OnNavigationEvent;
 	
 		private DocumentView documentView;
 		private System.Timers.Timer caretTimer;
@@ -25,7 +28,9 @@ namespace Spire
 			SetupDoubleBuffer();
 			this.GotFocus += new EventHandler(EnableCaretTimer);
 			this.LostFocus += new EventHandler(DisableCaretTimer);
+			this.PreviewKeyDown += new PreviewKeyDownEventHandler(PreviewUserKeyDown);
 			this.KeyPress += new KeyPressEventHandler(UserKeyPress);
+			this.KeyDown += new KeyEventHandler(UserKeyDown);
 		}
 		
 		public void SetView(DocumentView view)
@@ -58,6 +63,30 @@ namespace Spire
 			this.Invalidate();
 		}
 		
+		private void PreviewUserKeyDown(object sender, PreviewKeyDownEventArgs e)
+		{
+			switch(e.KeyCode)
+			{
+				case Keys.Left:
+				case Keys.Right:
+					e.IsInputKey = true;
+					break;
+			}
+		}
+		
+		private void UserKeyDown(object sender, KeyEventArgs e)
+		{
+			switch(e.KeyCode)
+			{
+				case Keys.Left:
+					RaiseNavigationEvent(NavigationEventArgs.Units.Character, -1);
+					break;
+				case Keys.Right:
+					RaiseNavigationEvent(NavigationEventArgs.Units.Character, 1);
+					break;
+			}
+		}
+		
 		private void UserKeyPress(object sender, KeyPressEventArgs e)
 		{
 			RaiseTextEvent(e.KeyChar);
@@ -69,6 +98,12 @@ namespace Spire
 		{
 			if(OnTextEvent == null) return;
 			OnTextEvent(this, new TextEventArgs(text));
+		}
+		
+		private void RaiseNavigationEvent(NavigationEventArgs.Units unit, int amount)
+		{
+			if(OnNavigationEvent == null) return;
+			OnNavigationEvent(this, new NavigationEventArgs(unit, amount));
 		}
 
 		protected override void OnPaint(PaintEventArgs e)

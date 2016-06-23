@@ -5,15 +5,23 @@ What automated unit tests make sense?
 
 What load testing makes sense?
 
---> current developement
-
 1. Type. See text appear on screen, with indicator of position.
 
-	Test all characters on keyboard.
+	Test all characters on keyboard except Tab and Enter.
 	Test capslock.
 	Test shift plus characters.
+	Test caret on new line.
+	Test caret during typeing.
+	Test caret after one or several spaces.
 
 2. Left, Right Arrow Keys to navigate edit position.
+
+	Test caret position as cursor moves along line.
+	Test going left.
+	Test going right.
+	Test entering text within line.
+
+--> current developement
 
 3. Line wrap on whole words.
 
