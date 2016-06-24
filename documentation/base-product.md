@@ -1,6 +1,8 @@
 Base Product: Notepad-level Word Processor
 ==========================================
 
+Hours of work: 2.5 + 1 + 0.5
+
 What automated unit tests make sense?
 
 What load testing makes sense?
@@ -14,6 +16,8 @@ What load testing makes sense?
 	Test caret during typeing.
 	Test caret after one or several spaces.
 
+--> current unit tests	
+	
 2. Left, Right Arrow Keys to navigate edit position.
 
 	Test caret position as cursor moves along line.
