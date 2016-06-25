@@ -5,8 +5,13 @@ namespace Spire
 {
 	public class DocumentChunk
 	{
+		private static int lowerChunkLength = 15;
+		private static int upperChunkLength = 75;
+
 		private List<char> _text;
 		private int _length;
+		
+		//how does List<> implement Count? is it recalculated every time, or saved. if saved, I don't need _length
 		
 		public DocumentChunk()
 		{
@@ -48,6 +53,16 @@ namespace Spire
 			get { return StartCharIndex + Length - 1; }
 		}
 		
+		public bool TooShort
+		{
+			get { return (_length < lowerChunkLength); }
+		}
+		
+		public bool TooLong
+		{
+			get { return (_length > upperChunkLength); }
+		}
+		
 		public void InsertText(char[] text, int charIndex)
 		{
 			int localIndex = LocalIndex(charIndex);
@@ -66,6 +81,18 @@ namespace Spire
 			_length++;
 		}
 		
+		private void AppendChar(char c)
+		{
+			_text.Insert(_length, c);
+			_length++;
+		}
+		
+		private void RemoveChar(int localIndex)
+		{
+			_text.RemoveAt(localIndex);
+			_length--;
+		}
+		
 		private int LocalIndex(int charIndex)
 		{
 			return charIndex - StartCharIndex;
@@ -78,7 +105,7 @@ namespace Spire
 		
 		public string SubStringFromCharIndex(int startIndex)
 		{
-			return SubString(LocalIndex(startIndex), _text.Count-1);
+			return SubString(LocalIndex(startIndex), _length-1);
 		}
 
 		public string SubStringToCharIndex(int endIndex)
@@ -94,6 +121,25 @@ namespace Spire
 			if(localEndIndex >= _text.Count) throw new Exception("Chunk internal index out of upper bounds.");
 			
 			return new String(_text.GetRange(localStartIndex, localEndIndex-localStartIndex+1).ToArray());
+		}
+		
+		public DocumentChunk Halve()
+		{
+			DocumentChunk secondChunk = new DocumentChunk();
+			if(_length <= 1) return secondChunk;
+			int halfIndex = (int)Math.Floor(_length / 2D);
+			while(halfIndex < _length)
+			{
+				secondChunk.AppendChar(this._text[halfIndex]);
+				this.RemoveChar(halfIndex);
+			}
+			return secondChunk;
+		}
+		
+		public void Append(DocumentChunk secondChunk)
+		{
+			this._text.AddRange(secondChunk._text);
+			this._length += secondChunk._length;
 		}
 		
 	}
