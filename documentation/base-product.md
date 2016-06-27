@@ -14,8 +14,6 @@ What load testing makes sense?
 	Test caret during typeing.
 	Test caret after one or several spaces.
 
---> current unit tests
-	
 2. Left, Right Arrow Keys to navigate edit position.
 
 	Test caret position as cursor moves along line.
@@ -23,6 +21,8 @@ What load testing makes sense?
 	Test going right.
 	Test entering text within line.
 
+--> current unit tests
+	
 2b. Set up expansion/collapse of chunks in DocumentModel.
 
 	Test adding text randomly, a lot.
