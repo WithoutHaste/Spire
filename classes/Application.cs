@@ -42,6 +42,7 @@ namespace Spire
 			documentModel = new DocumentModel();
 			paper.OnTextEvent += new Paper.TextEventHandler(documentModel.OnTextEvent);
 			paper.OnNavigationEvent += new Paper.NavigationEventHandler(documentModel.OnNavigationEvent);
+			paper.OnEraseEvent += new Paper.EraseEventHandler(documentModel.OnEraseEvent);
 			
 			documentView = new DocumentView(documentModel);
 			documentModel.OnUpdateAtEvent += new DocumentModel.UpdateAtEventHandler(documentView.OnModelUpdateEvent);

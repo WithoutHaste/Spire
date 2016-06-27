@@ -1,8 +1,6 @@
 Base Product: Notepad-level Word Processor
 ==========================================
 
-Hours of work: 2.5 + 1 + 0.5 + 0.3
-
 What automated unit tests make sense?
 
 What load testing makes sense?
@@ -25,25 +23,25 @@ What load testing makes sense?
 	Test going right.
 	Test entering text within line.
 
---> current developement
-
 2b. Set up expansion/collapse of chunks in DocumentModel.
 
 	Test adding text randomly, a lot.
 
-3. Line wrap on whole words.
+--> current developement
 
-4. Up, Down Arrow Keys to navigate edit position.
+3. Delete Key and Backspace Key.
 
-5. Undo.
+4. Line wrap on whole words.
 
-6. Redo.
+5. Up, Down Arrow Keys to navigate edit position.
 
-7. Shift + Arrow Keys to highlight text.
+6. Undo.
 
-8. Drag and Drop to highlight text.
+7. Redo.
 
-9. Delete Key and Backspace Key.
+8. Shift + Arrow Keys to highlight text.
+
+9. Drag and Drop to highlight text.
 
 10. Home Key and End Key.
 

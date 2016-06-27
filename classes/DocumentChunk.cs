@@ -63,6 +63,11 @@ namespace Spire
 			get { return (_length > upperChunkLength); }
 		}
 		
+		public bool IsEmpty
+		{
+			get { return (_length == 0); }
+		}
+		
 		public void InsertText(char[] text, int charIndex)
 		{
 			int localIndex = LocalIndex(charIndex);
@@ -72,6 +77,18 @@ namespace Spire
 			{
 				InsertChar(c, localIndex);
 				localIndex++;
+			}
+		}
+		
+		public void RemoveText(int charIndex, int length)
+		{
+			int localIndex = LocalIndex(charIndex);
+			if(localIndex < 0) throw new Exception("Chunk internal index out of lower bounds.");
+			if(localIndex > _length) throw new Exception("Chunk internal index out of upper bounds.");
+			for(int i=0; i<length; i++)
+			{
+				if(localIndex > _length) throw new Exception("Chunk internal index out of upper bounds.");
+				RemoveChar(localIndex);
 			}
 		}
 		
