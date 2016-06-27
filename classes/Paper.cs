@@ -83,13 +83,13 @@ namespace Spire
 			switch(e.KeyCode)
 			{
 				case Keys.Delete:
-					RaiseEraseEvent(EraseEventArgs.Units.Character, 1);
+					RaiseEraseEvent(TextUnit.Character, 1);
 					break;
 				case Keys.Left:
-					RaiseNavigationEvent(NavigationEventArgs.Units.Character, -1);
+					RaiseNavigationEvent(TextUnit.Character, -1);
 					break;
 				case Keys.Right:
-					RaiseNavigationEvent(NavigationEventArgs.Units.Character, 1);
+					RaiseNavigationEvent(TextUnit.Character, 1);
 					break;
 			}
 		}
@@ -98,7 +98,7 @@ namespace Spire
 		{
 			if(e.KeyChar == '\b')
 			{
-				RaiseEraseEvent(EraseEventArgs.Units.Character, -1);
+				RaiseEraseEvent(TextUnit.Character, -1);
 			}
 			else
 			{
@@ -115,13 +115,13 @@ namespace Spire
 			OnTextEvent(this, new TextEventArgs(text));
 		}
 		
-		private void RaiseNavigationEvent(NavigationEventArgs.Units unit, int amount)
+		private void RaiseNavigationEvent(TextUnit unit, int amount)
 		{
 			if(OnNavigationEvent == null) return;
 			OnNavigationEvent(this, new NavigationEventArgs(unit, amount));
 		}
 		
-		private void RaiseEraseEvent(EraseEventArgs.Units unit, int amount)
+		private void RaiseEraseEvent(TextUnit unit, int amount)
 		{
 			if(OnEraseEvent == null) return;
 			OnEraseEvent(this, new EraseEventArgs(unit, amount));

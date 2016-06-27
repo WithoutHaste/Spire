@@ -4,12 +4,10 @@ namespace Spire
 {
 	public class EraseEventArgs : EventArgs
 	{
-		public enum Units { Character, Word };
-		
-		public Units Unit { get; private set; }
+		public TextUnit Unit { get; private set; }
 		public int Amount { get; private set; }
 		
-		public EraseEventArgs(Units unit, int amount)
+		public EraseEventArgs(TextUnit unit, int amount)
 		{
 			Unit = unit;
 			Amount = amount;

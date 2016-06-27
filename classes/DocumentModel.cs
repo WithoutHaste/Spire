@@ -77,11 +77,13 @@ namespace Spire
 		{
 			switch(e.Unit)
 			{
-				case NavigationEventArgs.Units.Character:
+				case TextUnit.Character:
 					CaretIndex += e.Amount;
 					break;
-				case NavigationEventArgs.Units.Word:
+				case TextUnit.Word:
 					throw new Exception("navigation by word not implemented");
+				default:
+					throw new Exception(String.Format("Unit {0} not supported in document navigation", e.Unit));
 			}
 		}
 		
@@ -89,12 +91,14 @@ namespace Spire
 		{
 			switch(e.Unit)
 			{
-				case EraseEventArgs.Units.Character:
+				case TextUnit.Character:
 					if(e.Amount < 0) BackspaceCharacters(Math.Abs(e.Amount));
 					else if(e.Amount > 0) DeleteCharacters(e.Amount);
 					break;
-				case EraseEventArgs.Units.Word:
+				case TextUnit.Word:
 					throw new Exception("erase whole word not implemented");
+				default:
+					throw new Exception(String.Format("Unit {0} not supported in document erasures", e.Unit));
 			}
 		}
 		
