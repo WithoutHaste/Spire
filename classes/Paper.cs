@@ -24,7 +24,9 @@ namespace Spire
 	
 		private DocumentView documentView;
 		private System.Timers.Timer caretTimer;
+		private System.Timers.Timer caretMovingTimer;
 		private bool caretOn = false;
+		private bool caretMoving = false;
 		
 		public Paper()
 		{
@@ -67,6 +69,39 @@ namespace Spire
 			this.Invalidate();
 		}
 		
+		private void EnableCaretMovingTimer()
+		{
+			caretMoving = true;
+			if(caretMovingTimer == null)
+			{
+				CreateCaretMovingTimer();
+			}
+			else
+			{
+				ResetCaretMovingTimer();
+			}
+		}
+		
+		private void CreateCaretMovingTimer()
+		{
+			caretMovingTimer = new System.Timers.Timer(250/*1000=1second*/);
+			caretMovingTimer.Elapsed += new ElapsedEventHandler(CaretMovingTimerElapsed);
+			caretMovingTimer.Enabled = true;
+		}
+		
+		private void ResetCaretMovingTimer()
+		{
+			caretMovingTimer.Stop();
+			caretMovingTimer.Start();
+		}
+		
+		private void CaretMovingTimerElapsed(object sender, ElapsedEventArgs e)
+		{
+			caretMoving = false;
+			caretMovingTimer.Stop();
+			this.Invalidate();
+		}
+		
 		private void PreviewUserKeyDown(object sender, PreviewKeyDownEventArgs e)
 		{
 			switch(e.KeyCode)
@@ -91,7 +126,11 @@ namespace Spire
 				case Keys.Right:
 					RaiseNavigationEvent(TextUnit.Character, 1);
 					break;
+				default:
+					return;
 			}
+			e.Handled = true;
+			this.Invalidate();
 		}
 		
 		private void UserKeyPress(object sender, KeyPressEventArgs e)
@@ -118,6 +157,7 @@ namespace Spire
 		private void RaiseNavigationEvent(TextUnit unit, int amount)
 		{
 			if(OnNavigationEvent == null) return;
+			EnableCaretMovingTimer();
 			OnNavigationEvent(this, new NavigationEventArgs(unit, amount));
 		}
 		
@@ -136,7 +176,7 @@ namespace Spire
 
 			if(documentView != null)
 			{
-				bool drawCaret = (this.Focused && caretOn);
+				bool drawCaret = (this.Focused && (caretOn || caretMoving));
 				documentView.Paint(graphics, drawCaret);
 			}
 

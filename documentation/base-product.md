@@ -27,9 +27,12 @@ What load testing makes sense?
 
 	Test adding text randomly, a lot.
 
---> current developement
-
 3. Delete Key and Backspace Key.
+	
+	Load Test: add 100,000 characters: 2-3 seconds
+	Load Test: delete 100,000 characters: 2-8 seconds
+
+--> current developement
 
 4. Line wrap on whole words.
 
