@@ -51,6 +51,7 @@ namespace Spire
 				return chunks[startChunkIndex].SubStringByCharIndex(startCharIndex, endCharIndex);
 			}
 			
+	//??
 			//expected to be 1-2 concats only, if frequently more than 4, use StringBuilder instead
 			string subString = chunks[startChunkIndex].SubStringFromCharIndex(startCharIndex);
 			for(int i=startChunkIndex+1; i<endChunkIndex; i++)
@@ -84,6 +85,19 @@ namespace Spire
 			}
 		}
 		
+		public void OnEraseEvent(object sender, EraseEventArgs e)
+		{
+			switch(e.Unit)
+			{
+				case EraseEventArgs.Units.Character:
+					if(e.Amount < 0) BackspaceCharacters(Math.Abs(e.Amount));
+					else if(e.Amount > 0) DeleteCharacters(e.Amount);
+					break;
+				case EraseEventArgs.Units.Word:
+					throw new Exception("erase whole word not implemented");
+			}
+		}
+		
 		private void InsertText(char[] text, int charIndex)
 		{
 			int chunkIndex = FindChunkByCharIndex(charIndex);
@@ -92,16 +106,61 @@ namespace Spire
 			int earliestEditChunkIndex = CheckChunkLength(chunkIndex, chunk);
 			UpdateChunksIndexesFrom(earliestEditChunkIndex);
 			RaiseUpdateAtEvent(charIndex);
-			
+/*			
 			Console.WriteLine("------");
 			foreach(DocumentChunk c in chunks)
 			{
 				Console.WriteLine("{0} L={1} ({2}-{3})", c.Text, c.Length, c.StartCharIndex, c.EndCharIndex);
 			}
+*/		}
+
+		private void BackspaceCharacters(int count)
+		{
+			if(_caretIndex == 0) return;
+			
+			int earliestEditChunkIndex = 0;
+			while(count > 0)
+			{
+				if(_caretIndex == 0) break;
+				_caretIndex--;
+				int chunkIndex = FindChunkByCharIndex(_caretIndex);
+				DocumentChunk chunk = chunks[chunkIndex];
+				chunk.RemoveText(_caretIndex, 1);
+				earliestEditChunkIndex = CheckChunkLength(chunkIndex, chunk);
+				count--;
+			}
+			UpdateChunksIndexesFrom(earliestEditChunkIndex);
+			RaiseUpdateAtEvent(_caretIndex);
+		}
+		
+		private void DeleteCharacters(int count)
+		{
+			if(_caretIndex >= Length) return;
+			
+			int earliestEditChunkIndex = 0;
+			while(count > 0)
+			{
+				if(_caretIndex >= Length) break;
+				int chunkIndex = FindChunkByCharIndex(_caretIndex);
+				DocumentChunk chunk = chunks[chunkIndex];
+				chunk.RemoveText(_caretIndex, 1);
+				earliestEditChunkIndex = CheckChunkLength(chunkIndex, chunk);
+				count--;
+			}
+			UpdateChunksIndexesFrom(earliestEditChunkIndex);
+			RaiseUpdateAtEvent(_caretIndex);
 		}
 		
 		private int CheckChunkLength(int chunkIndex, DocumentChunk chunk)
 		{
+			if(chunk.IsEmpty)
+			{
+				if(chunks.Count > 1)
+				{
+					chunks.RemoveAt(chunkIndex);
+				}
+				return chunkIndex;
+			}
 			if(chunk.TooLong)
 			{
 				SplitChunk(chunkIndex, chunk);

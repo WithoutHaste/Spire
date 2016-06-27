@@ -18,6 +18,9 @@ namespace Spire
 		
 		public delegate void NavigationEventHandler(object sender, NavigationEventArgs e);
 		public event NavigationEventHandler OnNavigationEvent;
+		
+		public delegate void EraseEventHandler(object sender, EraseEventArgs e);
+		public event EraseEventHandler OnEraseEvent;
 	
 		private DocumentView documentView;
 		private System.Timers.Timer caretTimer;
@@ -46,7 +49,8 @@ namespace Spire
 		
 		private void EnableCaretTimer(object sender, EventArgs e)
 		{
-			caretTimer = new System.Timers.Timer(450/*1000=1second*/);
+			caretOn = true;
+			caretTimer = new System.Timers.Timer(350/*1000=1second*/);
 			caretTimer.Elapsed += new ElapsedEventHandler(CaretTimerElapsed);
 			caretTimer.Enabled = true;
 		}
@@ -78,6 +82,9 @@ namespace Spire
 		{
 			switch(e.KeyCode)
 			{
+				case Keys.Delete:
+					RaiseEraseEvent(EraseEventArgs.Units.Character, 1);
+					break;
 				case Keys.Left:
 					RaiseNavigationEvent(NavigationEventArgs.Units.Character, -1);
 					break;
@@ -89,9 +96,17 @@ namespace Spire
 		
 		private void UserKeyPress(object sender, KeyPressEventArgs e)
 		{
-			RaiseTextEvent(e.KeyChar);
+			if(e.KeyChar == '\b')
+			{
+				RaiseEraseEvent(EraseEventArgs.Units.Character, -1);
+			}
+			else
+			{
+				RaiseTextEvent(e.KeyChar);
+			}
 			e.Handled = true;
 			this.Invalidate();
+			//Console.WriteLine("key press: {0}", e.KeyChar);
 		}
 		
 		private void RaiseTextEvent(char text)
@@ -104,6 +119,12 @@ namespace Spire
 		{
 			if(OnNavigationEvent == null) return;
 			OnNavigationEvent(this, new NavigationEventArgs(unit, amount));
+		}
+		
+		private void RaiseEraseEvent(EraseEventArgs.Units unit, int amount)
+		{
+			if(OnEraseEvent == null) return;
+			OnEraseEvent(this, new EraseEventArgs(unit, amount));
 		}
 
 		protected override void OnPaint(PaintEventArgs e)
