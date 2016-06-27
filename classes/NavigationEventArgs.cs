@@ -4,12 +4,10 @@ namespace Spire
 {
 	public class NavigationEventArgs : EventArgs
 	{
-		public enum Units { Character, Word };
-		
-		public Units Unit { get; private set; }
+		public TextUnit Unit { get; private set; }
 		public int Amount { get; private set; }
 		
-		public NavigationEventArgs(Units unit, int amount)
+		public NavigationEventArgs(TextUnit unit, int amount)
 		{
 			Unit = unit;
 			Amount = amount;
