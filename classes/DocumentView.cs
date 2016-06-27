@@ -51,7 +51,7 @@ namespace Spire
 		
 		private void DrawCaret(Graphics graphics)
 		{
-			Pen pen = new Pen(Color.LightBlue, 0.75f);
+			Pen pen = new Pen(Color.Black, 0.5f);
 			string textToCaret = Line(0).Substring(0, CaretIndex);
 			SizeF textSize = graphics.MeasureString(textToCaret, Application.GlobalFont, new PointF(0,0), stringFormat);
 			SizeF charSize = graphics.MeasureString("X", Application.GlobalFont, new PointF(0,0), stringFormat);
