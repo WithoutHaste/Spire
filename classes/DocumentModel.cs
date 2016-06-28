@@ -120,7 +120,6 @@ namespace Spire
 
 		private void BackspaceCharacters(int count)
 		{
-		DateTime startTime = DateTime.Now;
 			if(_caretIndex == 0) return;
 			
 			int earliestEditChunkIndex = 0;
@@ -136,13 +135,10 @@ namespace Spire
 			}
 			UpdateChunksIndexesFrom(earliestEditChunkIndex);
 			RaiseUpdateAtEvent(_caretIndex);
-		TimeSpan duration = DateTime.Now - startTime;
-		Console.WriteLine("Backspace took {0} ticks", duration.Ticks);
 		}
 		
 		private void DeleteCharacters(int count)
 		{
-		DateTime startTime = DateTime.Now;
 			if(_caretIndex >= Length) return;
 			
 			int earliestEditChunkIndex = 0;
@@ -157,8 +153,6 @@ namespace Spire
 			}
 			UpdateChunksIndexesFrom(earliestEditChunkIndex);
 			RaiseUpdateAtEvent(_caretIndex);
-		TimeSpan duration = DateTime.Now - startTime;
-		Console.WriteLine("Delete took {0} ticks", duration.Ticks);
 		}
 		
 		private int CheckChunkLength(int chunkIndex, DocumentChunk chunk)

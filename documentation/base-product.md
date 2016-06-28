@@ -21,8 +21,6 @@ What load testing makes sense?
 	Test going right.
 	Test entering text within line.
 
---> current unit tests
-	
 2b. Set up expansion/collapse of chunks in DocumentModel.
 
 	Test adding text randomly, a lot.
@@ -31,7 +29,15 @@ What load testing makes sense?
 	
 	Load Test: add 100,000 characters: 2-3 seconds
 	Load Test: delete 100,000 characters: 2-8 seconds
+	
+	Test adding and removing text randomly, a lot.
+	Test backspace correctly.
+	Test backspace at beginning of text.
+	Test delete correctly.
+	Test delete at end of text.
 
+--> current unit tests
+	
 --> current developement
 
 4. Line wrap on whole words.
