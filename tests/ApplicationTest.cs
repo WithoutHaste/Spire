@@ -9,7 +9,12 @@ namespace SpireTest
 			DateTime startTime = DateTime.Now;
 			Console.WriteLine("Starting tests at {0:HH:mm:ss}\n", startTime);
 
-			new TestDocumentModel();
+			bool allTestsPassed = true;
+			
+			allTestsPassed = (allTestsPassed && (new TestDocumentModel()).RunTests());
+			
+			if(allTestsPassed) Console.WriteLine("All tests passed.\n");
+			else Console.WriteLine("Some tests failed.\n");
 
 			DateTime endTime = DateTime.Now;
 			Console.WriteLine("\nEnding tests at {0:HH:mm:ss}", endTime);
