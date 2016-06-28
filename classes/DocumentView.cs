@@ -36,36 +36,38 @@ namespace Spire
 			//assuming one infinite display area to start with
 			DisplayArea displayArea = displayAreas[0];
 			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(cindex);
-			if(lineBreakIndex > -1)
-			{
-				cindex = displayArea.LineBreaks[lineBreakIndex];
-			}
-			else
-			{
-				cindex = 0;
-			}
+			cindex = (lineBreakIndex > -1) ? (int)displayArea.LineBreaks[lineBreakIndex] : 0;
 			displayArea.ClearLineBreaksAfter(lineBreakIndex);
 			using(Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height))
 			{
-				while(cindex < documentModel.Length)
+				int endCindex = cindex;
+				while(endCindex < documentModel.Length)
 				{
-					//find full line
-					int endCindex = cindex;
-					while(endCindex < documentModel.Length)
+					endCindex = FindEndOfLine(displayArea, graphics, cindex);
+					if(endCindex < documentModel.Length-1)
 					{
-						SizeF textSize = graphics.MeasureString(documentModel.SubString(cindex, endCindex), Application.GlobalFont, new PointF(0,0), stringFormat);
-						if(textSize.Width > displayArea.Width)
-						{
-							endCindex--;
-							displayArea.LineBreaks.Add(endCindex);
-							break;
-						}
-						endCindex++;
+						displayArea.LineBreaks.Add(endCindex);
+						layoutUpdatedTo = endCindex;
+						cindex = endCindex + 1;
 					}
-					layoutUpdatedTo = endCindex;
-					cindex = endCindex+1;
+					endCindex++;
 				}
 			}
+		}
+		
+		private Cindex FindEndOfLine(DisplayArea displayArea, Graphics graphics, Cindex start)
+		{
+			int end = start;
+			while(end < documentModel.Length)
+			{
+				SizeF textSize = graphics.MeasureString(documentModel.SubString(start, end), Application.GlobalFont, new PointF(0,0), stringFormat);
+				if(textSize.Width > displayArea.Width)
+				{
+					return end-1;
+				}
+				end++;
+			}
+			return end-1;
 		}
 
 		public void AppendDisplayArea(DisplayArea displayArea)
@@ -102,17 +104,17 @@ namespace Spire
 		private void DrawText(Graphics graphics)
 		{
 			Brush brush = new SolidBrush(Color.Black);
-			SizeF charSize = graphics.MeasureString("X", Application.GlobalFont, new PointF(0,0), stringFormat);
+			int lineHeight = StringHeight(graphics, "X");
 			DisplayArea displayArea = displayAreas[0];
 			int y = 0;
 			Cindex lineStart = 0;
 			foreach(Cindex lineBreak in displayArea.LineBreaks)
 			{
 				graphics.DrawString(documentModel.SubString(lineStart, lineBreak), Application.GlobalFont, brush, new Point(0, y), stringFormat);
-				y += (int)Math.Ceiling(charSize.Height);
+				y += lineHeight;
 				lineStart = lineBreak+1;
 			}
-			if(documentModel.Length-1 >= lineStart)
+			if(lineStart < documentModel.Length)
 			{
 				graphics.DrawString(documentModel.SubString(lineStart, documentModel.Length-1), Application.GlobalFont, brush, new Point(0, y), stringFormat);
 			}
@@ -121,23 +123,39 @@ namespace Spire
 		private void DrawCaret(Graphics graphics)
 		{
 			Pen pen = new Pen(Color.Black, 0.5f);
-			SizeF charSize = graphics.MeasureString("X", Application.GlobalFont, new PointF(0,0), stringFormat);
-			DisplayArea displayArea = displayAreas[0];
+			int lineHeight = StringHeight(graphics, "X");
+			Point caretLocation = CaretLocation(graphics, displayAreas[0]);
+			graphics.DrawLine(pen, caretLocation.X, caretLocation.Y, caretLocation.X, caretLocation.Y + lineHeight);
+		}
+		
+		private Point CaretLocation(Graphics graphics, DisplayArea displayArea)
+		{
+			int lineHeight = StringHeight(graphics, "X");
 			Cindex lineStart = 0;
 			int y = 0;
 			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(CaretPosition);
 			if(lineBreakIndex > -1)
 			{
 				lineStart = displayArea.LineBreaks[lineBreakIndex] + 1;
-				y = (lineBreakIndex+1) * (int)Math.Ceiling(charSize.Height);
+				y = (lineBreakIndex+1) * lineHeight;
 			}
 			string textToCaret = "";
-			if(documentModel.Length-1 >= lineStart && lineStart <= CaretPosition-1)
+			if(lineStart < documentModel.Length && lineStart < CaretPosition)
 			{
 				textToCaret = documentModel.SubString(lineStart, CaretPosition-1);
 			}
-			SizeF textSize = graphics.MeasureString(textToCaret, Application.GlobalFont, new PointF(0,0), stringFormat);
-			graphics.DrawLine(pen, Math.Max(1,textSize.Width), y, Math.Max(1,textSize.Width), y + Math.Max(charSize.Height, textSize.Height));
+			SizeF textSize = MeasureString(graphics, textToCaret);
+			return new Point((int)Math.Ceiling(textSize.Width), y);
+		}
+		
+		private SizeF MeasureString(Graphics graphics, string text)
+		{
+			return graphics.MeasureString(text, Application.GlobalFont, new PointF(0,0), stringFormat);
+		}
+		
+		private int StringHeight(Graphics graphics, string text)
+		{
+			return (int)Math.Ceiling(MeasureString(graphics, text).Height);
 		}
 		
 	}
