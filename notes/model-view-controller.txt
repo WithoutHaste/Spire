@@ -16,6 +16,8 @@ Style start and end points saved here.
 
 Accept commands from Controller, Pass notice of changes to View.
 
+	Initial load testing of model shows that either (A) I am awesome at data structures or (B) computers are so fast that it doesn't make much difference how I model the text.
+
 
 
 View
