@@ -38,6 +38,15 @@ namespace Spire
 			}
 		}
 		
+		public char this[int cindex]
+		{
+			get
+			{
+				DocumentChunk chunk = chunks[FindChunkByCharIndex(cindex)];
+				return chunk[cindex];
+			}
+		}
+		
 		public string SubString(Cindex from, Cindex to)
 		{
 			if(from < 0) throw new Exception("Document substring start index out of lower bounds.");

@@ -4,17 +4,22 @@ namespace Spire
 {
 	public struct Cindex
 	{
-		private int characterIndex;
+		private int _characterIndex;
 		
 		public Cindex(int i)
 		{
-			characterIndex = i;
+			_characterIndex = i;
 		}
 		
 		public int Value
 		{
-			get { return characterIndex; }
-			set { characterIndex = value; }
+			get { return _characterIndex; }
+			set { _characterIndex = value; }
+		}
+		
+		public override string ToString()
+		{
+			return _characterIndex.ToString();
 		}
 		
 		public static implicit operator Cindex(int i)
