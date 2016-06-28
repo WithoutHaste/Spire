@@ -1,11 +1,7 @@
 using System;
-//using System.Collections.Generic;
-//using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Drawing.Text;
 using System.IO;
-//using System.Text;
 using System.Timers;
 using System.Windows.Forms;
 
@@ -171,8 +167,7 @@ namespace Spire
 		{
 			Bitmap graphicsBuffer = new Bitmap(this.Width, this.Height);
 			Graphics graphics = Graphics.FromImage(graphicsBuffer);
-			graphics.SmoothingMode = SmoothingMode.AntiAlias;
-			graphics.TextRenderingHint = TextRenderingHint.AntiAlias;
+			graphics.PageUnit = GraphicsUnit.Pixel;
 
 			if(documentView != null)
 			{

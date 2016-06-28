@@ -38,6 +38,11 @@ namespace Spire
 			get { return new String(_text.ToArray()); }
 		}
 		
+		public char this[int cindex]
+		{
+			get { return _text[LocalIndex(cindex)]; }
+		}
+		
 		public int Length
 		{
 			get { return _length; }

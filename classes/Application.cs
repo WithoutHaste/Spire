@@ -45,6 +45,7 @@ namespace Spire
 			paper.OnEraseEvent += new Paper.EraseEventHandler(documentModel.OnEraseEvent);
 			
 			documentView = new DocumentView(documentModel);
+			documentView.AppendDisplayArea(new DisplayArea(500, 800));
 			documentModel.OnUpdateAtEvent += new DocumentModel.UpdateAtEventHandler(documentView.OnModelUpdateEvent);
 			paper.SetView(documentView);
 

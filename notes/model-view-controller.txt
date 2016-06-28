@@ -34,6 +34,11 @@ Note up to what character index this has been determined since last user edit.
 Draw graphics object for GUI display and for printing.
 	
 Accept notice of changes from Model, Trigger Controller display update.
+
+	Given a list of characters.
+	Given a list of display areas.
+	Generate a list what character indexes line breaks and areas breaks occur at.
+		Line break, area break, chapter break (start on next odd page)
 	
 
 	
