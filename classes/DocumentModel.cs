@@ -8,7 +8,7 @@ namespace Spire
 		public delegate void UpdateAtEventHandler(object sender, UpdateAtEventArgs e);
 		public event UpdateAtEventHandler OnUpdateAtEvent;
 
-		private int _caretIndex;
+		private Cindex _caretPosition;
 		private List<DocumentChunk> chunks; //list is never left empty
 	
 		public DocumentModel()
@@ -16,49 +16,49 @@ namespace Spire
 			chunks = new List<DocumentChunk>();
 			chunks.Add(new DocumentChunk());
 			UpdateChunksIndexesFrom(0);
-			CaretIndex = 0;
+			CaretPosition = 0;
 		}
 		
 		public int Length
 		{
-			get { return LastChunk.EndCharIndex + 1; }
+			get { return LastChunk.End + 1; }
 		}
 		
-		public int CaretIndex
+		public Cindex CaretPosition
 		{
 			get
 			{
-				return _caretIndex;
+				return _caretPosition;
 			}
 			set 
 			{
 				if(value < 0) value = 0;
 				if(value > Length) value = Length;
-				_caretIndex = value;
+				_caretPosition = value;
 			}
 		}
 		
-		public string SubString(int startCharIndex, int endCharIndex)
+		public string SubString(Cindex from, Cindex to)
 		{
-			if(startCharIndex < 0) throw new Exception("Document substring start index out of lower bounds.");
-			if(endCharIndex > LastChunk.EndCharIndex) throw new Exception("Document substring end index out of upper bounds.");
+			if(from < 0) throw new Exception("Document substring start index out of lower bounds.");
+			if(to > LastChunk.End) throw new Exception("Document substring end index out of upper bounds.");
 		
-			int startChunkIndex = FindChunkByCharIndex(startCharIndex);
-			int endChunkIndex = FindChunkByCharIndex(endCharIndex);
+			int startChunkIndex = FindChunkByCharIndex(from);
+			int endChunkIndex = FindChunkByCharIndex(to);
 			
 			if(startChunkIndex == endChunkIndex)
 			{
-				return chunks[startChunkIndex].SubStringByCharIndex(startCharIndex, endCharIndex);
+				return chunks[startChunkIndex].SubStringByCharIndex(from, to);
 			}
 			
 	//??
 			//expected to be 1-2 concats only, if frequently more than 4, use StringBuilder instead
-			string subString = chunks[startChunkIndex].SubStringFromCharIndex(startCharIndex);
+			string subString = chunks[startChunkIndex].SubStringFromCharIndex(from);
 			for(int i=startChunkIndex+1; i<endChunkIndex; i++)
 			{
 				subString += chunks[i].Text;
 			}
-			subString += chunks[endChunkIndex].SubStringToCharIndex(endCharIndex);
+			subString += chunks[endChunkIndex].SubStringToCharIndex(to);
 			return subString;
 		}
 		
@@ -69,8 +69,8 @@ namespace Spire
 		
 		public void OnTextEvent(object sender, TextEventArgs e)
 		{
-			InsertText(new char[] { e.Text }, CaretIndex);
-			CaretIndex += 1;
+			InsertText(new char[] { e.Text }, CaretPosition);
+			CaretPosition += 1;
 		}
 		
 		public void OnNavigationEvent(object sender, NavigationEventArgs e)
@@ -78,7 +78,7 @@ namespace Spire
 			switch(e.Unit)
 			{
 				case TextUnit.Character:
-					CaretIndex += e.Amount;
+					CaretPosition += e.Amount;
 					break;
 				case TextUnit.Word:
 					throw new Exception("navigation by word not implemented");
@@ -102,57 +102,57 @@ namespace Spire
 			}
 		}
 		
-		private void InsertText(char[] text, int charIndex)
+		private void InsertText(char[] text, Cindex at)
 		{
-			int chunkIndex = FindChunkByCharIndex(charIndex);
+			int chunkIndex = FindChunkByCharIndex(at);
 			DocumentChunk chunk = chunks[chunkIndex];
-			chunk.InsertText(text, charIndex);
+			chunk.InsertText(text, at);
 			int earliestEditChunkIndex = CheckChunkLength(chunkIndex, chunk);
 			UpdateChunksIndexesFrom(earliestEditChunkIndex);
-			RaiseUpdateAtEvent(charIndex);
+			RaiseUpdateAtEvent(at);
 /*			
 			Console.WriteLine("------");
 			foreach(DocumentChunk c in chunks)
 			{
-				Console.WriteLine("{0} L={1} ({2}-{3})", c.Text, c.Length, c.StartCharIndex, c.EndCharIndex);
+				Console.WriteLine("{0} L={1} ({2}-{3})", c.Text, c.Length, c.Start, c.End);
 			}
 */		}
 
 		private void BackspaceCharacters(int count)
 		{
-			if(_caretIndex == 0) return;
+			if(_caretPosition == 0) return;
 			
 			int earliestEditChunkIndex = 0;
 			while(count > 0)
 			{
-				if(_caretIndex == 0) break;
-				_caretIndex--;
-				int chunkIndex = FindChunkByCharIndex(_caretIndex);
+				if(_caretPosition == 0) break;
+				_caretPosition--;
+				int chunkIndex = FindChunkByCharIndex(_caretPosition);
 				DocumentChunk chunk = chunks[chunkIndex];
-				chunk.RemoveText(_caretIndex, 1);
+				chunk.RemoveText(_caretPosition, 1);
 				earliestEditChunkIndex = CheckChunkLength(chunkIndex, chunk);
 				count--;
 			}
 			UpdateChunksIndexesFrom(earliestEditChunkIndex);
-			RaiseUpdateAtEvent(_caretIndex);
+			RaiseUpdateAtEvent(_caretPosition);
 		}
 		
 		private void DeleteCharacters(int count)
 		{
-			if(_caretIndex >= Length) return;
+			if(_caretPosition >= Length) return;
 			
 			int earliestEditChunkIndex = 0;
 			while(count > 0)
 			{
-				if(_caretIndex >= Length) break;
-				int chunkIndex = FindChunkByCharIndex(_caretIndex);
+				if(_caretPosition >= Length) break;
+				int chunkIndex = FindChunkByCharIndex(_caretPosition);
 				DocumentChunk chunk = chunks[chunkIndex];
-				chunk.RemoveText(_caretIndex, 1);
+				chunk.RemoveText(_caretPosition, 1);
 				earliestEditChunkIndex = CheckChunkLength(chunkIndex, chunk);
 				count--;
 			}
 			UpdateChunksIndexesFrom(earliestEditChunkIndex);
-			RaiseUpdateAtEvent(_caretIndex);
+			RaiseUpdateAtEvent(_caretPosition);
 		}
 		
 		private int CheckChunkLength(int chunkIndex, DocumentChunk chunk)
@@ -206,10 +206,10 @@ namespace Spire
 			return chunkIndex;
 		}
 		
-		private void RaiseUpdateAtEvent(int charIndex)
+		private void RaiseUpdateAtEvent(Cindex at)
 		{
 			if(OnUpdateAtEvent == null) return;
-			OnUpdateAtEvent(this, new UpdateAtEventArgs(charIndex));
+			OnUpdateAtEvent(this, new UpdateAtEventArgs(at));
 		}
 		
 		private void UpdateChunksIndexesFrom(DocumentChunk chunk)
@@ -221,20 +221,20 @@ namespace Spire
 		{
 			if(chunkIndex == 0)
 			{
-				chunks[chunkIndex].StartCharIndex = 0;
+				chunks[chunkIndex].Start = 0;
 				chunkIndex++;
 			}
 			while(chunkIndex < chunks.Count)
 			{
-				chunks[chunkIndex].StartCharIndex = chunks[chunkIndex-1].EndCharIndex + 1;
+				chunks[chunkIndex].Start = chunks[chunkIndex-1].End + 1;
 				chunkIndex++;
 			}
 		}
 		
-		private int FindChunkByCharIndex(int charIndex)
+		private int FindChunkByCharIndex(Cindex cindex)
 		{
 			int chunkIndex = 0;
-			while(chunkIndex < chunks.Count && chunks[chunkIndex].EndCharIndex != -1 && chunks[chunkIndex].EndCharIndex < charIndex)
+			while(chunkIndex < chunks.Count && chunks[chunkIndex].End != -1 && chunks[chunkIndex].End < cindex)
 			{
 				chunkIndex++;
 			}

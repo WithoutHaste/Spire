@@ -41,3 +41,12 @@ Controller
 ==========
 
 Interpret key and mouse commands, pass interpreted commands to Model.
+
+
+
+Cindex
+======
+
+DocumentModel, View, and Chunk are already using several different types of indexes.
+
+Going to try making a struct (closest I can get to a primitive) called Cindex that will be for Character Index Based On Full Length Of Document. The idea is to have an integer that is labeled by its type instead of in the variable name.
