@@ -58,6 +58,8 @@ What load testing makes sense?
 
 5. Up, Down Arrow Keys to navigate edit position.
 
+5b. Click with mouse to navigate edit position.
+
 6. Undo.
 
 7. Redo.

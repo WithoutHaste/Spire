@@ -56,7 +56,7 @@ namespace Spire
 		public void ClearLineBreaksAfter(int lineBreakIndex)
 		{
 			while(_lineBreaks.Count > lineBreakIndex+1)
-				_lineBreaks.RemoveAt(lineBreakIndex+1);
+				_lineBreaks.RemoveAt(_lineBreaks.Count-1);
 		}
 	}
 }
