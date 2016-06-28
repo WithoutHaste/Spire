@@ -11,6 +11,7 @@ namespace Spire
 		private List<char> _text;
 		private int _length;
 		
+	//??
 		//how does List<> implement Count? is it recalculated every time, or saved. if saved, I don't need _length
 		
 		public DocumentChunk()
@@ -42,15 +43,15 @@ namespace Spire
 			get { return _length; }
 		}
 		
-		public int StartCharIndex
+		public Cindex Start
 		{
 			get;
 			set;
 		}
 		
-		public int EndCharIndex
+		public Cindex End
 		{
-			get { return StartCharIndex + Length - 1; }
+			get { return Start + Length - 1; }
 		}
 		
 		public bool TooShort
@@ -68,9 +69,9 @@ namespace Spire
 			get { return (_length == 0); }
 		}
 		
-		public void InsertText(char[] text, int charIndex)
+		public void InsertText(char[] text, Cindex index)
 		{
-			int localIndex = LocalIndex(charIndex);
+			int localIndex = LocalIndex(index);
 			if(localIndex < 0) throw new Exception("Chunk internal index out of lower bounds.");
 			if(localIndex > _length) throw new Exception("Chunk internal index out of upper bounds.");
 			foreach(char c in text)
@@ -80,9 +81,9 @@ namespace Spire
 			}
 		}
 		
-		public void RemoveText(int charIndex, int length)
+		public void RemoveText(Cindex index, int length)
 		{
-			int localIndex = LocalIndex(charIndex);
+			int localIndex = LocalIndex(index);
 			if(localIndex < 0) throw new Exception("Chunk internal index out of lower bounds.");
 			if(localIndex > _length) throw new Exception("Chunk internal index out of upper bounds.");
 			for(int i=0; i<length; i++)
@@ -110,24 +111,24 @@ namespace Spire
 			_length--;
 		}
 		
-		private int LocalIndex(int charIndex)
+		private int LocalIndex(Cindex index)
 		{
-			return charIndex - StartCharIndex;
+			return index - Start;
 		}
 		
-		public string SubStringByCharIndex(int startIndex, int endIndex)
+		public string SubStringByCharIndex(Cindex from, Cindex to)
 		{
-			return SubString(LocalIndex(startIndex), LocalIndex(endIndex));
+			return SubString(LocalIndex(from), LocalIndex(to));
 		}
 		
-		public string SubStringFromCharIndex(int startIndex)
+		public string SubStringFromCharIndex(Cindex from)
 		{
-			return SubString(LocalIndex(startIndex), _length-1);
+			return SubString(LocalIndex(from), _length-1);
 		}
 
-		public string SubStringToCharIndex(int endIndex)
+		public string SubStringToCharIndex(Cindex to)
 		{
-			return SubString(0, LocalIndex(endIndex));
+			return SubString(0, LocalIndex(to));
 		}
 		
 		private string SubString(int localStartIndex, int localEndIndex)

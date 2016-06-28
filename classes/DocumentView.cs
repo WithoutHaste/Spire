@@ -15,9 +15,9 @@ namespace Spire
 			stringFormat = new StringFormat(StringFormat.GenericTypographic) { FormatFlags = StringFormatFlags.MeasureTrailingSpaces };
 		}
 		
-		public int CaretIndex
+		public int CaretPosition
 		{
-			get { return documentModel.CaretIndex; }
+			get { return documentModel.CaretPosition; }
 		}
 		
 		private string Line(int lineIndex)
@@ -25,8 +25,6 @@ namespace Spire
 			if(documentModel.Length == 0) return "";
 			return documentModel.SubString(0, documentModel.Length-1);
 		}
-		
-		// ?? Cindex - character index with 0 at beginning of doc counting to end
 		
 		public void OnModelUpdateEvent(object sender, UpdateAtEventArgs e)
 		{
@@ -52,7 +50,7 @@ namespace Spire
 		private void DrawCaret(Graphics graphics)
 		{
 			Pen pen = new Pen(Color.Black, 0.5f);
-			string textToCaret = Line(0).Substring(0, CaretIndex);
+			string textToCaret = Line(0).Substring(0, CaretPosition);
 			SizeF textSize = graphics.MeasureString(textToCaret, Application.GlobalFont, new PointF(0,0), stringFormat);
 			SizeF charSize = graphics.MeasureString("X", Application.GlobalFont, new PointF(0,0), stringFormat);
 			graphics.DrawLine(pen, Math.Max(1,textSize.Width), 0, Math.Max(1,textSize.Width), Math.Max(charSize.Height, textSize.Height));

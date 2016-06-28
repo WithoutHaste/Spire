@@ -4,11 +4,11 @@ namespace Spire
 {
 	public class UpdateAtEventArgs : EventArgs
 	{
-		public int CharIndex { get; private set; }
+		public Cindex At { get; private set; }
 		
-		public UpdateAtEventArgs(int charIndex)
+		public UpdateAtEventArgs(Cindex at)
 		{
-			CharIndex = charIndex;
+			At = at;
 		}
 	}
 }
