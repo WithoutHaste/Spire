@@ -38,8 +38,6 @@ What load testing makes sense?
 
 --> current unit tests
 	
---> current developement
-
 4. Line wrap on characters.
 
 	Test display no text.
@@ -52,7 +50,11 @@ What load testing makes sense?
 	Test typing onto third line.
 	Test typing text back into the first line after several lines are in.
 
+--> current developement
+
 4b. Line wrap on whole words.
+
+4c. Break words with hyphen if word is longer than line.
 
 5. Up, Down Arrow Keys to navigate edit position.
 
