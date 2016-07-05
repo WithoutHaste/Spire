@@ -1,4 +1,5 @@
 Base Product: Notepad-level Word Processor
+Milestone set 1
 ==========================================
 
 What automated unit tests make sense?
@@ -50,12 +51,16 @@ What load testing makes sense?
 	Test typing onto third line.
 	Test typing text back into the first line after several lines are in.
 
---> current developement
-
 4b. Line wrap on whole words.
 
-4c. Break words with hyphen if word is longer than line.
+--> current developement
 
+4c. Make running unit tests part of standard build process.
+
+4d. Make test app for all combinations of Graphics display options.
+
+	Find the one(s) that fix that 1 pixel wiggle on tall letters.	
+	
 5. Up, Down Arrow Keys to navigate edit position.
 
 5b. Click with mouse to navigate edit position.
@@ -96,3 +101,6 @@ What load testing makes sense?
 20. Replace.
 
 21. Print.
+
+22. Break words with hyphen if word is longer than line.
+

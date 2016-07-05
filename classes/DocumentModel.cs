@@ -49,8 +49,15 @@ namespace Spire
 		
 		public string SubString(Cindex from, Cindex to)
 		{
+//	Console.WriteLine("substring {0} to {1}", from, to);
+//	Console.WriteLine("------");
+//	foreach(DocumentChunk c in chunks)
+//	{
+//		Console.WriteLine("{0} L={1} ({2}-{3})", c.Text, c.Length, c.Start, c.End);
+//	}
 			if(from < 0) throw new Exception("Document substring start index out of lower bounds.");
 			if(to > LastChunk.End) throw new Exception("Document substring end index out of upper bounds.");
+			if(to < from) throw new Exception("Document 'to' is less than 'from'.");
 		
 			int startChunkIndex = FindChunkByCharIndex(from);
 			int endChunkIndex = FindChunkByCharIndex(to);

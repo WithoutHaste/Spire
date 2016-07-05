@@ -35,19 +35,17 @@ namespace Spire
 		{
 			//assuming one infinite display area to start with
 			DisplayArea displayArea = displayAreas[0];
-			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(cindex);
-			cindex = (lineBreakIndex > -1) ? (int)displayArea.LineBreaks[lineBreakIndex] : 0;
-			displayArea.ClearLineBreaksAfter(lineBreakIndex);
+			cindex = displayArea.ClearLineBreaksAfter(cindex);
 			using(Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height))
 			{
 				int endCindex = cindex;
-				while(endCindex < documentModel.Length)
+				while(endCindex < documentModel.Length-1)
 				{
 					endCindex = FindEndOfLine(displayArea, graphics, cindex);
 					if(endCindex < documentModel.Length-1)
 					{
 						displayArea.LineBreaks.Add(endCindex);
-						layoutUpdatedTo = endCindex;
+						layoutUpdatedTo = endCindex + 1;
 						cindex = endCindex + 1;
 					}
 					endCindex++;
@@ -58,11 +56,16 @@ namespace Spire
 		private Cindex FindEndOfLine(DisplayArea displayArea, Graphics graphics, Cindex start)
 		{
 			int end = start;
+			int? lastSpace = null;
 			while(end < documentModel.Length)
 			{
+				if(documentModel[end] == ' ')
+					lastSpace = end;
 				SizeF textSize = graphics.MeasureString(documentModel.SubString(start, end), Application.GlobalFont, new PointF(0,0), stringFormat);
 				if(textSize.Width > displayArea.Width)
 				{
+					if(lastSpace.HasValue && lastSpace != end)
+						return lastSpace.Value;
 					return end-1;
 				}
 				end++;
