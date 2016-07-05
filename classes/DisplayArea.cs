@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+//using System.Drawing;
+using System.Linq;
 
 namespace Spire
 {
@@ -53,10 +54,19 @@ namespace Spire
 			return lineBreakIndex;
 		}
 		
-		public void ClearLineBreaksAfter(int lineBreakIndex)
+		public Cindex ClearLineBreaksAfter(Cindex cindex)
 		{
-			while(_lineBreaks.Count > lineBreakIndex+1)
+			while(_lineBreaks.Count > 0 && _lineBreaks.Last() >= cindex)
+			{
 				_lineBreaks.RemoveAt(_lineBreaks.Count-1);
+			}
+			if(_lineBreaks.Count == 0) return 0;
+			return _lineBreaks.Last() + 1;
+		}
+		
+		public override string ToString()
+		{
+			return "LineBreaks: " + String.Join(", ", _lineBreaks.ToArray());
 		}
 	}
 }
