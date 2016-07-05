@@ -37,22 +37,24 @@ What load testing makes sense?
 	Test delete correctly.
 	Test delete at end of text.
 
---> current unit tests
-	
 4. Line wrap on characters.
 
-	Test display no text.
-	Test typing along one line.
-	Test navigating past beginning of text.
-	Test navigating past end of text.
-	Test typing onto second line.
-	Test navigating back to first line.
-	Test navigating back to second line.
-	Test typing onto third line.
-	Test typing text back into the first line after several lines are in.
+	All tests overridden by 4b test.
 
 4b. Line wrap on whole words.
 
+	Test display no text.
+	Test typing along one line.
+	Test typing onto second line.
+	Test typing onto third line.
+	Test navigating back to first line and typing more.
+	Test navigating back to second line and typing more.
+	Test typing words almost too long for one line.
+	Test typing words too long for one line.
+	Test removing text from various parts.
+
+--> current unit tests
+	
 --> current developement
 
 4c. Make running unit tests part of standard build process.

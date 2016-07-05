@@ -11,7 +11,8 @@ namespace SpireTest
 
 			bool allTestsPassed = true;
 			
-			allTestsPassed = (allTestsPassed && (new TestDocumentModel()).RunTests());
+			(new TestDocumentModel()).RunTests(ref allTestsPassed);
+			(new TestDocumentView()).RunTests(ref allTestsPassed);
 			
 			if(allTestsPassed) Console.WriteLine("All tests passed.\n");
 			else Console.WriteLine("Some tests failed.\n");
