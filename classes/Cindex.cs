@@ -31,5 +31,17 @@ namespace Spire
 		{
 			return c.Value;
 		}
+		
+		public static Cindex operator --(Cindex c)
+		{
+			c._characterIndex--;
+			return c;
+		}
+		
+		public static Cindex operator ++(Cindex c)
+		{
+			c._characterIndex++;
+			return c;
+		}
 	}
 }
