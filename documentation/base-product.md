@@ -61,7 +61,11 @@ What load testing makes sense?
 
 	Find the one(s) that fix that 1 pixel wiggle on tall letters.	
 	
+--> current Linux developement
+
 5. Up, Down Arrow Keys to navigate edit position.
+	
+	Add DocumentView test case: delete characters from long word until it ought to fit back on previous line
 
 5b. Click with mouse to navigate edit position.
 
