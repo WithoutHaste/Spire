@@ -57,9 +57,7 @@ What load testing makes sense?
 	
 --> current developement
 
-4c. Make running unit tests part of standard build process.
-
-4d. Make test app for all combinations of Graphics display options.
+4c. Make test app for all combinations of Graphics display options.
 
 	Find the one(s) that fix that 1 pixel wiggle on tall letters.	
 	
