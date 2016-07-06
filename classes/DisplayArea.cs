@@ -66,7 +66,7 @@ namespace Spire
 		
 		public override string ToString()
 		{
-			return "LineBreaks: " + String.Join(", ", _lineBreaks.ToArray());
+			return "LineBreaks: " + String.Join(", ", _lineBreaks.Select(p=>p.ToString()).ToArray());
 		}
 	}
 }
