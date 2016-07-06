@@ -31,6 +31,45 @@ namespace Spire
 			UpdateLayoutFrom(Math.Min(layoutUpdatedTo, e.At));
 		}
 		
+		public void OnNavigationVerticalEvent(object sender, NavigationVerticalEventArgs e)
+		{
+			DisplayArea displayArea = displayAreas[0];
+			Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height);
+			Point caretLocation = CaretLocation(graphics, displayArea);
+			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(CaretPosition);
+			lineBreakIndex += e.Amount; //assuming only + or - one line
+			if(lineBreakIndex < -1)
+				return;
+			if(lineBreakIndex >= displayArea.LineBreaks.Count)
+				return;
+			Cindex lineStart = 0;
+			if(lineBreakIndex > -1)
+				lineStart = displayArea.LineBreaks[lineBreakIndex] + 1;
+			documentModel.CaretPosition = FindCindexClosestToX(graphics, lineStart, caretLocation.X);			
+		}
+		
+		private Cindex FindCindexClosestToX(Graphics graphics, Cindex lineStart, int x)
+		{
+			//is it possible to run off the end of the line here?
+			string textToX = "";
+			int charCount = 0;
+			while(lineStart+charCount < documentModel.Length)
+			{
+				textToX = documentModel.SubString(lineStart, lineStart+charCount);
+				if((MeasureString(graphics, textToX)).Width > x)
+					break;
+				charCount++;
+			}
+			if(charCount == 0)
+				return lineStart + 1;
+			SizeF currentSize = MeasureString(graphics, textToX);
+			SizeF previousSize = MeasureString(graphics, textToX.Substring(0, textToX.Length-1));
+	Console.WriteLine("'{0}'={1} '{2}'={3} caret={4}", textToX, currentSize.Width, textToX.Substring(0, textToX.Length-1), previousSize.Width, x);		
+			if(Math.Abs(x-currentSize.Width) < Math.Abs(x-previousSize.Width))
+				return lineStart + charCount + 1;
+			return lineStart + charCount;
+		}
+		
 		private void UpdateLayoutFrom(Cindex cindex)
 		{
 			//assuming one infinite display area to start with

@@ -12,8 +12,11 @@ namespace Spire
 		public delegate void TextEventHandler(object sender, TextEventArgs e);
 		public event TextEventHandler OnTextEvent;
 		
-		public delegate void NavigationEventHandler(object sender, NavigationEventArgs e);
-		public event NavigationEventHandler OnNavigationEvent;
+		public delegate void NavigationHorizontalEventHandler(object sender, NavigationHorizontalEventArgs e);
+		public event NavigationHorizontalEventHandler OnNavigationHorizontalEvent;
+		
+		public delegate void NavigationVerticalEventHandler(object sender, NavigationVerticalEventArgs e);
+		public event NavigationVerticalEventHandler OnNavigationVerticalEvent;
 		
 		public delegate void EraseEventHandler(object sender, EraseEventArgs e);
 		public event EraseEventHandler OnEraseEvent;
@@ -37,6 +40,7 @@ namespace Spire
 		public void SetView(DocumentView view)
 		{
 			documentView = view;
+			this.OnNavigationVerticalEvent += new Paper.NavigationVerticalEventHandler(documentView.OnNavigationVerticalEvent);
 		}
 				
 		private void SetupDoubleBuffer()
@@ -102,8 +106,10 @@ namespace Spire
 		{
 			switch(e.KeyCode)
 			{
+				case Keys.Down:
 				case Keys.Left:
 				case Keys.Right:
+				case Keys.Up:
 					e.IsInputKey = true;
 					break;
 			}
@@ -116,11 +122,17 @@ namespace Spire
 				case Keys.Delete:
 					RaiseEraseEvent(TextUnit.Character, 1);
 					break;
+				case Keys.Down:
+					RaiseNavigationVerticalEvent(1);
+					break;
 				case Keys.Left:
-					RaiseNavigationEvent(TextUnit.Character, -1);
+					RaiseNavigationHorizontalEvent(TextUnit.Character, -1);
 					break;
 				case Keys.Right:
-					RaiseNavigationEvent(TextUnit.Character, 1);
+					RaiseNavigationHorizontalEvent(TextUnit.Character, 1);
+					break;
+				case Keys.Up:
+					RaiseNavigationVerticalEvent(-1);
 					break;
 				default:
 					return;
@@ -150,11 +162,18 @@ namespace Spire
 			OnTextEvent(this, new TextEventArgs(text));
 		}
 		
-		private void RaiseNavigationEvent(TextUnit unit, int amount)
+		private void RaiseNavigationHorizontalEvent(TextUnit unit, int amount)
 		{
-			if(OnNavigationEvent == null) return;
+			if(OnNavigationHorizontalEvent == null) return;
 			EnableCaretMovingTimer();
-			OnNavigationEvent(this, new NavigationEventArgs(unit, amount));
+			OnNavigationHorizontalEvent(this, new NavigationHorizontalEventArgs(unit, amount));
+		}
+		
+		private void RaiseNavigationVerticalEvent(int amount)
+		{
+			if(OnNavigationVerticalEvent == null) return;
+			EnableCaretMovingTimer();
+			OnNavigationVerticalEvent(this, new NavigationVerticalEventArgs(amount));
 		}
 		
 		private void RaiseEraseEvent(TextUnit unit, int amount)

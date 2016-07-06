@@ -89,7 +89,7 @@ namespace Spire
 			CaretPosition += 1;
 		}
 		
-		public void OnNavigationEvent(object sender, NavigationEventArgs e)
+		public void OnNavigationHorizontalEvent(object sender, NavigationHorizontalEventArgs e)
 		{
 			switch(e.Unit)
 			{
