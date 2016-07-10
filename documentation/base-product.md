@@ -69,13 +69,13 @@ What load testing makes sense?
 	Visually test moving down at beginning of line
 	Visually test moving down at first character of line
 
---> current unit tests
-	
---> current Linux developement
-
 5b. When removing characters from first word in line, check if the word now fits on the previous line.
 
 	Add DocumentView test case: delete characters from long word until it ought to fit back on previous line
+
+--> current unit tests
+	
+--> current Linux developement
 
 5c. Click with mouse to navigate edit position.
 

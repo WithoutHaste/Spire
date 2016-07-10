@@ -28,7 +28,7 @@ namespace Spire
 		
 		public void OnModelUpdateEvent(object sender, UpdateAtEventArgs e)
 		{
-			UpdateLayoutFrom(Math.Min(layoutUpdatedTo, e.At));
+			UpdateLayoutFrom(Math.Min(layoutUpdatedTo, PreviousLineBreak(e.At)));
 		}
 		
 		public void OnNavigationVerticalEvent(object sender, NavigationVerticalEventArgs e)
@@ -65,6 +65,15 @@ namespace Spire
 			if(Math.Abs(x-currentSize.Width) < Math.Abs(x-previousSize.Width))
 				return lineStart + charCount + 1;
 			return lineStart + charCount;
+		}
+		
+		private Cindex PreviousLineBreak(Cindex cindex)
+		{
+			//assuming one infinite display area to start with
+			DisplayArea displayArea = displayAreas[0];
+			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(cindex);
+			if(lineBreakIndex < 0) return 0;
+			return displayArea.LineBreaks[lineBreakIndex];
 		}
 		
 		private void UpdateLayoutFrom(Cindex cindex)
