@@ -126,13 +126,7 @@ namespace Spire
 			int earliestEditChunkIndex = CheckChunkLength(chunkIndex, chunk);
 			UpdateChunksIndexesFrom(earliestEditChunkIndex);
 			RaiseUpdateAtEvent(at);
-/*			
-			Console.WriteLine("------");
-			foreach(DocumentChunk c in chunks)
-			{
-				Console.WriteLine("{0} L={1} ({2}-{3})", c.Text, c.Length, c.Start, c.End);
-			}
-*/		}
+		}
 
 		private void BackspaceCharacters(int count)
 		{

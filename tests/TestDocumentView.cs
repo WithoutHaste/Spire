@@ -19,6 +19,7 @@ namespace SpireTest
 			TestUtilities.RunTest(TestWordsAlmostTooLongForLine, ref allTestsPassed);
 			TestUtilities.RunTest(TestWordsTooLongForLine, ref allTestsPassed);
 			TestUtilities.RunTest(TestDeletingInMiddleOfDocument, ref allTestsPassed);
+			TestUtilities.RunTest(TestDeletingInFirstWordOfLineTillWordFitsOnPreviousLine, ref allTestsPassed);
 			TestUtilities.RunTest(TestMovingUp, ref allTestsPassed);
 			TestUtilities.RunTest(TestMovingDown, ref allTestsPassed);
 		}
@@ -89,6 +90,17 @@ namespace SpireTest
 			documentModel.MoveCaretTo(65);
 			documentModel.BackspaceCharacters(20, 20);
 			documentView.Display();
+		}
+		
+		private void TestDeletingInFirstWordOfLineTillWordFitsOnPreviousLine()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("One Two Threeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+			documentView.Display();
+			documentModel.BackspaceCharacters(documentModel.Length-12, documentModel.Length-12);
+			documentView.Display();
+			documentView.MoveUpOrDown(1,0);
 		}
 		
 		private void TestMovingUp()
