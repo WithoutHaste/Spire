@@ -53,21 +53,31 @@ What load testing makes sense?
 	Test typing words too long for one line.
 	Test removing text from various parts.
 
---> current unit tests
-	
 --> current developement
 
 4c. Make test app for all combinations of Graphics display options.
 
 	Find the one(s) that fix that 1 pixel wiggle on tall letters.	
 	
---> current Linux developement
-
 5. Up, Down Arrow Keys to navigate edit position.
 	
+	Test moving up a line
+	Test moving down a line
+	Visually test moving down when lower line is much shorter
+	Visually test moving up at beginning of line
+	Visually test moving up at first character of line
+	Visually test moving down at beginning of line
+	Visually test moving down at first character of line
+
+--> current unit tests
+	
+--> current Linux developement
+
+5b. When removing characters from first word in line, check if the word now fits on the previous line.
+
 	Add DocumentView test case: delete characters from long word until it ought to fit back on previous line
 
-5b. Click with mouse to navigate edit position.
+5c. Click with mouse to navigate edit position.
 
 6. Undo.
 

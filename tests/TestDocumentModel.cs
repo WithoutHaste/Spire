@@ -239,17 +239,17 @@ namespace SpireTest
 			TestUtilities.Assert(currentPosition + expectedChange == this.CaretPosition, String.Format("error moving caret from {0} by {1}, document length {2}", currentPosition, distance, this.Length));
 		}
 		
-		public void RaiseTextEvent(char text)
+		private void RaiseTextEvent(char text)
 		{
 			this.OnTextEvent(this, new TextEventArgs(text));
 		}
 
-		public void RaiseNavigationHorizontalEvent(TextUnit units, int distance)
+		private void RaiseNavigationHorizontalEvent(TextUnit units, int distance)
 		{
 			this.OnNavigationHorizontalEvent(this, new NavigationHorizontalEventArgs(units, distance));
 		}
 		
-		public void RaiseEraseEvent(TextUnit units, int count)
+		private void RaiseEraseEvent(TextUnit units, int count)
 		{
 			this.OnEraseEvent(this, new EraseEventArgs(units, count));
 		}
