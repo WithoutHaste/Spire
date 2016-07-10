@@ -19,6 +19,8 @@ namespace SpireTest
 			TestUtilities.RunTest(TestWordsAlmostTooLongForLine, ref allTestsPassed);
 			TestUtilities.RunTest(TestWordsTooLongForLine, ref allTestsPassed);
 			TestUtilities.RunTest(TestDeletingInMiddleOfDocument, ref allTestsPassed);
+			TestUtilities.RunTest(TestMovingUp, ref allTestsPassed);
+			TestUtilities.RunTest(TestMovingDown, ref allTestsPassed);
 		}
 		
 		private void TestDisplayNoText()
@@ -88,6 +90,28 @@ namespace SpireTest
 			documentModel.BackspaceCharacters(20, 20);
 			documentView.Display();
 		}
+		
+		private void TestMovingUp()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("We know little or nothing of Vermeer's personality, and it is dangerous to generalize from the evidence of his paintings. He left behind him a large family and many debts, and his life may have been sordid.");
+			documentModel.AddCharacters("But a mind that is troubled may seek a peaceful refuge in art. Vermeer is almost as much a mystery as Shakespeare, but he is perhaps nearer to another British poet, his comtemporary Thomas Traherne (1637-74), whose work was almost lost for centuries and then recovered.");
+			documentView.MoveUpOrDown(-1, -1);
+			documentModel.MoveCaretTo(12);
+			documentView.MoveUpOrDown(-1, 0);
+		}
+		
+		private void TestMovingDown()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("We know little or nothing of Vermeer's personality, and it is dangerous to generalize from the evidence of his paintings. He left behind him a large family and many debts, and his life may have been sordid.");
+			documentModel.AddCharacters("But a mind that is troubled may seek a peaceful refuge in art. Vermeer is almost as much a mystery as Shakespeare, but he is perhaps nearer to another British poet, his comtemporary Thomas Traherne (1637-74), whose work was almost lost for centuries and then recovered.");
+			documentView.MoveUpOrDown(1, 0);
+			documentModel.MoveCaretTo(12);
+			documentView.MoveUpOrDown(1, 1);
+		}
 	}
 	
 	public class DocumentViewWrapper : DocumentView
@@ -115,6 +139,21 @@ namespace SpireTest
 			}
 		}
 		
+		public void MoveUpOrDown(int distance, int expectedChange)
+		{
+			int previousPosition = this.CaretPosition;
+			RaiseNavigationVerticalEvent(distance);
+			bool success = true;
+			if(expectedChange == 0) success = (previousPosition == this.CaretPosition);
+			else if(expectedChange < 0) success = (this.CaretPosition < previousPosition);
+			else if(expectedChange > 0) success = (this.CaretPosition > previousPosition);
+			TestUtilities.Assert(success, String.Format("error moving caret from {0} by {1} line(s), expected change {2}", previousPosition, distance, expectedChange));
+		}
+		
+		private void RaiseNavigationVerticalEvent(int distance)
+		{
+			this.OnNavigationVerticalEvent(this, new NavigationVerticalEventArgs(distance));
+		}
 		
 	}
 }
