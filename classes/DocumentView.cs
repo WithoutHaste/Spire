@@ -60,11 +60,8 @@ namespace Spire
 					break;
 				charCount++;
 			}
-			if(charCount == 0)
-				return lineStart + 1;
 			SizeF currentSize = MeasureString(graphics, textToX);
 			SizeF previousSize = MeasureString(graphics, textToX.Substring(0, textToX.Length-1));
-	Console.WriteLine("'{0}'={1} '{2}'={3} caret={4}", textToX, currentSize.Width, textToX.Substring(0, textToX.Length-1), previousSize.Width, x);		
 			if(Math.Abs(x-currentSize.Width) < Math.Abs(x-previousSize.Width))
 				return lineStart + charCount + 1;
 			return lineStart + charCount;
