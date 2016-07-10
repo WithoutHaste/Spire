@@ -71,13 +71,15 @@ What load testing makes sense?
 
 5b. When removing characters from first word in line, check if the word now fits on the previous line.
 
-	Add DocumentView test case: delete characters from long word until it ought to fit back on previous line
+	Test delete characters from long word until it ought to fit back on previous line
+
+5c. Fix bug: when second line is longer than first, up arrow from second line lands you back in the second line.
+
+	Test move up from longer line to shorter, from point after end of shorter line, should end up at end of shorter line.
 
 --> current unit tests
 	
 --> current Linux developement
-
-5c. Click with mouse to navigate edit position.
 
 6. Undo.
 
@@ -85,7 +87,9 @@ What load testing makes sense?
 
 8. Shift + Arrow Keys to highlight text.
 
-9. Drag and Drop to highlight text.
+9. Click with mouse to navigate edit position.
+
+9b. Drag and Drop to highlight text.
 
 10. Home Key and End Key.
 

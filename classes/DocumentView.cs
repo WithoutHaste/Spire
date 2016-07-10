@@ -26,6 +26,11 @@ namespace Spire
 			get { return documentModel.CaretPosition; }
 		}
 		
+		public int LineCount
+		{
+			get { return displayAreas[0].LineBreaks.Count + 1; }
+		}
+		
 		public void OnModelUpdateEvent(object sender, UpdateAtEventArgs e)
 		{
 			UpdateLayoutFrom(Math.Min(layoutUpdatedTo, PreviousLineBreak(e.At)));
@@ -53,9 +58,10 @@ namespace Spire
 			//is it possible to run off the end of the line here?
 			string textToX = "";
 			int charCount = 0;
-			while(lineStart+charCount < documentModel.Length)
+			int max = NextLineBreak(lineStart);
+			while(lineStart+charCount <= max)
 			{
-				textToX = documentModel.SubString(lineStart, lineStart+charCount);
+				textToX = documentModel.SubString(lineStart, Math.Min(documentModel.Length-1, lineStart+charCount));
 				if((MeasureString(graphics, textToX)).Width > x)
 					break;
 				charCount++;
@@ -63,8 +69,8 @@ namespace Spire
 			SizeF currentSize = MeasureString(graphics, textToX);
 			SizeF previousSize = MeasureString(graphics, textToX.Substring(0, textToX.Length-1));
 			if(Math.Abs(x-currentSize.Width) < Math.Abs(x-previousSize.Width))
-				return lineStart + charCount + 1;
-			return lineStart + charCount;
+				return Math.Min(max, lineStart + charCount + 1);
+			return Math.Min(max, lineStart + charCount);
 		}
 		
 		private Cindex PreviousLineBreak(Cindex cindex)
@@ -74,6 +80,17 @@ namespace Spire
 			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(cindex);
 			if(lineBreakIndex < 0) return 0;
 			return displayArea.LineBreaks[lineBreakIndex];
+		}
+		
+		private Cindex NextLineBreak(Cindex cindex)
+		{
+			//assuming one infinite display area to start with
+			DisplayArea displayArea = displayAreas[0];
+			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(cindex);
+			lineBreakIndex++;
+			if(lineBreakIndex < displayArea.LineBreaks.Count)
+				return displayArea.LineBreaks[lineBreakIndex];
+			return documentModel.Length;
 		}
 		
 		private void UpdateLayoutFrom(Cindex cindex)

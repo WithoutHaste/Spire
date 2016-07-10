@@ -22,6 +22,8 @@ namespace SpireTest
 			TestUtilities.RunTest(TestDeletingInFirstWordOfLineTillWordFitsOnPreviousLine, ref allTestsPassed);
 			TestUtilities.RunTest(TestMovingUp, ref allTestsPassed);
 			TestUtilities.RunTest(TestMovingDown, ref allTestsPassed);
+			TestUtilities.RunTest(TestSecondLineShorter, ref allTestsPassed);
+			TestUtilities.RunTest(TestFirstLineShorter, ref allTestsPassed);
 		}
 		
 		private void TestDisplayNoText()
@@ -98,9 +100,11 @@ namespace SpireTest
 			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
 			documentModel.AddCharacters("One Two Threeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
 			documentView.Display();
-			documentModel.BackspaceCharacters(documentModel.Length-12, documentModel.Length-12);
+			documentModel.MoveCaretTo(15);
+			documentView.MoveUpOrDown(1,1); //verify there are two lines
+			documentModel.DeleteCharacters(documentModel.Length-documentModel.CaretPosition, documentModel.Length-documentModel.CaretPosition);
 			documentView.Display();
-			documentView.MoveUpOrDown(1,0);
+			documentView.MoveUpOrDown(1,0); //there should now be just one line
 		}
 		
 		private void TestMovingUp()
@@ -123,6 +127,34 @@ namespace SpireTest
 			documentView.MoveUpOrDown(1, 0);
 			documentModel.MoveCaretTo(12);
 			documentView.MoveUpOrDown(1, 1);
+		}
+		
+		private void TestSecondLineShorter()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			while(documentView.LineCount < 2)
+			{
+				documentModel.AddCharacters("watermelon ");
+			}
+			documentModel.AddCharacters("mushroom mushroom");
+			documentModel.MoveCaretTo(30);
+			documentView.MoveUpOrDown(1, 1);
+			documentModel.MoveCaret(1,0); //should be at end of document now
+		}
+		
+		private void TestFirstLineShorter()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("One Two Three");
+			while(documentView.LineCount < 2)
+			{
+				documentModel.AddCharacters("eeeee");
+			}
+			documentView.MoveUpOrDown(-1, -1); //should be at end of first line
+			documentModel.MoveCaret(1,1); //move to beginning of second line
+			documentView.MoveUpOrDown(1,0); //should be on last line now
 		}
 	}
 	
