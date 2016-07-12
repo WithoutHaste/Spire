@@ -1,0 +1,15 @@
+save enough data to make any action reversible (undo) and redoable (redo)
+save undo/redo list with file
+
+when a new action is taken, redo stack is cleared
+add to redo stack as undos are made
+
+if an action causes other changes, make sure the whole set undo and redo as a single unit
+
+actions so far
+--------------
+add character at location
+	group: add a continuous string of characters
+erase character at location	
+	group: erase a continuous string of characters
+(navigation does not count as an edit)

@@ -10,6 +10,7 @@ namespace Spire
 
 		private Cindex _caretPosition;
 		private List<DocumentChunk> chunks; //list is never left empty
+		private History history;
 	
 		public DocumentModel()
 		{
@@ -17,6 +18,7 @@ namespace Spire
 			chunks.Add(new DocumentChunk());
 			UpdateChunksIndexesFrom(0);
 			CaretPosition = 0;
+			history = new History();
 		}
 		
 		public int Length
@@ -85,6 +87,7 @@ namespace Spire
 		
 		public void OnTextEvent(object sender, TextEventArgs e)
 		{
+			history.Add(new DocumentEdit_AddCharacters(CaretPosition, e.Text.ToString()));
 			InsertText(new char[] { e.Text }, CaretPosition);
 			CaretPosition += 1;
 		}
@@ -116,6 +119,11 @@ namespace Spire
 				default:
 					throw new Exception(String.Format("Unit {0} not supported in document erasures", e.Unit));
 			}
+		}
+		
+		public void OnUndoEvent(object sender, EventArgs e)
+		{
+			history.Undo(this);
 		}
 		
 		private void InsertText(char[] text, Cindex at)
