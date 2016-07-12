@@ -20,6 +20,8 @@ namespace Spire
 		
 		public delegate void EraseEventHandler(object sender, EraseEventArgs e);
 		public event EraseEventHandler OnEraseEvent;
+
+		public event EventHandler OnUndoEvent;
 	
 		private DocumentView documentView;
 		private System.Timers.Timer caretTimer;
@@ -117,6 +119,11 @@ namespace Spire
 		
 		private void UserKeyDown(object sender, KeyEventArgs e)
 		{
+			if(e.Control)
+			{
+				UserControlKeyDown(e);
+				return;
+			}
 			switch(e.KeyCode)
 			{
 				case Keys.Delete:
@@ -141,9 +148,26 @@ namespace Spire
 			this.Invalidate();
 		}
 		
+		private void UserControlKeyDown(KeyEventArgs e)
+		{
+			if(!e.Control) 
+				throw new Exception("Control key required for function UserControlKeyDown.");
+			switch(e.KeyCode)
+			{
+				case Keys.Z:
+					RaiseUndoEvent();
+					break;
+				default:
+					return;
+			}
+			e.Handled = true;
+			this.Invalidate();
+		}
+		
 		private void UserKeyPress(object sender, KeyPressEventArgs e)
 		{
-			if(e.KeyChar == '\b')
+			if((Control.ModifierKeys & Keys.Control) == Keys.Control) return;
+			else if(e.KeyChar == '\b')
 			{
 				RaiseEraseEvent(TextUnit.Character, -1);
 			}
@@ -153,7 +177,6 @@ namespace Spire
 			}
 			e.Handled = true;
 			this.Invalidate();
-			//Console.WriteLine("key press: {0}", e.KeyChar);
 		}
 		
 		private void RaiseTextEvent(char text)
@@ -180,6 +203,12 @@ namespace Spire
 		{
 			if(OnEraseEvent == null) return;
 			OnEraseEvent(this, new EraseEventArgs(unit, amount));
+		}
+		
+		private void RaiseUndoEvent()
+		{
+			if(OnUndoEvent == null) return;
+			OnUndoEvent(this, new EventArgs());
 		}
 
 		protected override void OnPaint(PaintEventArgs e)
