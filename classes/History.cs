@@ -20,7 +20,7 @@ namespace Spire
 			pendingRedos.Clear();
 			if(pendingUndos.Count > 0)
 			{
-				bool success = pendingUndos.Last().Concat(edit);
+				bool success = pendingUndos.First().Concat(edit);
 				if(success)
 					return;
 			}

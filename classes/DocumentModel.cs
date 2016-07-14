@@ -44,19 +44,14 @@ namespace Spire
 		{
 			get
 			{
-				DocumentChunk chunk = chunks[FindChunkByCharIndex(cindex)];
+				int chunkIndex = FindChunkByCharIndex(cindex);
+				DocumentChunk chunk = chunks[chunkIndex];
 				return chunk[cindex];
 			}
 		}
 		
 		public string SubString(Cindex from, Cindex to)
 		{
-//	Console.WriteLine("substring {0} to {1}", from, to);
-//	Console.WriteLine("------");
-//	foreach(DocumentChunk c in chunks)
-//	{
-//		Console.WriteLine("{0} L={1} ({2}-{3})", c.Text, c.Length, c.Start, c.End);
-//	}
 			if(from < 0) throw new Exception("Document substring start index out of lower bounds.");
 			if(to > LastChunk.End) throw new Exception("Document substring end index out of upper bounds.");
 			if(to < from) throw new Exception("Document 'to' is less than 'from'.");
@@ -69,7 +64,6 @@ namespace Spire
 				return chunks[startChunkIndex].SubStringByCharIndex(from, to);
 			}
 			
-	//??
 			//expected to be 1-2 concats only, if frequently more than 4, use StringBuilder instead
 			string subString = chunks[startChunkIndex].SubStringFromCharIndex(from);
 			for(int i=startChunkIndex+1; i<endChunkIndex; i++)
@@ -87,8 +81,11 @@ namespace Spire
 		
 		public void OnTextEvent(object sender, TextEventArgs e)
 		{
-			history.Add(new DocumentEdit_AddCharacters(CaretPosition, e.Text.ToString()));
-			InsertText(new char[] { e.Text }, CaretPosition);
+			if(!e.IsHistoryEvent)
+			{
+				history.Add(new DocumentEdit_AddCharacters(CaretPosition, e.Text));
+			}
+			InsertText(e.Text, CaretPosition);
 			CaretPosition += 1;
 		}
 		
@@ -111,8 +108,22 @@ namespace Spire
 			switch(e.Unit)
 			{
 				case TextUnit.Character:
-					if(e.Amount < 0) BackspaceCharacters(Math.Abs(e.Amount));
-					else if(e.Amount > 0) DeleteCharacters(e.Amount);
+					if(e.Amount < 0)
+					{
+						if(!e.IsHistoryEvent)
+						{
+							history.Add(new DocumentEdit_BackspaceCharacters(CaretPosition, SubString(Math.Max(0,CaretPosition+e.Amount),  CaretPosition-1)));
+						}
+						BackspaceCharacters(Math.Abs(e.Amount));
+					}
+					else if(e.Amount > 0)
+					{
+						if(!e.IsHistoryEvent)
+						{
+							history.Add(new DocumentEdit_DeleteCharacters(CaretPosition, SubString(CaretPosition, Math.Min(CaretPosition+e.Amount-1, Length-1))));
+						}
+						DeleteCharacters(e.Amount);
+					}
 					break;
 				case TextUnit.Word:
 					throw new Exception("erase whole word not implemented");
@@ -126,13 +137,12 @@ namespace Spire
 			history.Undo(this);
 		}
 		
-		private void InsertText(char[] text, Cindex at)
+		private void InsertText(string text, Cindex at)
 		{
 			int chunkIndex = FindChunkByCharIndex(at);
 			DocumentChunk chunk = chunks[chunkIndex];
 			chunk.InsertText(text, at);
-			int earliestEditChunkIndex = CheckChunkLength(chunkIndex, chunk);
-			UpdateChunksIndexesFrom(earliestEditChunkIndex);
+			CheckChunkLength(chunkIndex, chunk);
 			RaiseUpdateAtEvent(at);
 		}
 
@@ -140,7 +150,6 @@ namespace Spire
 		{
 			if(_caretPosition == 0) return;
 			
-			int earliestEditChunkIndex = 0;
 			while(count > 0)
 			{
 				if(_caretPosition == 0) break;
@@ -148,51 +157,47 @@ namespace Spire
 				int chunkIndex = FindChunkByCharIndex(_caretPosition);
 				DocumentChunk chunk = chunks[chunkIndex];
 				chunk.RemoveText(_caretPosition, 1);
-				earliestEditChunkIndex = CheckChunkLength(chunkIndex, chunk);
+				CheckChunkLength(chunkIndex, chunk);
 				count--;
 			}
-			UpdateChunksIndexesFrom(earliestEditChunkIndex);
 			RaiseUpdateAtEvent(_caretPosition);
 		}
 		
 		private void DeleteCharacters(int count)
 		{
 			if(_caretPosition >= Length) return;
-			
-			int earliestEditChunkIndex = 0;
+
 			while(count > 0)
 			{
 				if(_caretPosition >= Length) break;
 				int chunkIndex = FindChunkByCharIndex(_caretPosition);
 				DocumentChunk chunk = chunks[chunkIndex];
 				chunk.RemoveText(_caretPosition, 1);
-				earliestEditChunkIndex = CheckChunkLength(chunkIndex, chunk);
+				CheckChunkLength(chunkIndex, chunk);
 				count--;
 			}
-			UpdateChunksIndexesFrom(earliestEditChunkIndex);
 			RaiseUpdateAtEvent(_caretPosition);
 		}
 		
-		private int CheckChunkLength(int chunkIndex, DocumentChunk chunk)
+		private void CheckChunkLength(int chunkIndex, DocumentChunk chunk)
 		{
+			int updateFromChunkIndex = chunkIndex;
 			if(chunk.IsEmpty)
 			{
 				if(chunks.Count > 1)
 				{
 					chunks.RemoveAt(chunkIndex);
 				}
-				return chunkIndex;
 			}
-			if(chunk.TooLong)
+			else if(chunk.TooLong)
 			{
 				SplitChunk(chunkIndex, chunk);
-				return chunkIndex;
 			}
-			if(chunk.TooShort)
+			else if(chunk.TooShort)
 			{
-				return CombineChunks(chunkIndex, chunk);
+				updateFromChunkIndex = CombineChunks(chunkIndex, chunk);
 			}
-			return chunkIndex;
+			UpdateChunksIndexesFrom(updateFromChunkIndex);
 		}
 		
 		private void SplitChunk(int chunkIndex, DocumentChunk chunk)
@@ -230,11 +235,6 @@ namespace Spire
 			OnUpdateAtEvent(this, new UpdateAtEventArgs(at));
 		}
 		
-		private void UpdateChunksIndexesFrom(DocumentChunk chunk)
-		{
-			UpdateChunksIndexesFrom(chunks.IndexOf(chunk));
-		}
-		
 		private void UpdateChunksIndexesFrom(int chunkIndex)
 		{
 			if(chunkIndex == 0)
@@ -259,7 +259,7 @@ namespace Spire
 			if(chunkIndex >= chunks.Count)
 			{
 				chunkIndex--; //insert at end of last chunk
-			}
+			}		
 			return chunkIndex;
 		}
 	}
