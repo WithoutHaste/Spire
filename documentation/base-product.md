@@ -79,9 +79,9 @@ What load testing makes sense?
 
 --> current unit tests
 	
---> current Linux developement
-
 6. Undo.
+
+--> current Linux developement
 
 7. Redo.
 

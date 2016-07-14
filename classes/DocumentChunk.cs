@@ -74,7 +74,7 @@ namespace Spire
 			get { return (_length == 0); }
 		}
 		
-		public void InsertText(char[] text, Cindex index)
+		public void InsertText(string text, Cindex index)
 		{
 			int localIndex = LocalIndex(index);
 			if(localIndex < 0) throw new Exception("Chunk internal index out of lower bounds.");
