@@ -108,27 +108,38 @@ namespace Spire
 			switch(e.Unit)
 			{
 				case TextUnit.Character:
-					if(e.Amount < 0)
-					{
-						if(!e.IsHistoryEvent)
-						{
-							history.Add(new DocumentEdit_BackspaceCharacters(CaretPosition, SubString(Math.Max(0,CaretPosition+e.Amount),  CaretPosition-1)));
-						}
-						BackspaceCharacters(Math.Abs(e.Amount));
-					}
-					else if(e.Amount > 0)
-					{
-						if(!e.IsHistoryEvent)
-						{
-							history.Add(new DocumentEdit_DeleteCharacters(CaretPosition, SubString(CaretPosition, Math.Min(CaretPosition+e.Amount-1, Length-1))));
-						}
-						DeleteCharacters(e.Amount);
-					}
+					OnEraseCharactersEvent(e);
 					break;
 				case TextUnit.Word:
 					throw new Exception("erase whole word not implemented");
 				default:
 					throw new Exception(String.Format("Unit {0} not supported in document erasures", e.Unit));
+			}
+		}
+		
+		private void OnEraseCharactersEvent(EraseEventArgs e)
+		{
+			int minCindex = CaretPosition;
+			int maxCindex = CaretPosition;
+			if(e.Amount < 0)
+			{
+				minCindex = Math.Max(0, CaretPosition+e.Amount);
+				maxCindex = Math.Min(CaretPosition-1, Length-1);
+				if(!e.IsHistoryEvent && minCindex <= maxCindex)
+				{
+					history.Add(new DocumentEdit_BackspaceCharacters(CaretPosition, SubString(minCindex,  maxCindex)));
+				}
+				BackspaceCharacters(Math.Abs(e.Amount));
+			}
+			else if(e.Amount > 0)
+			{
+				minCindex = CaretPosition;
+				maxCindex = Math.Min(CaretPosition+e.Amount-1, Length-1);
+				if(!e.IsHistoryEvent && minCindex <= maxCindex)
+				{
+					history.Add(new DocumentEdit_DeleteCharacters(CaretPosition, SubString(minCindex, maxCindex)));
+				}
+				DeleteCharacters(e.Amount);
 			}
 		}
 		
