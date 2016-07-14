@@ -27,6 +27,20 @@ namespace SpireTest
 			TestUtilities.RunTest(TestUndoOneLetter, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoSeveralLetters, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndo100Letters, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoWordWithSpace, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoSeveralWords, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoRemovingSpaceBetweenWords, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoHyphenatedWord, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoReplacingSpaceWithHyphen, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoPuttingHyphenInWord, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoWordWithComma, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoWordWithPeriod, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoWordWithSemiColon, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoWordWithColon, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoWordWithApostrophe, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoWordWithQuote, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoWordWithQuestionMark, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoWordWithExclamationMark, ref allTestsPassed);
 		}
 		
 		private void TestAllKeyboardCharacters()
@@ -187,23 +201,21 @@ namespace SpireTest
 		private void TestUndoInEmptyDocument()
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
-			documentModel.Undo();
+			documentModel.Undo(0, 0);
 		}
 		
 		private void TestUndoOneLetter()
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
 			documentModel.AddCharacters("a");
-			documentModel.Undo();
-			TestUtilities.Assert(documentModel.Length == 0, "Undo a single letter document");
+			documentModel.Undo(0, 0);
 		}
 		
 		private void TestUndoSeveralLetters()
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
 			documentModel.AddCharacters("abcdef");
-			documentModel.Undo();
-			TestUtilities.Assert(documentModel.Length == 0, "Undo a several letter document");
+			documentModel.Undo(0, 0);
 		}
 		
 		private void TestUndo100Letters()
@@ -214,7 +226,132 @@ namespace SpireTest
 				documentModel.AddCharacters("x");
 			}
 			documentModel.Undo();
-			TestUtilities.Assert(documentModel.Length > 0 && documentModel.Length < 100, "Undo a 100 letter document");
+			TestUtilities.Assert(documentModel.Length > 0 && documentModel.Length < 100, "length wrong");
+			TestUtilities.Assert(documentModel.Length == documentModel.CaretPosition, "caret position wrong");
+		}
+		
+		private void TestUndoWordWithSpace()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("one ");
+			documentModel.Undo(0, 0);
+		}
+		
+		private void TestUndoSeveralWords()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("one two three");
+			documentModel.Undo(8, 8);
+			documentModel.Undo(4, 4);
+			documentModel.Undo(0, 0);
+		}
+		
+		private void TestUndoRemovingSpaceBetweenWords()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("one two");
+			documentModel.MoveCaretTo(3);
+			documentModel.DeleteCharacters(1,1);
+			documentModel.Undo(7, 3);
+			documentModel.Undo(4, 4);
+			documentModel.AddCharacters("two");
+			documentModel.MoveCaretTo(4);
+			documentModel.BackspaceCharacters(1,1);
+			documentModel.Undo(7, 4);
+			documentModel.Undo(4, 4);
+		}
+		
+		private void TestUndoHyphenatedWord()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("Amelia-Rory");
+			documentModel.Undo(0, 0);
+		}
+		
+		private void TestUndoReplacingSpaceWithHyphen()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("stone angels");
+			documentModel.MoveCaretTo(5);
+			documentModel.DeleteCharacters(1,1);
+			documentModel.AddCharacters("-");
+			documentModel.Undo(11, 5);
+			documentModel.Undo(12, 5);
+			documentModel.Undo(6, 6);
+		}
+		
+		private void TestUndoPuttingHyphenInWord()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghijklmnopQRSTUVWXYZ");
+			documentModel.MoveCaretTo(16);
+			documentModel.AddCharacters("-");
+			documentModel.Undo(26, 16);
+			documentModel.Undo(0, 0);
+		}
+		
+		private void TestUndoWordWithComma()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("and then, th,en");
+			documentModel.Undo(10, 10);
+			documentModel.Undo(4, 4);
+		}
+		
+		private void TestUndoWordWithPeriod()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("and then. th.en");
+			documentModel.Undo(10, 10);
+			documentModel.Undo(4, 4);
+		}
+		
+		private void TestUndoWordWithSemiColon()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("and then; th;en");
+			documentModel.Undo(10, 10);
+			documentModel.Undo(4, 4);
+		}
+		
+		private void TestUndoWordWithColon()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("and then: th:en");
+			documentModel.Undo(10, 10);
+			documentModel.Undo(4, 4);
+		}
+		
+		private void TestUndoWordWithApostrophe()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("and then' th'en");
+			documentModel.Undo(10, 10);
+			documentModel.Undo(4, 4);
+		}
+
+		private void TestUndoWordWithQuote()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("and then\" th\"en");
+			documentModel.Undo(10, 10);
+			documentModel.Undo(4, 4);
+		}
+
+		private void TestUndoWordWithQuestionMark()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("and then? th?en");
+			documentModel.Undo(10, 10);
+			documentModel.Undo(4, 4);
+		}
+
+		private void TestUndoWordWithExclamationMark()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("and then! th!en");
+			documentModel.Undo(10, 10);
+			documentModel.Undo(4, 4);
 		}
 	}
 	
@@ -278,6 +415,13 @@ namespace SpireTest
 		public void Undo()
 		{
 			RaiseUndoEvent();
+		}
+		
+		public void Undo(int expectedLength, int expectedCaretPosition)
+		{
+			RaiseUndoEvent();
+			TestUtilities.Assert(this.Length == expectedLength, "wrong document length after undo");
+			TestUtilities.Assert(this.CaretPosition == expectedCaretPosition, "wrong caret position after undo");
 		}
 		
 		private void RaiseTextEvent(char text)

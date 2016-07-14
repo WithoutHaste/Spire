@@ -77,8 +77,6 @@ What load testing makes sense?
 
 	Test move up from longer line to shorter, from point after end of shorter line, should end up at end of shorter line.
 
---> current unit tests
-	
 6. Undo.
 
 	empty file, undo
@@ -86,16 +84,19 @@ What load testing makes sense?
 	type several letters, undo (all)
 	type 100 letters, undo (some)
 	type several words, undo (one word) undo again (another word)
-	type part of word, wait awhile, type more words, undo
+xx	type part of word, wait awhile, type more words, undo
 	type two words, delete/backspace the space in between, undo (undoes the delete)
 	type hyphenated words, undo
 	type two words, replace space with hyphen, undo
 	type a long words, put a hyphen in the middle, undo, undo
 	type word with comma at end, undo
 	type word with period at end, undo
+	test other punctuation
+--> current unit tests
 	type word, type in another part of document, add to first word with no space, undo, undo, undo
 	type word, move cursor, go back to end of word, type more, undo
 	type word, move cursor, go to middle of word, type more, undo, undo
+	test numbers count as characters
 
 --> current Linux developement
 
