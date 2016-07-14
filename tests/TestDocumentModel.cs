@@ -21,8 +21,12 @@ namespace SpireTest
 			TestUtilities.RunTest(TestDeleteFromEndOfDocument, ref allTestsPassed);
 			TestUtilities.RunTest(TestBackspace, ref allTestsPassed);
 			TestUtilities.RunTest(TestBackspaceFromBeginningOfDocument, ref allTestsPassed);
-			TestUtilities.RunTest(TestLoad_AddAndRemoveInOrder, ref allTestsPassed);
-			TestUtilities.RunTest(TestLoad_AddAndRemoveRandomly, ref allTestsPassed);
+			//TestUtilities.RunTest(TestLoad_AddAndRemoveInOrder, ref allTestsPassed);
+			//TestUtilities.RunTest(TestLoad_AddAndRemoveRandomly, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoInEmptyDocument, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoOneLetter, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoSeveralLetters, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndo100Letters, ref allTestsPassed);
 		}
 		
 		private void TestAllKeyboardCharacters()
@@ -180,6 +184,38 @@ namespace SpireTest
 				String.Format("Random editing {0} times took {1}h {2}m {3}s, longer than {4}s allowance", editCount, duration.Hours, duration.Minutes, duration.Seconds, maxSeconds));
 		}
 		
+		private void TestUndoInEmptyDocument()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.Undo();
+		}
+		
+		private void TestUndoOneLetter()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("a");
+			documentModel.Undo();
+			TestUtilities.Assert(documentModel.Length == 0, "Undo a single letter document");
+		}
+		
+		private void TestUndoSeveralLetters()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdef");
+			documentModel.Undo();
+			TestUtilities.Assert(documentModel.Length == 0, "Undo a several letter document");
+		}
+		
+		private void TestUndo100Letters()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			for(int i=0; i<100; i++)
+			{
+				documentModel.AddCharacters("x");
+			}
+			documentModel.Undo();
+			TestUtilities.Assert(documentModel.Length > 0 && documentModel.Length < 100, "Undo a 100 letter document");
+		}
 	}
 	
 	public class DocumentModelWrapper : DocumentModel
@@ -239,6 +275,11 @@ namespace SpireTest
 			TestUtilities.Assert(currentPosition + expectedChange == this.CaretPosition, String.Format("error moving caret from {0} by {1}, document length {2}", currentPosition, distance, this.Length));
 		}
 		
+		public void Undo()
+		{
+			RaiseUndoEvent();
+		}
+		
 		private void RaiseTextEvent(char text)
 		{
 			this.OnTextEvent(this, new TextEventArgs(text));
@@ -252,6 +293,11 @@ namespace SpireTest
 		private void RaiseEraseEvent(TextUnit units, int count)
 		{
 			this.OnEraseEvent(this, new EraseEventArgs(units, count));
+		}
+		
+		private void RaiseUndoEvent()
+		{
+			this.OnUndoEvent(this, new EventArgs());
 		}
 	}
 }
