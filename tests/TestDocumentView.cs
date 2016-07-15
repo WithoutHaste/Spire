@@ -11,14 +11,19 @@ namespace SpireTest
 		{
 		}
 		
+		public void RunLongTests(ref bool allTestsPassed)
+		{
+			TestUtilities.RunTest(TestDisplayLongText, ref allTestsPassed);
+			TestUtilities.RunTest(TestDisplayTypingInMiddleOfDocument, ref allTestsPassed);
+			TestUtilities.RunTest(TestDisplayWordsAlmostTooLongForLine, ref allTestsPassed);
+			TestUtilities.RunTest(TestDisplayWordsTooLongForLine, ref allTestsPassed);
+			TestUtilities.RunTest(TestDisplayDeletingInMiddleOfDocument, ref allTestsPassed);
+		}
+		
 		public void RunTests(ref bool allTestsPassed)
 		{
 			TestUtilities.RunTest(TestDisplayNoText, ref allTestsPassed);
-			TestUtilities.RunTest(TestTypingSeveralLines, ref allTestsPassed);
-			TestUtilities.RunTest(TestTypingInMiddleOfDocument, ref allTestsPassed);
-			TestUtilities.RunTest(TestWordsAlmostTooLongForLine, ref allTestsPassed);
-			TestUtilities.RunTest(TestWordsTooLongForLine, ref allTestsPassed);
-			TestUtilities.RunTest(TestDeletingInMiddleOfDocument, ref allTestsPassed);
+			TestUtilities.RunTest(TestDisplayShortText, ref allTestsPassed);
 			TestUtilities.RunTest(TestDeletingInFirstWordOfLineTillWordFitsOnPreviousLine, ref allTestsPassed);
 			TestUtilities.RunTest(TestMovingUp, ref allTestsPassed);
 			TestUtilities.RunTest(TestMovingDown, ref allTestsPassed);
@@ -33,32 +38,54 @@ namespace SpireTest
 			documentView.Display();
 		}
 		
-		private void TestTypingSeveralLines()
+		private void TestDisplayShortText()
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
 			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("And yet, Dom Paulo's own Faith told him that the burden was there, had been there since Adam's time - and the burden imposed by a fiend crying in mockery, \"Man!\" at man.");
+			documentView.Display();
+		}
+		
+		private void TestDisplayLongText()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("And yet, Dom Paulo's own Faith told him that the burden was there, had been there since Adam's time - and the burden imposed by a fiend crying in mockery, \"Man!\" at man.");
+			documentModel.AddCharacters("And yet, Dom Paulo's own Faith told him that the burden was there, had been there since Adam's time - and the burden imposed by a fiend crying in mockery, \"Man!\" at man.");
+			documentModel.AddCharacters("And yet, Dom Paulo's own Faith told him that the burden was there, had been there since Adam's time - and the burden imposed by a fiend crying in mockery, \"Man!\" at man.");
+			documentModel.AddCharacters("And yet, Dom Paulo's own Faith told him that the burden was there, had been there since Adam's time - and the burden imposed by a fiend crying in mockery, \"Man!\" at man.");
+			documentModel.AddCharacters("123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890 ");
+			documentModel.AddCharacters("And yet, Dom Paulo's own Faith told him that the burden was there, had been there since Adam's time - and the burden imposed by a fiend crying in mockery, \"Man!\" at man.");
+			documentModel.AddCharacters("And yet, Dom Paulo's own Faith told him that the burden was there, had been there since Adam's time - and the burden imposed by a fiend crying in mockery, \"Man!\" at man.");
+			documentModel.AddCharacters("123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890 ");
+			documentModel.AddCharacters("And yet, Dom Paulo's own Faith told him that the burden was there, had been there since Adam's time - and the burden imposed by a fiend crying in mockery, \"Man!\" at man.");
+			documentModel.AddCharacters("And yet, Dom Paulo's own Faith told him that the burden was there, had been there since Adam's time - and the burden imposed by a fiend crying in mockery, \"Man!\" at man.");
+			documentModel.AddCharacters("And yet, Dom Paulo's own Faith told him that the burden was there, had been there since Adam's time - and the burden imposed by a fiend crying in mockery, \"Man!\" at man.");
+			documentModel.AddCharacters("123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890 ");
+			documentModel.AddCharacters("123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890 ");
+			documentModel.AddCharacters("123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890 ");
+			documentModel.AddCharacters("And yet, Dom Paulo's own Faith told him that the burden was there, had been there since Adam's time - and the burden imposed by a fiend crying in mockery, \"Man!\" at man.");
+			documentModel.AddCharacters("And yet, Dom Paulo's own Faith told him that the burden was there, had been there since Adam's time - and the burden imposed by a fiend crying in mockery, \"Man!\" at man.");
 			documentModel.AddCharacters("And yet, Dom Paulo's own Faith told him that the burden was there, had been there since Adam's time - and the burden imposed by a fiend crying in mockery, \"Man!\" at man.");
 			documentModel.AddCharacters("\"Man!\" - calling each to account for the deeds of all since the beginning; a burden impressed upon every generation before the opening of the womb, the burden of the guilt of original sin.");
 			documentModel.AddCharacters("Brother Francis was not entirely convinced that they were talking about the donkey. \"Good day to you, sir,\" the monk said pleasantly. \"You may take the ass. Walking will improve my health, I think.\" He smiled again and started away.");
 			documentView.Display();
 		}
 		
-		private void TestTypingInMiddleOfDocument()
+		private void TestDisplayTypingInMiddleOfDocument()
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
 			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
 			documentModel.AddCharacters("We know little or nothing of Vermeer's personality, and it is dangerous to generalize from the evidence of his paintings. He left behind him a large family and many debts, and his life may have been sordid.");
 			documentModel.AddCharacters("But a mind that is troubled may seek a peaceful refuge in art. Vermeer is almost as much a mystery as Shakespeare, but he is perhaps nearer to another British poet, his comtemporary Thomas Traherne (1637-74), whose work was almost lost for centuries and then recovered.");
-			documentView.Display();
 			documentModel.MoveCaretTo(15);
 			documentModel.AddCharacters("Vermeer's ability to convey a sense of absolute tranquility is nowhere more apparent than in this painting, his homage to his native city.");
-			documentView.Display();
 			documentModel.MoveCaretTo(80);
 			documentModel.AddCharacters("Air that can almost be felt, water and cool light are its chief elements.");
 			documentView.Display();
 		}
 		
-		private void TestWordsAlmostTooLongForLine()
+		private void TestDisplayWordsAlmostTooLongForLine()
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
 			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
@@ -68,7 +95,7 @@ namespace SpireTest
 			documentView.Display();
 		}
 
-		private void TestWordsTooLongForLine()
+		private void TestDisplayWordsTooLongForLine()
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
 			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
@@ -79,16 +106,14 @@ namespace SpireTest
 			documentView.Display();
 		}
 		
-		private void TestDeletingInMiddleOfDocument()
+		private void TestDisplayDeletingInMiddleOfDocument()
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
 			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
 			documentModel.AddCharacters("We know little or nothing of Vermeer's personality, and it is dangerous to generalize from the evidence of his paintings. He left behind him a large family and many debts, and his life may have been sordid.");
 			documentModel.AddCharacters("But a mind that is troubled may seek a peaceful refuge in art. Vermeer is almost as much a mystery as Shakespeare, but he is perhaps nearer to another British poet, his comtemporary Thomas Traherne (1637-74), whose work was almost lost for centuries and then recovered.");
-			documentView.Display();
 			documentModel.MoveCaretTo(15);
 			documentModel.DeleteCharacters(12, 12);
-			documentView.Display();
 			documentModel.MoveCaretTo(65);
 			documentModel.BackspaceCharacters(20, 20);
 			documentView.Display();
@@ -99,11 +124,9 @@ namespace SpireTest
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
 			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
 			documentModel.AddCharacters("One Two Threeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
-			documentView.Display();
 			documentModel.MoveCaretTo(15);
 			documentView.MoveUpOrDown(1,1); //verify there are two lines
 			documentModel.DeleteCharacters(documentModel.Length-documentModel.CaretPosition, documentModel.Length-documentModel.CaretPosition);
-			documentView.Display();
 			documentView.MoveUpOrDown(1,0); //there should now be just one line
 		}
 		

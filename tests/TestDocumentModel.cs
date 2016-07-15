@@ -10,6 +10,12 @@ namespace SpireTest
 		{
 		}
 		
+		public void RunLongTests(ref bool allTestsPassed)
+		{
+			TestUtilities.RunTest(TestLoad_AddAndRemoveInOrder, ref allTestsPassed);
+			TestUtilities.RunTest(TestLoad_AddAndRemoveRandomly, ref allTestsPassed);
+		}
+		
 		public void RunTests(ref bool allTestsPassed)
 		{
 			TestUtilities.RunTest(TestAllKeyboardCharacters, ref allTestsPassed);
@@ -21,8 +27,6 @@ namespace SpireTest
 			TestUtilities.RunTest(TestDeleteFromEndOfDocument, ref allTestsPassed);
 			TestUtilities.RunTest(TestBackspace, ref allTestsPassed);
 			TestUtilities.RunTest(TestBackspaceFromBeginningOfDocument, ref allTestsPassed);
-			//TestUtilities.RunTest(TestLoad_AddAndRemoveInOrder, ref allTestsPassed);
-			//TestUtilities.RunTest(TestLoad_AddAndRemoveRandomly, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoInNewDocument, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoMoreThanAvailable, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoOneLetter, ref allTestsPassed);
