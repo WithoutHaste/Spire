@@ -22,6 +22,7 @@ namespace Spire
 		public event EraseEventHandler OnEraseEvent;
 
 		public event EventHandler OnUndoEvent;
+		public event EventHandler OnRedoEvent;
 	
 		private DocumentView documentView;
 		private System.Timers.Timer caretTimer;
@@ -154,6 +155,9 @@ namespace Spire
 				throw new Exception("Control key required for function UserControlKeyDown.");
 			switch(e.KeyCode)
 			{
+				case Keys.Y:
+					RaiseRedoEvent();
+					break;
 				case Keys.Z:
 					RaiseUndoEvent();
 					break;
@@ -209,6 +213,12 @@ namespace Spire
 		{
 			if(OnUndoEvent == null) return;
 			OnUndoEvent(this, new EventArgs());
+		}
+
+		private void RaiseRedoEvent()
+		{
+			if(OnRedoEvent == null) return;
+			OnRedoEvent(this, new EventArgs());
 		}
 
 		protected override void OnPaint(PaintEventArgs e)

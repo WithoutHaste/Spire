@@ -23,7 +23,8 @@ namespace SpireTest
 			TestUtilities.RunTest(TestBackspaceFromBeginningOfDocument, ref allTestsPassed);
 			//TestUtilities.RunTest(TestLoad_AddAndRemoveInOrder, ref allTestsPassed);
 			//TestUtilities.RunTest(TestLoad_AddAndRemoveRandomly, ref allTestsPassed);
-			TestUtilities.RunTest(TestUndoInEmptyDocument, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoInNewDocument, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoMoreThanAvailable, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoOneLetter, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoSeveralLetters, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndo100Letters, ref allTestsPassed);
@@ -53,6 +54,13 @@ namespace SpireTest
 			TestUtilities.RunTest(TestUndoDigitsInWord, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoDigitsEndingWord, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoDigitsStartingWord, ref allTestsPassed);
+			TestUtilities.RunTest(TestRedoInNewDocument, ref allTestsPassed);
+			TestUtilities.RunTest(TestRedoTyping, ref allTestsPassed);
+			TestUtilities.RunTest(TestRedoBackspace, ref allTestsPassed);
+			TestUtilities.RunTest(TestRedoDelete, ref allTestsPassed);
+			TestUtilities.RunTest(TestRedoMoreThanAvailable, ref allTestsPassed);
+			TestUtilities.RunTest(TestRedoSeveralTimes, ref allTestsPassed);
+			TestUtilities.RunTest(TestRedoListClearsOnEdit, ref allTestsPassed);
 		}
 		
 		private void TestAllKeyboardCharacters()
@@ -210,9 +218,20 @@ namespace SpireTest
 				String.Format("Random editing {0} times took {1}h {2}m {3}s, longer than {4}s allowance", editCount, duration.Hours, duration.Minutes, duration.Seconds, maxSeconds));
 		}
 		
-		private void TestUndoInEmptyDocument()
+		private void TestUndoInNewDocument()
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.Undo(0, 0);
+		}
+		
+		private void TestUndoMoreThanAvailable()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abc def ghi");
+			documentModel.Undo(8, 8);
+			documentModel.Undo(4, 4);
+			documentModel.Undo(0, 0);
+			documentModel.Undo(0, 0);
 			documentModel.Undo(0, 0);
 		}
 		
@@ -583,6 +602,84 @@ namespace SpireTest
 			documentModel.VerifyTextEquals("1134two");
 			documentModel.Undo(0, 0);
 		}
+
+		private void TestRedoInNewDocument()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.Redo(0, 0);
+		}
+
+		private void TestRedoTyping()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("one two three");
+			documentModel.Undo(8, 8);
+			documentModel.VerifyTextEquals("one two ");
+			documentModel.Redo(13, 13);
+			documentModel.VerifyTextEquals("one two three");
+		}
+
+		private void TestRedoBackspace()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("one two three");
+			documentModel.BackspaceCharacters(7, 7);
+			documentModel.Undo(13, 13);
+			documentModel.VerifyTextEquals("one two three");
+			documentModel.Redo(6, 6);
+			documentModel.VerifyTextEquals("one tw");
+		}
+
+		private void TestRedoDelete()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("one two three");
+			documentModel.MoveCaretTo(0);
+			documentModel.DeleteCharacters(7, 7);
+			documentModel.Undo(13, 0);
+			documentModel.VerifyTextEquals("one two three");
+			documentModel.Redo(6, 0);
+			documentModel.VerifyTextEquals(" three");
+		}
+		
+		private void TestRedoMoreThanAvailable()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abc def ghi");
+			documentModel.Undo(8, 8);
+			documentModel.Undo(4, 4);
+			documentModel.Undo(0, 0);
+			documentModel.Redo(4, 4);
+			documentModel.Redo(8, 8);
+			documentModel.Redo(11, 11);
+			documentModel.Redo(11, 11);
+			documentModel.Redo(11, 11);
+		}
+		
+		private void TestRedoSeveralTimes()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("The brown fox");
+			documentModel.Undo(10, 10);
+			documentModel.Undo(4, 4);
+			documentModel.Undo(0, 0);
+			documentModel.Redo(4, 4);
+			documentModel.Redo(10, 10);
+			documentModel.Redo(13, 13);
+		}
+		
+		private void TestRedoListClearsOnEdit()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("The brown fox");
+			documentModel.Undo(10, 10);
+			documentModel.Undo(4, 4);
+			documentModel.Undo(0, 0);
+			documentModel.Redo(4, 4);
+			documentModel.AddCharacters("chubby bunny");
+			documentModel.Redo(16, 16);
+			documentModel.Redo(16, 16);
+		}
 	}
 	
 	public class DocumentModelWrapper : DocumentModel
@@ -654,6 +751,18 @@ namespace SpireTest
 			TestUtilities.Assert(this.CaretPosition == expectedCaretPosition, "wrong caret position after undo");
 		}
 		
+		public void Redo()
+		{
+			RaiseRedoEvent();
+		}
+		
+		public void Redo(int expectedLength, int expectedCaretPosition)
+		{
+			RaiseRedoEvent();
+			TestUtilities.Assert(this.Length == expectedLength, "wrong document length after redo");
+			TestUtilities.Assert(this.CaretPosition == expectedCaretPosition, "wrong caret position after redo");
+		}
+		
 		public void VerifyTextEquals(string text)
 		{
 			if(this.Length == 0)
@@ -682,6 +791,11 @@ namespace SpireTest
 		private void RaiseUndoEvent()
 		{
 			this.OnUndoEvent(this, new EventArgs());
+		}
+		
+		private void RaiseRedoEvent()
+		{
+			this.OnRedoEvent(this, new EventArgs());
 		}
 	}
 }
