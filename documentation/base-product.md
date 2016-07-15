@@ -111,9 +111,9 @@ xx	type part of word, wait awhile, type more words, undo
 --> current unit tests
 --> current Linux developement
 
-7b. Separate long running tests from fasts tests.
-
 8. Shift + Arrow Keys to highlight text.
+
+8b. Separate long running tests from fasts tests.
 
 9. Click with mouse to navigate edit position.
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Spire
 {
@@ -64,7 +65,18 @@ namespace Spire
 				return chunks[startChunkIndex].SubStringByCharIndex(from, to);
 			}
 			
-			//expected to be 1-2 concats only, if frequently more than 4, use StringBuilder instead
+			if(endChunkIndex - startChunkIndex < 3)
+			{
+				return SubStringWithConcat(startChunkIndex, endChunkIndex, from, to);
+			}
+			else
+			{
+				return SubStringWithStringBuilder(startChunkIndex, endChunkIndex, from, to);
+			}
+		}
+		
+		private string SubStringWithConcat(int startChunkIndex, int endChunkIndex, Cindex from, Cindex to)
+		{
 			string subString = chunks[startChunkIndex].SubStringFromCharIndex(from);
 			for(int i=startChunkIndex+1; i<endChunkIndex; i++)
 			{
@@ -72,6 +84,18 @@ namespace Spire
 			}
 			subString += chunks[endChunkIndex].SubStringToCharIndex(to);
 			return subString;
+		}
+		
+		private string SubStringWithStringBuilder(int startChunkIndex, int endChunkIndex, Cindex from, Cindex to)
+		{
+			StringBuilder stringBuilder = new StringBuilder();
+			stringBuilder.Append(chunks[startChunkIndex].SubStringFromCharIndex(from));
+			for(int i=startChunkIndex+1; i<endChunkIndex; i++)
+			{
+				stringBuilder.Append(chunks[i].Text);
+			}
+			stringBuilder.Append(chunks[endChunkIndex].SubStringToCharIndex(to));
+			return stringBuilder.ToString();
 		}
 		
 		private DocumentChunk LastChunk
