@@ -74,7 +74,6 @@ namespace Spire
 		{
 			documentModel.CaretPosition = startCindex - text.Length;
 			documentModel.OnTextEvent(this, new TextEventArgs(text, true));
-			documentModel.CaretPosition = startCindex;
 		}
 		
 		public override void Redo(DocumentModel documentModel)

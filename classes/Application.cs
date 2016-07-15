@@ -44,6 +44,7 @@ namespace Spire
 			paper.OnNavigationHorizontalEvent += new Paper.NavigationHorizontalEventHandler(documentModel.OnNavigationHorizontalEvent);
 			paper.OnEraseEvent += new Paper.EraseEventHandler(documentModel.OnEraseEvent);
 			paper.OnUndoEvent += new EventHandler(documentModel.OnUndoEvent);
+			paper.OnRedoEvent += new EventHandler(documentModel.OnRedoEvent);
 			
 			documentView = new DocumentView(documentModel);
 			documentView.AppendDisplayArea(new DisplayArea(paper.Width, paper.Height));

@@ -86,7 +86,7 @@ namespace Spire
 				history.Add(new DocumentEdit_AddCharacters(CaretPosition, e.Text));
 			}
 			InsertText(e.Text, CaretPosition);
-			CaretPosition += 1;
+			CaretPosition += e.Text.Length;
 		}
 		
 		public void OnNavigationHorizontalEvent(object sender, NavigationHorizontalEventArgs e)
@@ -146,6 +146,11 @@ namespace Spire
 		public void OnUndoEvent(object sender, EventArgs e)
 		{
 			history.Undo(this);
+		}
+		
+		public void OnRedoEvent(object sender, EventArgs e)
+		{
+			history.Redo(this);
 		}
 		
 		private void InsertText(string text, Cindex at)

@@ -98,12 +98,20 @@ xx	type part of word, wait awhile, type more words, undo
 	test numbers count as characters
 	test delete and backspace
 
+7. Redo.
+
+	test redo on new document
+	test redo typing
+	test redo backspace
+	test redo delete
+	test redo past end of redo list
+	test several undos then several redos
+	test that editing clears redo list
+
 --> current unit tests
 --> current Linux developement
 
-6b. Separate long running tests from fasts tests.
-
-7. Redo.
+7b. Separate long running tests from fasts tests.
 
 8. Shift + Arrow Keys to highlight text.
 
