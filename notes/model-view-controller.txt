@@ -1,5 +1,5 @@
-Model
-=====
+Document Model
+==============
 
 A single string of text comprising the entire document. Indexed by character from 0 to end.
 
@@ -17,6 +17,18 @@ Style start and end points saved here.
 Accept commands from Controller, Pass notice of changes to View.
 
 	Initial load testing of model shows that either (A) I am awesome at data structures or (B) computers are so fast that it doesn't make much difference how I model the text.
+
+
+
+Display Model
+=============
+
+List of displayable areas on the paper. This is as much as part of the total document as the Document Model.
+
+Document Model + Display Model => how the text is layed out on the screen.
+
+Save layout details (like line breaks) in Display Model?
+I should be able to ask how many lines long the document is, and navigate by line number.
 
 
 
