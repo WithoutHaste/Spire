@@ -108,16 +108,22 @@ xx	type part of word, wait awhile, type more words, undo
 	test several undos then several redos
 	test that editing clears redo list
 
+7b. Separate long running tests from fasts tests.
+
 --> current unit tests
 --> current Linux developement
 
-8. Shift + Arrow Keys to highlight text.
+8. Click with mouse to navigate edit position.
 
-8b. Separate long running tests from fasts tests.
-
-9. Click with mouse to navigate edit position.
+9. Shift + Arrow Keys to highlight text.
 
 9b. Drag and Drop to highlight text.
+
+9c. Delete highlighted text.
+
+9d. Backspace hightlighted text.
+
+9e. Type over highlighted text.
 
 10. Home Key and End Key.
 
