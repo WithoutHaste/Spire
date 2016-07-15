@@ -41,6 +41,18 @@ namespace SpireTest
 			TestUtilities.RunTest(TestUndoWordWithQuote, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoWordWithQuestionMark, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoWordWithExclamationMark, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoContinuingWordAfterMoving, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoContinuingBackspaceAfterMoving, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoContinuingDeleteAfterMoving, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoContinuingWordAfterTypingElsewhere, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoContinuingBackspaceAfterEditingElsewhere, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoContinuingDeleteAfterEditingElsewhere, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoEditWordAfterTypingElsewhere, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoDigit, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoDigits, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoDigitsInWord, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoDigitsEndingWord, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoDigitsStartingWord, ref allTestsPassed);
 		}
 		
 		private void TestAllKeyboardCharacters()
@@ -208,6 +220,13 @@ namespace SpireTest
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
 			documentModel.AddCharacters("a");
+			documentModel.BackspaceCharacters(1,1);
+			documentModel.Undo(1, 1);
+			documentModel.VerifyTextEquals("a");
+			documentModel.MoveCaret(-1, -1);
+			documentModel.DeleteCharacters(1, 1);
+			documentModel.Undo(1, 0);
+			documentModel.VerifyTextEquals("a");
 			documentModel.Undo(0, 0);
 		}
 		
@@ -215,18 +234,40 @@ namespace SpireTest
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
 			documentModel.AddCharacters("abcdef");
+			documentModel.BackspaceCharacters(3, 3);
+			documentModel.Undo(6, 6);
+			documentModel.VerifyTextEquals("abcdef");
+			documentModel.MoveCaret(-3, -3);
+			documentModel.DeleteCharacters(3, 3);
+			documentModel.Undo(6, 3);
+			documentModel.VerifyTextEquals("abcdef");
 			documentModel.Undo(0, 0);
 		}
 		
 		private void TestUndo100Letters()
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
-			for(int i=0; i<100; i++)
+			int count = 100;
+			for(int i=0; i<count; i++)
 			{
 				documentModel.AddCharacters("x");
 			}
+			string fullText = documentModel.SubString(0, count-1);
+			documentModel.BackspaceCharacters(count, count);
+			while(documentModel.Length < count)
+			{
+				documentModel.Undo();
+			}
+			documentModel.VerifyTextEquals(fullText);
+			documentModel.MoveCaretTo(0);
+			documentModel.DeleteCharacters(count, count);
+			while(documentModel.Length < count)
+			{
+				documentModel.Undo();
+			}
+			documentModel.VerifyTextEquals(fullText);
 			documentModel.Undo();
-			TestUtilities.Assert(documentModel.Length > 0 && documentModel.Length < 100, "length wrong");
+			TestUtilities.Assert(documentModel.Length > 0 && documentModel.Length < count, "length wrong");
 			TestUtilities.Assert(documentModel.Length == documentModel.CaretPosition, "caret position wrong");
 		}
 		
@@ -234,6 +275,13 @@ namespace SpireTest
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
 			documentModel.AddCharacters("one ");
+			documentModel.BackspaceCharacters(4, 4);
+			documentModel.Undo(4, 4);
+			documentModel.VerifyTextEquals("one ");
+			documentModel.MoveCaretTo(0);
+			documentModel.DeleteCharacters(4, 4);
+			documentModel.Undo(4, 0);
+			documentModel.VerifyTextEquals("one ");
 			documentModel.Undo(0, 0);
 		}
 		
@@ -241,8 +289,17 @@ namespace SpireTest
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
 			documentModel.AddCharacters("one two three");
+			documentModel.BackspaceCharacters(13, 13);
+			documentModel.Undo(13, 13);
+			documentModel.VerifyTextEquals("one two three");
+			documentModel.MoveCaretTo(0);
+			documentModel.DeleteCharacters(13, 13);
+			documentModel.Undo(13, 0);
+			documentModel.VerifyTextEquals("one two three");
 			documentModel.Undo(8, 8);
+			documentModel.VerifyTextEquals("one two ");
 			documentModel.Undo(4, 4);
+			documentModel.VerifyTextEquals("one ");
 			documentModel.Undo(0, 0);
 		}
 		
@@ -265,6 +322,13 @@ namespace SpireTest
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
 			documentModel.AddCharacters("Amelia-Rory");
+			documentModel.BackspaceCharacters(11, 11);
+			documentModel.Undo(11, 11);
+			documentModel.VerifyTextEquals("Amelia-Rory");
+			documentModel.MoveCaretTo(0);
+			documentModel.DeleteCharacters(11, 11);
+			documentModel.Undo(11, 0);
+			documentModel.VerifyTextEquals("Amelia-Rory");
 			documentModel.Undo(0, 0);
 		}
 		
@@ -290,68 +354,234 @@ namespace SpireTest
 			documentModel.Undo(0, 0);
 		}
 		
-		private void TestUndoWordWithComma()
+		private void TestUndoPunctuationAsCharacter(char punctuation)
 		{
+			string fullText = String.Format("and then{0} th{0}en {0}then", punctuation);
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
-			documentModel.AddCharacters("and then, th,en");
+			documentModel.AddCharacters(fullText);
+			documentModel.BackspaceCharacters(21, 21);
+			documentModel.Undo(21, 21);
+			documentModel.VerifyTextEquals(fullText);
+			documentModel.MoveCaretTo(0);
+			documentModel.DeleteCharacters(21, 21);
+			documentModel.Undo(21, 0);
+			documentModel.VerifyTextEquals(fullText);
+			documentModel.Undo(16, 16);
 			documentModel.Undo(10, 10);
 			documentModel.Undo(4, 4);
+		}
+		
+		private void TestUndoWordWithComma()
+		{
+			TestUndoPunctuationAsCharacter(',');
 		}
 		
 		private void TestUndoWordWithPeriod()
 		{
-			DocumentModelWrapper documentModel = new DocumentModelWrapper();
-			documentModel.AddCharacters("and then. th.en");
-			documentModel.Undo(10, 10);
-			documentModel.Undo(4, 4);
+			TestUndoPunctuationAsCharacter('.');
 		}
 		
 		private void TestUndoWordWithSemiColon()
 		{
-			DocumentModelWrapper documentModel = new DocumentModelWrapper();
-			documentModel.AddCharacters("and then; th;en");
-			documentModel.Undo(10, 10);
-			documentModel.Undo(4, 4);
+			TestUndoPunctuationAsCharacter(';');
 		}
 		
 		private void TestUndoWordWithColon()
 		{
-			DocumentModelWrapper documentModel = new DocumentModelWrapper();
-			documentModel.AddCharacters("and then: th:en");
-			documentModel.Undo(10, 10);
-			documentModel.Undo(4, 4);
+			TestUndoPunctuationAsCharacter(':');
 		}
 		
 		private void TestUndoWordWithApostrophe()
 		{
-			DocumentModelWrapper documentModel = new DocumentModelWrapper();
-			documentModel.AddCharacters("and then' th'en");
-			documentModel.Undo(10, 10);
-			documentModel.Undo(4, 4);
+			TestUndoPunctuationAsCharacter('\'');
 		}
 
 		private void TestUndoWordWithQuote()
 		{
-			DocumentModelWrapper documentModel = new DocumentModelWrapper();
-			documentModel.AddCharacters("and then\" th\"en");
-			documentModel.Undo(10, 10);
-			documentModel.Undo(4, 4);
+			TestUndoPunctuationAsCharacter('"');
 		}
 
 		private void TestUndoWordWithQuestionMark()
 		{
-			DocumentModelWrapper documentModel = new DocumentModelWrapper();
-			documentModel.AddCharacters("and then? th?en");
-			documentModel.Undo(10, 10);
-			documentModel.Undo(4, 4);
+			TestUndoPunctuationAsCharacter('?');
 		}
 
 		private void TestUndoWordWithExclamationMark()
 		{
+			TestUndoPunctuationAsCharacter('!');
+		}
+		
+		private void TestUndoContinuingWordAfterMoving()
+		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
-			documentModel.AddCharacters("and then! th!en");
-			documentModel.Undo(10, 10);
+			documentModel.AddCharacters("chubby bunny");
+			documentModel.MoveCaret(-3, -3);
+			documentModel.MoveCaret(3, 3);
+			documentModel.AddCharacters("Easter");
+			documentModel.Undo(7, 7);
+			documentModel.Undo(0, 0);
+		}
+		
+		private void TestUndoContinuingBackspaceAfterMoving()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("whale in pail");
+			documentModel.BackspaceCharacters(5, 5);
+			documentModel.MoveCaret(-2, -2);
+			documentModel.MoveCaret(2, 2);
+			documentModel.BackspaceCharacters(3, 3);
+			documentModel.Undo(13, 13);
+			documentModel.VerifyTextEquals("whale in pail");
+		}
+		
+		private void TestUndoContinuingDeleteAfterMoving()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("whale in pail");
+			documentModel.MoveCaretTo(0);
+			documentModel.DeleteCharacters(5, 5);
+			documentModel.MoveCaret(2, 2);
+			documentModel.MoveCaret(-2, -2);
+			documentModel.DeleteCharacters(3, 3);
+			documentModel.Undo(13, 0);
+			documentModel.VerifyTextEquals("whale in pail");
+		}
+		
+		private void TestUndoContinuingWordAfterTypingElsewhere()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("big red ball");
+			documentModel.MoveCaretTo(4);
+			documentModel.AddCharacters("soft");
+			documentModel.MoveCaretTo(16);
+			documentModel.AddCharacters("bearing");
+			documentModel.Undo(16, 16);
+			documentModel.Undo(12, 4);
+			documentModel.Undo(8, 8);
 			documentModel.Undo(4, 4);
+			documentModel.Undo(0, 0);
+		}
+		
+		private void TestUndoContinuingBackspaceAfterEditingElsewhere()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("whale in pail");
+			documentModel.BackspaceCharacters(5, 5); //whale in//
+			documentModel.MoveCaret(-2, -2);
+			documentModel.BackspaceCharacters(1, 1); //whalein//
+			documentModel.MoveCaret(2, 2);
+			documentModel.BackspaceCharacters(3, 3); //whal//
+			documentModel.VerifyTextEquals("whal");
+			documentModel.Undo(7, 7);
+			documentModel.VerifyTextEquals("whalein");
+			documentModel.Undo(8, 6);
+			documentModel.VerifyTextEquals("whale in");
+			documentModel.Undo(13, 13);
+			documentModel.VerifyTextEquals("whale in pail");
+		}
+		
+		private void TestUndoContinuingDeleteAfterEditingElsewhere()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("whale in pail");
+			documentModel.MoveCaretTo(0);
+			documentModel.DeleteCharacters(5, 5); // in pail//
+			documentModel.MoveCaret(2, 2);
+			documentModel.DeleteCharacters(1, 1); // i pail//
+			documentModel.MoveCaret(-2, -2);
+			documentModel.DeleteCharacters(3, 3); //pail//
+			documentModel.VerifyTextEquals("pail");
+			documentModel.Undo(7, 0);
+			documentModel.VerifyTextEquals(" i pail");
+			documentModel.Undo(8, 2);
+			documentModel.VerifyTextEquals(" in pail");
+			documentModel.Undo(13, 0);
+			documentModel.VerifyTextEquals("whale in pail");
+		}
+		
+		private void TestUndoEditWordAfterTypingElsewhere()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("big red ball");
+			documentModel.MoveCaretTo(4);
+			documentModel.AddCharacters("soft");
+			documentModel.MoveCaretTo(14);
+			documentModel.AddCharacters("llalla");
+			documentModel.Undo(16, 14);
+			documentModel.Undo(12, 4);
+			documentModel.Undo(8, 8);
+		}
+		
+		private void TestUndoDigit()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("one 1 two");
+			documentModel.BackspaceCharacters(9, 9);
+			documentModel.Undo(9, 9);
+			documentModel.VerifyTextEquals("one 1 two");
+			documentModel.MoveCaretTo(0);
+			documentModel.DeleteCharacters(9, 9);
+			documentModel.Undo(9, 0);
+			documentModel.VerifyTextEquals("one 1 two");
+			documentModel.Undo(6, 6);
+			documentModel.Undo(4, 4);
+		}
+		
+		private void TestUndoDigits()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("one 1134 two");
+			documentModel.BackspaceCharacters(12, 12);
+			documentModel.Undo(12, 12);
+			documentModel.VerifyTextEquals("one 1134 two");
+			documentModel.MoveCaretTo(0);
+			documentModel.DeleteCharacters(12, 12);
+			documentModel.Undo(12, 0);
+			documentModel.VerifyTextEquals("one 1134 two");
+			documentModel.Undo(9, 9);
+			documentModel.Undo(4, 4);
+		}
+		
+		private void TestUndoDigitsInWord()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("one1134two");
+			documentModel.BackspaceCharacters(10, 10);
+			documentModel.Undo(10, 10);
+			documentModel.VerifyTextEquals("one1134two");
+			documentModel.MoveCaretTo(0);
+			documentModel.DeleteCharacters(10, 10);
+			documentModel.Undo(10, 0);
+			documentModel.VerifyTextEquals("one1134two");
+			documentModel.Undo(0, 0);
+		}
+		
+		private void TestUndoDigitsEndingWord()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("one1134");
+			documentModel.BackspaceCharacters(7, 7);
+			documentModel.Undo(7, 7);
+			documentModel.VerifyTextEquals("one1134");
+			documentModel.MoveCaretTo(0);
+			documentModel.DeleteCharacters(7, 7);
+			documentModel.Undo(7, 0);
+			documentModel.VerifyTextEquals("one1134");
+			documentModel.Undo(0, 0);
+		}
+		
+		private void TestUndoDigitsStartingWord()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("1134two");
+			documentModel.BackspaceCharacters(7, 7);
+			documentModel.Undo(7, 7);
+			documentModel.VerifyTextEquals("1134two");
+			documentModel.MoveCaretTo(0);
+			documentModel.DeleteCharacters(7, 7);
+			documentModel.Undo(7, 0);
+			documentModel.VerifyTextEquals("1134two");
+			documentModel.Undo(0, 0);
 		}
 	}
 	
@@ -422,6 +652,16 @@ namespace SpireTest
 			RaiseUndoEvent();
 			TestUtilities.Assert(this.Length == expectedLength, "wrong document length after undo");
 			TestUtilities.Assert(this.CaretPosition == expectedCaretPosition, "wrong caret position after undo");
+		}
+		
+		public void VerifyTextEquals(string text)
+		{
+			if(this.Length == 0)
+			{
+				TestUtilities.Assert(text == "", "transcription error");
+				return;
+			}
+			TestUtilities.Assert(this.SubString(0, this.Length-1) == text, "transcription error");
 		}
 		
 		private void RaiseTextEvent(char text)

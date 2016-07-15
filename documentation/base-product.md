@@ -92,12 +92,13 @@ xx	type part of word, wait awhile, type more words, undo
 	type word with comma at end, undo
 	type word with period at end, undo
 	test other punctuation
---> current unit tests
-	type word, type in another part of document, add to first word with no space, undo, undo, undo
 	type word, move cursor, go back to end of word, type more, undo
+	type word, type in another part of document, add to first word with no space, undo, undo, undo
 	type word, move cursor, go to middle of word, type more, undo, undo
 	test numbers count as characters
+	test delete and backspace
 
+--> current unit tests
 --> current Linux developement
 
 6b. Separate long running tests from fasts tests.
