@@ -10,13 +10,14 @@ namespace Spire
 		public event UpdateAtEventHandler OnUpdateAtEvent;
 
 		private Cindex _caretPosition;
-		private List<DocumentChunk> chunks; //list is never left empty
+		private Cindex? _highlightPosition;
+		private List<DocumentChunk> chunks;
 		private History history;
 	
 		public DocumentModel()
 		{
 			chunks = new List<DocumentChunk>();
-			chunks.Add(new DocumentChunk());
+			chunks.Add(new DocumentChunk()); //list is never left empty
 			UpdateChunksIndexesFrom(0);
 			CaretPosition = 0;
 			history = new History();
@@ -41,6 +42,22 @@ namespace Spire
 			}
 		}
 		
+		public Cindex HighlightPosition
+		{
+			get
+			{
+				if(_highlightPosition == null)
+					return _caretPosition;
+				return _highlightPosition.Value;
+			}
+			set 
+			{
+				if(value < 0) value = 0;
+				if(value > Length) value = Length;
+				_highlightPosition = value;
+			}
+		}
+		
 		public char this[int cindex]
 		{
 			get
@@ -49,6 +66,11 @@ namespace Spire
 				DocumentChunk chunk = chunks[chunkIndex];
 				return chunk[cindex];
 			}
+		}
+		
+		public void ClearHighlight()
+		{
+			_highlightPosition = null;
 		}
 		
 		public string SubString(Cindex from, Cindex to)
@@ -111,22 +133,46 @@ namespace Spire
 			}
 			InsertText(e.Text, CaretPosition);
 			CaretPosition += e.Text.Length;
+			ClearHighlight();
 		}
 		
-		public void OnNavigationHorizontalEvent(object sender, NavigationHorizontalEventArgs e)
+		public void OnCaretNavigationHorizontalEvent(object sender, NavigationHorizontalEventArgs e)
 		{
+			int amount = 0;
+			switch(e.Direction)
+			{
+				case HorizontalDirection.Left: amount = -1; break;
+				case HorizontalDirection.Right: amount = 1; break;
+				default: throw new Exception(String.Format("HorizontalDirection {0} not supported in document navigation", e.Direction));
+			}
+			switch(e.Unit)
+			{
+				case TextUnit.Character: CaretPosition += amount; break;
+				case TextUnit.Word: throw new Exception("navigation by word not implemented");
+				default: throw new Exception(String.Format("Unit {0} not supported in document navigation", e.Unit));
+			}
+			ClearHighlight();
+		}
+
+		public void OnHighlightNavigationHorizontalEvent(object sender, NavigationHorizontalEventArgs e)
+		{
+			int amount = 0;
+			switch(e.Direction)
+			{
+				case HorizontalDirection.Left: amount = -1; break;
+				case HorizontalDirection.Right: amount = 1; break;
+				default: throw new Exception(String.Format("HorizontalDirection {0} not supported in document highlighting", e.Direction));
+			}
 			switch(e.Unit)
 			{
 				case TextUnit.Character:
-					CaretPosition += e.Amount;
+					HighlightPosition += amount;
 					break;
-				case TextUnit.Word:
-					throw new Exception("navigation by word not implemented");
-				default:
-					throw new Exception(String.Format("Unit {0} not supported in document navigation", e.Unit));
+				case TextUnit.Word: throw new Exception("highlighting by word not implemented");
+				default: throw new Exception(String.Format("Unit {0} not supported in document highlighting", e.Unit));
 			}
 		}
-		
+				
 		public void OnEraseEvent(object sender, EraseEventArgs e)
 		{
 			switch(e.Unit)
@@ -139,6 +185,7 @@ namespace Spire
 				default:
 					throw new Exception(String.Format("Unit {0} not supported in document erasures", e.Unit));
 			}
+			ClearHighlight();
 		}
 		
 		private void OnEraseCharactersEvent(EraseEventArgs e)
@@ -170,11 +217,13 @@ namespace Spire
 		public void OnUndoEvent(object sender, EventArgs e)
 		{
 			history.Undo(this);
+			ClearHighlight();
 		}
 		
 		public void OnRedoEvent(object sender, EventArgs e)
 		{
 			history.Redo(this);
+			ClearHighlight();
 		}
 		
 		private void InsertText(string text, Cindex at)

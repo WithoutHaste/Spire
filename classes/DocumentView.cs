@@ -21,9 +21,19 @@ namespace Spire
 			layoutUpdatedTo = 0;
 		}
 		
-		public int CaretPosition
+		public Cindex CaretPosition
 		{
 			get { return documentModel.CaretPosition; }
+		}
+		
+		public Cindex HighlightPosition
+		{
+			get { return documentModel.HighlightPosition; }
+		} 
+		
+		public bool HighlightOn
+		{
+			get { return (HighlightPosition != CaretPosition); }
 		}
 		
 		public int LineCount
@@ -36,21 +46,48 @@ namespace Spire
 			UpdateLayoutFrom(Math.Min(layoutUpdatedTo, PreviousLineBreak(e.At)));
 		}
 		
-		public void OnNavigationVerticalEvent(object sender, NavigationVerticalEventArgs e)
+		public void OnCaretNavigationVerticalEvent(object sender, NavigationVerticalEventArgs e)
 		{
+			int amount = 0;
+			switch(e.Direction)
+			{
+				case VerticalDirection.Up: amount = -1; break;
+				case VerticalDirection.Down: amount = 1; break;
+				default: throw new Exception(String.Format("VerticalDirection {0} not supported in document highlighting", e.Direction));
+			}
 			DisplayArea displayArea = displayAreas[0];
 			Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height);
-			Point caretLocation = CaretLocation(graphics, displayArea);
-			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(CaretPosition);
-			lineBreakIndex += e.Amount; //assuming only + or - one line
+			documentModel.CaretPosition = CalculateVerticalMove(graphics, displayArea, CaretPosition, amount);
+			documentModel.ClearHighlight();
+		}
+		
+		public void OnHighlightNavigationVerticalEvent(object sender, NavigationVerticalEventArgs e)
+		{
+			int amount = 0;
+			switch(e.Direction)
+			{
+				case VerticalDirection.Up: amount = -1; break;
+				case VerticalDirection.Down: amount = 1; break;
+				default: throw new Exception(String.Format("VerticalDirection {0} not supported in document highlighting", e.Direction));
+			}
+			DisplayArea displayArea = displayAreas[0];
+			Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height);
+			documentModel.HighlightPosition = CalculateVerticalMove(graphics, displayArea, HighlightPosition, amount);
+		}
+		
+		private Cindex CalculateVerticalMove(Graphics graphics, DisplayArea displayArea, Cindex currentPosition, int moveAmount)
+		{
+			Point currentPoint = CindexLocation(graphics, displayArea, currentPosition);
+			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(currentPosition);
+			lineBreakIndex += moveAmount;
 			if(lineBreakIndex < -1)
-				return;
+				return currentPosition;
 			if(lineBreakIndex >= displayArea.LineBreaks.Count)
-				return;
+				return currentPosition;
 			Cindex lineStart = 0;
 			if(lineBreakIndex > -1)
 				lineStart = displayArea.LineBreaks[lineBreakIndex] + 1;
-			documentModel.CaretPosition = FindCindexClosestToX(graphics, lineStart, caretLocation.X);			
+			return FindCindexClosestToX(graphics, lineStart, currentPoint.X);
 		}
 		
 		public void OnNavigationPointEvent(object sender, NavigationPointEventArgs e)
@@ -63,6 +100,7 @@ namespace Spire
 			int lineStart = (lineBreakIndex >= 0) ? displayArea.LineBreaks[lineBreakIndex] + 1 : 0;
 			int cindex = FindCindexClosestToX(graphics, lineStart, e.X);
 			documentModel.CaretPosition = cindex;
+			documentModel.ClearHighlight();
 		}
 		
 		private Cindex FindCindexClosestToX(Graphics graphics, Cindex lineStart, int x)
@@ -179,46 +217,66 @@ namespace Spire
 		
 		private void DrawText(Graphics graphics)
 		{
-			Brush brush = new SolidBrush(Color.Black);
 			int lineHeight = StringHeight(graphics, "X");
 			DisplayArea displayArea = displayAreas[0];
 			int y = 0;
 			Cindex lineStart = 0;
 			foreach(Cindex lineBreak in displayArea.LineBreaks)
 			{
-				graphics.DrawString(documentModel.SubString(lineStart, lineBreak), Application.GlobalFont, brush, new Point(0, y), stringFormat);
+				DrawTextLine(graphics, y, lineStart, lineBreak);
 				y += lineHeight;
 				lineStart = lineBreak+1;
 			}
 			if(lineStart < documentModel.Length)
 			{
-				graphics.DrawString(documentModel.SubString(lineStart, documentModel.Length-1), Application.GlobalFont, brush, new Point(0, y), stringFormat);
+				DrawTextLine(graphics, y, lineStart, documentModel.Length-1);
 			}
+		}
+		
+		private void DrawTextLine(Graphics graphics, int y, Cindex lineStart, Cindex lineEnd)
+		{
+			DrawHighlightLine(graphics, y, lineStart, lineEnd);
+			Brush textBrush = new SolidBrush(Color.Black);
+			graphics.DrawString(documentModel.SubString(lineStart, lineEnd), Application.GlobalFont, textBrush, new Point(0, y), stringFormat);
+		}
+		
+		private void DrawHighlightLine(Graphics graphics, int y, Cindex lineStart, Cindex lineEnd)
+		{
+			if(!HighlightOn) return;
+			Cindex highlightStart = Math.Min(HighlightPosition, CaretPosition);
+			Cindex highlightEnd = Math.Max(HighlightPosition, CaretPosition);
+			if(highlightStart > lineEnd) return;
+			if(highlightEnd < lineStart) return;
+			Brush highlightBrush = new SolidBrush(Color.FromArgb(255, 205, 255, 255));
+			Point start = CindexLocation(graphics, displayAreas[0], Math.Max(highlightStart, lineStart));
+			Point end = CindexLocation(graphics, displayAreas[0], Math.Max(highlightEnd, lineEnd));
+			int lineHeight = StringHeight(graphics, "X");
+			graphics.FillRectangle(highlightBrush, start.X, start.Y, end.X-start.X, lineHeight);
 		}
 		
 		private void DrawCaret(Graphics graphics)
 		{
 			Pen pen = new Pen(Color.Black, 0.5f);
 			int lineHeight = StringHeight(graphics, "X");
-			Point caretLocation = CaretLocation(graphics, displayAreas[0]);
+			Point caretLocation = CindexLocation(graphics, displayAreas[0], CaretPosition);
 			graphics.DrawLine(pen, caretLocation.X, caretLocation.Y, caretLocation.X, caretLocation.Y + lineHeight);
 		}
 		
-		private Point CaretLocation(Graphics graphics, DisplayArea displayArea)
+		private Point CindexLocation(Graphics graphics, DisplayArea displayArea, Cindex cindex)
 		{
 			int lineHeight = StringHeight(graphics, "X");
 			Cindex lineStart = 0;
 			int y = 0;
-			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(CaretPosition);
+			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(cindex);
 			if(lineBreakIndex > -1)
 			{
 				lineStart = displayArea.LineBreaks[lineBreakIndex] + 1;
 				y = (lineBreakIndex+1) * lineHeight;
 			}
 			string textToCaret = "";
-			if(lineStart < documentModel.Length && lineStart < CaretPosition)
+			if(lineStart < documentModel.Length && lineStart < cindex)
 			{
-				textToCaret = documentModel.SubString(lineStart, CaretPosition-1);
+				textToCaret = documentModel.SubString(lineStart, cindex-1);
 			}
 			SizeF textSize = MeasureString(graphics, textToCaret);
 			return new Point((int)Math.Ceiling(textSize.Width), y);

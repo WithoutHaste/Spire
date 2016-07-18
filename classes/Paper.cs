@@ -12,11 +12,17 @@ namespace Spire
 		public delegate void TextEventHandler(object sender, TextEventArgs e);
 		public event TextEventHandler OnTextEvent;
 		
-		public delegate void NavigationHorizontalEventHandler(object sender, NavigationHorizontalEventArgs e);
-		public event NavigationHorizontalEventHandler OnNavigationHorizontalEvent;
+		public delegate void CaretNavigationHorizontalEventHandler(object sender, NavigationHorizontalEventArgs e);
+		public event CaretNavigationHorizontalEventHandler OnCaretNavigationHorizontalEvent;
 		
-		public delegate void NavigationVerticalEventHandler(object sender, NavigationVerticalEventArgs e);
-		public event NavigationVerticalEventHandler OnNavigationVerticalEvent;
+		public delegate void CaretNavigationVerticalEventHandler(object sender, NavigationVerticalEventArgs e);
+		public event CaretNavigationVerticalEventHandler OnCaretNavigationVerticalEvent;
+		
+		public delegate void HighlightNavigationHorizontalEventHandler(object sender, NavigationHorizontalEventArgs e);
+		public event HighlightNavigationHorizontalEventHandler OnHighlightNavigationHorizontalEvent;
+		
+		public delegate void HighlightNavigationVerticalEventHandler(object sender, NavigationVerticalEventArgs e);
+		public event HighlightNavigationVerticalEventHandler OnHighlightNavigationVerticalEvent;
 		
 		public delegate void NavigationPointEventHandler(object sender, NavigationPointEventArgs e);
 		public event NavigationPointEventHandler OnNavigationPointEvent;
@@ -48,7 +54,8 @@ namespace Spire
 		public void SetView(DocumentView view)
 		{
 			documentView = view;
-			this.OnNavigationVerticalEvent += new Paper.NavigationVerticalEventHandler(documentView.OnNavigationVerticalEvent);
+			this.OnCaretNavigationVerticalEvent += new Paper.CaretNavigationVerticalEventHandler(documentView.OnCaretNavigationVerticalEvent);
+			this.OnHighlightNavigationVerticalEvent += new Paper.HighlightNavigationVerticalEventHandler(documentView.OnHighlightNavigationVerticalEvent);
 			this.OnNavigationPointEvent += new Paper.NavigationPointEventHandler(documentView.OnNavigationPointEvent);
 		}
 				
@@ -131,22 +138,27 @@ namespace Spire
 				UserControlKeyDown(e);
 				return;
 			}
+			if(e.Shift)
+			{
+				UserShiftKeyDown(e);
+				return;
+			}
 			switch(e.KeyCode)
 			{
 				case Keys.Delete:
 					RaiseEraseEvent(TextUnit.Character, 1);
 					break;
 				case Keys.Down:
-					RaiseNavigationVerticalEvent(1);
+					RaiseCaretNavigationVerticalEvent(VerticalDirection.Down);
 					break;
 				case Keys.Left:
-					RaiseNavigationHorizontalEvent(TextUnit.Character, -1);
+					RaiseCaretNavigationHorizontalEvent(TextUnit.Character, HorizontalDirection.Left);
 					break;
 				case Keys.Right:
-					RaiseNavigationHorizontalEvent(TextUnit.Character, 1);
+					RaiseCaretNavigationHorizontalEvent(TextUnit.Character, HorizontalDirection.Right);
 					break;
 				case Keys.Up:
-					RaiseNavigationVerticalEvent(-1);
+					RaiseCaretNavigationVerticalEvent(VerticalDirection.Up);
 					break;
 				default:
 					return;
@@ -166,6 +178,31 @@ namespace Spire
 					break;
 				case Keys.Z:
 					RaiseUndoEvent();
+					break;
+				default:
+					return;
+			}
+			e.Handled = true;
+			this.Invalidate();
+		}
+		
+		private void UserShiftKeyDown(KeyEventArgs e)
+		{
+			if(!e.Shift)
+				throw new Exception("Shift key required for function UserShiftKeyDown.");
+			switch(e.KeyCode)
+			{
+				case Keys.Down:
+					RaiseHighlightNavigationVerticalEvent(VerticalDirection.Down);
+					break;
+				case Keys.Left:
+					RaiseHighlightNavigationHorizontalEvent(TextUnit.Character, HorizontalDirection.Left);
+					break;
+				case Keys.Right:
+					RaiseHighlightNavigationHorizontalEvent(TextUnit.Character, HorizontalDirection.Right);
+					break;
+				case Keys.Up:
+					RaiseHighlightNavigationVerticalEvent(VerticalDirection.Up);
 					break;
 				default:
 					return;
@@ -202,18 +239,30 @@ namespace Spire
 			OnTextEvent(this, new TextEventArgs(text));
 		}
 		
-		private void RaiseNavigationHorizontalEvent(TextUnit unit, int amount)
+		private void RaiseCaretNavigationHorizontalEvent(TextUnit unit, HorizontalDirection direction)
 		{
-			if(OnNavigationHorizontalEvent == null) return;
+			if(OnCaretNavigationHorizontalEvent == null) return;
 			EnableCaretMovingTimer();
-			OnNavigationHorizontalEvent(this, new NavigationHorizontalEventArgs(unit, amount));
+			OnCaretNavigationHorizontalEvent(this, new NavigationHorizontalEventArgs(unit, direction));
 		}
 		
-		private void RaiseNavigationVerticalEvent(int amount)
+		private void RaiseCaretNavigationVerticalEvent(VerticalDirection direction)
 		{
-			if(OnNavigationVerticalEvent == null) return;
+			if(OnCaretNavigationVerticalEvent == null) return;
 			EnableCaretMovingTimer();
-			OnNavigationVerticalEvent(this, new NavigationVerticalEventArgs(amount));
+			OnCaretNavigationVerticalEvent(this, new NavigationVerticalEventArgs(direction));
+		}
+		
+		private void RaiseHighlightNavigationHorizontalEvent(TextUnit unit, HorizontalDirection direction)
+		{
+			if(OnHighlightNavigationHorizontalEvent == null) return;
+			OnHighlightNavigationHorizontalEvent(this, new NavigationHorizontalEventArgs(unit, direction));
+		}
+		
+		private void RaiseHighlightNavigationVerticalEvent(VerticalDirection direction)
+		{
+			if(OnHighlightNavigationVerticalEvent == null) return;
+			OnHighlightNavigationVerticalEvent(this, new NavigationVerticalEventArgs(direction));
 		}
 		
 		private void RaiseEraseEvent(TextUnit unit, int amount)

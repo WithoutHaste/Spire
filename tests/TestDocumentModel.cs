@@ -739,7 +739,7 @@ namespace SpireTest
 		public void MoveCaret(int distance, int expectedChange)
 		{
 			int currentPosition = this.CaretPosition;
-			RaiseNavigationHorizontalEvent(TextUnit.Character, distance);
+			RaiseCaretNavigationHorizontalEvent(TextUnit.Character, distance);
 			TestUtilities.Assert(currentPosition + expectedChange == this.CaretPosition, String.Format("error moving caret from {0} by {1}, document length {2}", currentPosition, distance, this.Length));
 		}
 		
@@ -782,9 +782,18 @@ namespace SpireTest
 			this.OnTextEvent(this, new TextEventArgs(text));
 		}
 
-		private void RaiseNavigationHorizontalEvent(TextUnit units, int distance)
+		private void RaiseCaretNavigationHorizontalEvent(TextUnit units, int distance)
 		{
-			this.OnNavigationHorizontalEvent(this, new NavigationHorizontalEventArgs(units, distance));
+			while(distance < 0)
+			{
+				this.OnCaretNavigationHorizontalEvent(this, new NavigationHorizontalEventArgs(units, HorizontalDirection.Left));
+				distance++;
+			}
+			while(distance > 0)
+			{
+				this.OnCaretNavigationHorizontalEvent(this, new NavigationHorizontalEventArgs(units, HorizontalDirection.Right));
+				distance--;
+			}
 		}
 		
 		private void RaiseEraseEvent(TextUnit units, int count)

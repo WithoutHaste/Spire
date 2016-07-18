@@ -4,11 +4,11 @@ namespace Spire
 {
 	public class NavigationVerticalEventArgs : EventArgs
 	{
-		public int Amount { get; private set; }
+		public VerticalDirection Direction { get; private set; }
 		
-		public NavigationVerticalEventArgs(int amount)
+		public NavigationVerticalEventArgs(VerticalDirection direction)
 		{
-			Amount = amount;
+			Direction = direction;
 		}
 	}
 }

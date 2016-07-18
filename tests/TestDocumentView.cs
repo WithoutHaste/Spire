@@ -209,7 +209,7 @@ namespace SpireTest
 		public void MoveUpOrDown(int distance, int expectedChange)
 		{
 			int previousPosition = this.CaretPosition;
-			RaiseNavigationVerticalEvent(distance);
+			RaiseCaretNavigationVerticalEvent(distance);
 			bool success = true;
 			if(expectedChange == 0) success = (previousPosition == this.CaretPosition);
 			else if(expectedChange < 0) success = (this.CaretPosition < previousPosition);
@@ -217,9 +217,18 @@ namespace SpireTest
 			TestUtilities.Assert(success, String.Format("error moving caret from {0} by {1} line(s), expected change {2}", previousPosition, distance, expectedChange));
 		}
 		
-		private void RaiseNavigationVerticalEvent(int distance)
+		private void RaiseCaretNavigationVerticalEvent(int distance)
 		{
-			this.OnNavigationVerticalEvent(this, new NavigationVerticalEventArgs(distance));
+			while(distance < 0)
+			{
+				this.OnCaretNavigationVerticalEvent(this, new NavigationVerticalEventArgs(VerticalDirection.Up));
+				distance++;
+			}
+			while(distance > 0)
+			{
+				this.OnCaretNavigationVerticalEvent(this, new NavigationVerticalEventArgs(VerticalDirection.Down));
+				distance--;
+			}
 		}
 		
 	}
