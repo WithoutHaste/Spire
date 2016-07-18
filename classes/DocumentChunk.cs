@@ -59,12 +59,12 @@ namespace Spire
 			get { return Start + Length - 1; }
 		}
 		
-		public bool TooShort
+		public bool IsTooShort
 		{
 			get { return (_length < lowerChunkLength); }
 		}
 		
-		public bool TooLong
+		public bool IsTooLong
 		{
 			get { return (_length > upperChunkLength); }
 		}

@@ -18,6 +18,9 @@ namespace Spire
 		public delegate void NavigationVerticalEventHandler(object sender, NavigationVerticalEventArgs e);
 		public event NavigationVerticalEventHandler OnNavigationVerticalEvent;
 		
+		public delegate void NavigationPointEventHandler(object sender, NavigationPointEventArgs e);
+		public event NavigationPointEventHandler OnNavigationPointEvent;
+		
 		public delegate void EraseEventHandler(object sender, EraseEventArgs e);
 		public event EraseEventHandler OnEraseEvent;
 
@@ -33,17 +36,20 @@ namespace Spire
 		public Paper()
 		{
 			SetupDoubleBuffer();
+			this.Cursor = Cursors.IBeam;
 			this.GotFocus += new EventHandler(EnableCaretTimer);
 			this.LostFocus += new EventHandler(DisableCaretTimer);
 			this.PreviewKeyDown += new PreviewKeyDownEventHandler(PreviewUserKeyDown);
 			this.KeyPress += new KeyPressEventHandler(UserKeyPress);
 			this.KeyDown += new KeyEventHandler(UserKeyDown);
+			this.MouseClick += new MouseEventHandler(UserMouseClick);
 		}
 		
 		public void SetView(DocumentView view)
 		{
 			documentView = view;
 			this.OnNavigationVerticalEvent += new Paper.NavigationVerticalEventHandler(documentView.OnNavigationVerticalEvent);
+			this.OnNavigationPointEvent += new Paper.NavigationPointEventHandler(documentView.OnNavigationPointEvent);
 		}
 				
 		private void SetupDoubleBuffer()
@@ -183,6 +189,13 @@ namespace Spire
 			this.Invalidate();
 		}
 		
+		private void UserMouseClick(object sender, MouseEventArgs e)
+		{
+			if(e.Button == MouseButtons.Right) return;
+			RaiseNavigationPointEvent(e.X, e.Y);
+			this.Invalidate();
+		}
+		
 		private void RaiseTextEvent(char text)
 		{
 			if(OnTextEvent == null) return;
@@ -219,6 +232,13 @@ namespace Spire
 		{
 			if(OnRedoEvent == null) return;
 			OnRedoEvent(this, new EventArgs());
+		}
+		
+		private void RaiseNavigationPointEvent(int x, int y)
+		{
+			if(OnNavigationPointEvent == null) return;
+			EnableCaretMovingTimer();
+			OnNavigationPointEvent(this, new NavigationPointEventArgs(x, y));
 		}
 
 		protected override void OnPaint(PaintEventArgs e)

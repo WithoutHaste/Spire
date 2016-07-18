@@ -108,12 +108,13 @@ xx	type part of word, wait awhile, type more words, undo
 	test several undos then several redos
 	test that editing clears redo list
 
-7b. Separate long running tests from fasts tests.
+7b. Separate long running tests from fast tests.
 
 --> current unit tests
---> current Linux developement
 
 8. Click with mouse to navigate edit position.
+
+--> current Linux developement
 
 9. Shift + Arrow Keys to highlight text.
 

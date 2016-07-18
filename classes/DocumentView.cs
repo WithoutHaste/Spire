@@ -53,9 +53,20 @@ namespace Spire
 			documentModel.CaretPosition = FindCindexClosestToX(graphics, lineStart, caretLocation.X);			
 		}
 		
+		public void OnNavigationPointEvent(object sender, NavigationPointEventArgs e)
+		{
+			DisplayArea displayArea = displayAreas[0];
+			Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height);
+			decimal lineHeight = StringHeight(graphics, "X");
+			int lineIndex = (int)Math.Floor(e.Y / lineHeight);
+			int lineBreakIndex = Math.Min(lineIndex - 1, displayArea.LineBreaks.Count - 1);
+			int lineStart = (lineBreakIndex >= 0) ? displayArea.LineBreaks[lineBreakIndex] + 1 : 0;
+			int cindex = FindCindexClosestToX(graphics, lineStart, e.X);
+			documentModel.CaretPosition = cindex;
+		}
+		
 		private Cindex FindCindexClosestToX(Graphics graphics, Cindex lineStart, int x)
 		{
-			//is it possible to run off the end of the line here?
 			string textToX = "";
 			int charCount = 0;
 			int max = NextLineBreak(lineStart);

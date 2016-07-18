@@ -229,11 +229,11 @@ namespace Spire
 					chunks.RemoveAt(chunkIndex);
 				}
 			}
-			else if(chunk.TooLong)
+			else if(chunk.IsTooLong)
 			{
 				SplitChunk(chunkIndex, chunk);
 			}
-			else if(chunk.TooShort)
+			else if(chunk.IsTooShort)
 			{
 				updateFromChunkIndex = CombineChunks(chunkIndex, chunk);
 			}
@@ -250,7 +250,7 @@ namespace Spire
 		{
 			if(chunkIndex > 0)
 			{
-				if(chunks[chunkIndex-1].TooShort)
+				if(chunks[chunkIndex-1].IsTooShort)
 				{
 					chunks[chunkIndex-1].Append(chunk);
 					chunks.RemoveAt(chunkIndex);
@@ -260,7 +260,7 @@ namespace Spire
 			}
 			if(chunkIndex < chunks.Count-1)
 			{
-				if(chunks[chunkIndex+1].TooShort)
+				if(chunks[chunkIndex+1].IsTooShort)
 				{
 					chunk.Append(chunks[chunkIndex+1]);
 					chunks.RemoveAt(chunkIndex+1);
