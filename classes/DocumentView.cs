@@ -48,31 +48,28 @@ namespace Spire
 		
 		public void OnCaretNavigationVerticalEvent(object sender, NavigationVerticalEventArgs e)
 		{
-			int amount = 0;
-			switch(e.Direction)
-			{
-				case VerticalDirection.Up: amount = -1; break;
-				case VerticalDirection.Down: amount = 1; break;
-				default: throw new Exception(String.Format("VerticalDirection {0} not supported in document highlighting", e.Direction));
-			}
-			DisplayArea displayArea = displayAreas[0];
-			Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height);
-			documentModel.CaretPosition = CalculateVerticalMove(graphics, displayArea, CaretPosition, amount);
 			documentModel.ClearHighlight();
+			MoveCaretVertical(e);
 		}
 		
 		public void OnHighlightNavigationVerticalEvent(object sender, NavigationVerticalEventArgs e)
+		{
+			documentModel.SetHighlight();
+			MoveCaretVertical(e);
+		}
+		
+		private void MoveCaretVertical(NavigationVerticalEventArgs e)
 		{
 			int amount = 0;
 			switch(e.Direction)
 			{
 				case VerticalDirection.Up: amount = -1; break;
 				case VerticalDirection.Down: amount = 1; break;
-				default: throw new Exception(String.Format("VerticalDirection {0} not supported in document highlighting", e.Direction));
+				default: throw new Exception(String.Format("VerticalDirection {0} not supported in document navigation", e.Direction));
 			}
 			DisplayArea displayArea = displayAreas[0];
 			Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height);
-			documentModel.HighlightPosition = CalculateVerticalMove(graphics, displayArea, HighlightPosition, amount);
+			documentModel.CaretPosition = CalculateVerticalMove(graphics, displayArea, CaretPosition, amount);
 		}
 		
 		private Cindex CalculateVerticalMove(Graphics graphics, DisplayArea displayArea, Cindex currentPosition, int moveAmount)
@@ -249,7 +246,9 @@ namespace Spire
 			if(highlightEnd < lineStart) return;
 			Brush highlightBrush = new SolidBrush(Color.FromArgb(255, 205, 255, 255));
 			Point start = CindexLocation(graphics, displayAreas[0], Math.Max(highlightStart, lineStart));
-			Point end = CindexLocation(graphics, displayAreas[0], Math.Max(highlightEnd, lineEnd));
+			Point end = (highlightEnd > lineEnd) ? 
+				LetterEndLocation(graphics, displayAreas[0], Math.Min(highlightEnd, lineEnd)) :
+				CindexLocation(graphics, displayAreas[0], Math.Min(highlightEnd, lineEnd));
 			int lineHeight = StringHeight(graphics, "X");
 			graphics.FillRectangle(highlightBrush, start.X, start.Y, end.X-start.X, lineHeight);
 		}
@@ -280,6 +279,26 @@ namespace Spire
 			}
 			SizeF textSize = MeasureString(graphics, textToCaret);
 			return new Point((int)Math.Ceiling(textSize.Width), y);
+		}
+		
+		private Point LetterEndLocation(Graphics graphics, DisplayArea displayArea, Cindex cindex)
+		{
+			int lineHeight = StringHeight(graphics, "X");
+			Cindex lineStart = 0;
+			int y = 0;
+			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(cindex);
+			if(lineBreakIndex > -1)
+			{
+				lineStart = displayArea.LineBreaks[lineBreakIndex] + 1;
+				y = (lineBreakIndex+1) * lineHeight;
+			}
+			string text = "";
+			if(lineStart < documentModel.Length && lineStart < cindex)
+			{
+				text = documentModel.SubString(lineStart, cindex);
+			}
+			SizeF textSize = MeasureString(graphics, text);
+			return new Point((int)Math.Ceiling(textSize.Width), y+lineHeight);
 		}
 		
 		private SizeF MeasureString(Graphics graphics, string text)

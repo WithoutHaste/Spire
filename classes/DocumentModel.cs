@@ -50,7 +50,7 @@ namespace Spire
 					return _caretPosition;
 				return _highlightPosition.Value;
 			}
-			set 
+			set
 			{
 				if(value < 0) value = 0;
 				if(value > Length) value = Length;
@@ -71,6 +71,12 @@ namespace Spire
 		public void ClearHighlight()
 		{
 			_highlightPosition = null;
+		}
+		
+		public void SetHighlight()
+		{
+			if(_highlightPosition == null)
+				_highlightPosition = _caretPosition;
 		}
 		
 		public string SubString(Cindex from, Cindex to)
@@ -138,6 +144,18 @@ namespace Spire
 		
 		public void OnCaretNavigationHorizontalEvent(object sender, NavigationHorizontalEventArgs e)
 		{
+			ClearHighlight();
+			MoveCaretHorizontal(e);
+		}
+
+		public void OnHighlightNavigationHorizontalEvent(object sender, NavigationHorizontalEventArgs e)
+		{
+			SetHighlight();
+			MoveCaretHorizontal(e);
+		}
+		
+		private void MoveCaretHorizontal(NavigationHorizontalEventArgs e)
+		{
 			int amount = 0;
 			switch(e.Direction)
 			{
@@ -151,30 +169,11 @@ namespace Spire
 				case TextUnit.Word: throw new Exception("navigation by word not implemented");
 				default: throw new Exception(String.Format("Unit {0} not supported in document navigation", e.Unit));
 			}
-			ClearHighlight();
-		}
-
-		public void OnHighlightNavigationHorizontalEvent(object sender, NavigationHorizontalEventArgs e)
-		{
-			int amount = 0;
-			switch(e.Direction)
-			{
-				case HorizontalDirection.Left: amount = -1; break;
-				case HorizontalDirection.Right: amount = 1; break;
-				default: throw new Exception(String.Format("HorizontalDirection {0} not supported in document highlighting", e.Direction));
-			}
-			switch(e.Unit)
-			{
-				case TextUnit.Character:
-					HighlightPosition += amount;
-					break;
-				case TextUnit.Word: throw new Exception("highlighting by word not implemented");
-				default: throw new Exception(String.Format("Unit {0} not supported in document highlighting", e.Unit));
-			}
 		}
 				
 		public void OnEraseEvent(object sender, EraseEventArgs e)
 		{
+			ClearHighlight();
 			switch(e.Unit)
 			{
 				case TextUnit.Character:
@@ -185,7 +184,6 @@ namespace Spire
 				default:
 					throw new Exception(String.Format("Unit {0} not supported in document erasures", e.Unit));
 			}
-			ClearHighlight();
 		}
 		
 		private void OnEraseCharactersEvent(EraseEventArgs e)

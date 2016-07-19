@@ -49,6 +49,9 @@ namespace SpireTest
 			TestUtilities.RunTest(TestUndoContinuingWordAfterMoving, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoContinuingBackspaceAfterMoving, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoContinuingDeleteAfterMoving, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoContinuingWordAfterHighlighting, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoContinuingBackspaceAfterHighlighting, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoContinuingDeleteAfterHighlighting, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoContinuingWordAfterTypingElsewhere, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoContinuingBackspaceAfterEditingElsewhere, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoContinuingDeleteAfterEditingElsewhere, ref allTestsPassed);
@@ -65,6 +68,17 @@ namespace SpireTest
 			TestUtilities.RunTest(TestRedoMoreThanAvailable, ref allTestsPassed);
 			TestUtilities.RunTest(TestRedoSeveralTimes, ref allTestsPassed);
 			TestUtilities.RunTest(TestRedoListClearsOnEdit, ref allTestsPassed);
+			TestUtilities.RunTest(TestNoHighlight, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightLeft, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightRight, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightLeftThenRight, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightRightThenLeft, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightThenUnhighlight, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightPastBeginningOfDocument, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightPastEndOfDocument, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightIsClearedAfterUndo, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightIsClearedAfterRedo, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightingMovesCaret, ref allTestsPassed);
 		}
 		
 		private void TestAllKeyboardCharacters()
@@ -470,6 +484,42 @@ namespace SpireTest
 			documentModel.VerifyTextEquals("whale in pail");
 		}
 		
+		private void TestUndoContinuingWordAfterHighlighting()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("agreed to attempt the nearly impossible ");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.MoveHighlight(3, 3);
+			documentModel.AddCharacters("feat");
+			documentModel.Undo(40, 40);
+			documentModel.Undo(29, 29);
+		}
+		
+		private void TestUndoContinuingBackspaceAfterHighlighting()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("agreed to attempt the nearly impossible ");
+			documentModel.BackspaceCharacters(5, 5);
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.MoveHighlight(3, 3);
+			documentModel.BackspaceCharacters(3, 3);
+			documentModel.Undo(40, 40);
+			documentModel.VerifyTextEquals("agreed to attempt the nearly impossible ");
+		}
+		
+		private void TestUndoContinuingDeleteAfterHighlighting()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("agreed to attempt the nearly impossible ");
+			documentModel.MoveCaretTo(0);
+			documentModel.DeleteCharacters(5, 5);
+			documentModel.MoveHighlight(3, 3);
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.DeleteCharacters(3, 3);
+			documentModel.Undo(40, 0);
+			documentModel.VerifyTextEquals("agreed to attempt the nearly impossible ");
+		}
+		
 		private void TestUndoContinuingWordAfterTypingElsewhere()
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
@@ -684,6 +734,106 @@ namespace SpireTest
 			documentModel.Redo(16, 16);
 			documentModel.Redo(16, 16);
 		}
+		
+		private void TestNoHighlight()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("When the Black Dragon seized the Deep of Ylferdun,");
+			documentModel.VerifyHighlightedTextEquals("");
+		}
+		
+		private void TestHighlightLeft()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("When the Black Dragon seized the Deep of Ylferdun,");
+			documentModel.MoveHighlight(-4, -4);
+			documentModel.VerifyHighlightedTextEquals("dun,");
+		}
+		
+		private void TestHighlightRight()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("When the Black Dragon seized the Deep of Ylferdun,");
+			documentModel.MoveCaretTo(11);
+			documentModel.MoveHighlight(4, 4);
+			documentModel.VerifyHighlightedTextEquals("ack ");
+		}
+		
+		private void TestHighlightLeftThenRight()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("young Gareth braved the far Winterlands to find John Aversin,");
+			documentModel.MoveHighlight(-10, -10);
+			documentModel.VerifyHighlightedTextEquals("n Aversin,");
+			documentModel.MoveHighlight(5, 5);
+			documentModel.VerifyHighlightedTextEquals("rsin,");
+		}
+		
+		private void TestHighlightRightThenLeft()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("young Gareth braved the far Winterlands to find John Aversin,");
+			documentModel.MoveCaretTo(11);
+			documentModel.MoveHighlight(10, 10);
+			documentModel.VerifyHighlightedTextEquals("h braved t");
+			documentModel.MoveHighlight(-5, -5);
+			documentModel.VerifyHighlightedTextEquals("h bra");
+		}
+		
+		private void TestHighlightThenUnhighlight()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("young Gareth braved the far Winterlands to find John Aversin,");
+			documentModel.MoveCaretTo(11);
+			documentModel.MoveHighlight(10, 10);
+			documentModel.VerifyHighlightedTextEquals("h braved t");
+			documentModel.MoveHighlight(-10, -10);
+			documentModel.VerifyHighlightedTextEquals("");
+		}
+		
+		private void TestHighlightPastBeginningOfDocument()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("Dragonsbane - the only living man ever to slay a dragon.");
+			documentModel.MoveHighlight(-1 * (documentModel.Length + 5), -1 * documentModel.Length);
+			documentModel.VerifyHighlightedTextEquals("Dragonsbane - the only living man ever to slay a dragon.");
+		}
+		
+		private void TestHighlightPastEndOfDocument()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("Dragonsbane - the only living man ever to slay a dragon.");
+			documentModel.MoveCaretTo(0);
+			documentModel.MoveHighlight(documentModel.Length + 5, documentModel.Length);
+			documentModel.VerifyHighlightedTextEquals("Dragonsbane - the only living man ever to slay a dragon.");
+		}
+		
+		private void TestHighlightIsClearedAfterUndo()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("Dragonsbane - the only living man ever to slay a dragon.");
+			documentModel.MoveHighlight(-10, -10);
+			documentModel.Undo(49, 49);
+			documentModel.VerifyHighlightedTextEquals("");
+		}
+		
+		private void TestHighlightIsClearedAfterRedo()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("Dragonsbane - the only living man ever to slay a dragon.");
+			documentModel.Undo(49, 49);
+			documentModel.MoveHighlight(-10, -10);
+			documentModel.Redo(56, 56);
+			documentModel.VerifyHighlightedTextEquals("");
+		}
+		
+		private void TestHighlightingMovesCaret()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("Dragonsbane - the only living man ever to slay a dragon.");
+			documentModel.MoveHighlight(-10, -10);
+			TestUtilities.Assert(documentModel.CaretPosition == 46, String.Format("caret position after highlight = {0}", documentModel.CaretPosition));
+		}
 	}
 	
 	public class DocumentModelWrapper : DocumentModel
@@ -743,6 +893,23 @@ namespace SpireTest
 			TestUtilities.Assert(currentPosition + expectedChange == this.CaretPosition, String.Format("error moving caret from {0} by {1}, document length {2}", currentPosition, distance, this.Length));
 		}
 		
+		public void MoveHighlightTo(int index)
+		{
+			Cindex currentHighlightPosition = this.HighlightPosition;
+			MoveHighlight(index-this.CaretPosition, index-this.CaretPosition);
+			TestUtilities.Assert(this.CaretPosition == index, String.Format("error moving highlight to specific index, caret position incorrect"));
+			TestUtilities.Assert(this.HighlightPosition == currentHighlightPosition, String.Format("error moving highlight to specific index, highlight position incorrect"));
+		}
+		
+		public void MoveHighlight(int distance, int expectedChange)
+		{
+			int currentHighlightPosition = this.HighlightPosition;
+			int currentCaretPosition = this.CaretPosition;
+			RaiseHighlightNavigationHorizontalEvent(TextUnit.Character, distance);
+			TestUtilities.Assert(currentCaretPosition + expectedChange == this.CaretPosition, String.Format("caret error moving highlight from {0} by {1}, document length {2}", currentCaretPosition, distance, this.Length));
+			TestUtilities.Assert(currentHighlightPosition == this.HighlightPosition, String.Format("highlight error moving highlight from {0} by {1}, document length {2}", currentCaretPosition, distance, this.Length));
+		}
+		
 		public void Undo()
 		{
 			RaiseUndoEvent();
@@ -777,6 +944,19 @@ namespace SpireTest
 			TestUtilities.Assert(this.SubString(0, this.Length-1) == text, "transcription error");
 		}
 		
+		public void VerifyHighlightedTextEquals(string text)
+		{
+			if(this.Length == 0 || this.CaretPosition == this.HighlightPosition)
+			{
+				TestUtilities.Assert(text == "", "highlighted text error");
+				return;
+			}
+			Cindex min = Math.Min(this.CaretPosition, this.HighlightPosition);
+			Cindex max = Math.Max(this.CaretPosition, this.HighlightPosition);
+			string substring = this.SubString(min, max-1);
+			TestUtilities.Assert(substring == text, String.Format("highlighted text error: cindex {0} to {1} = '{2}', not '{3}'", min, max, substring, text));
+		}
+		
 		private void RaiseTextEvent(char text)
 		{
 			this.OnTextEvent(this, new TextEventArgs(text));
@@ -792,6 +972,20 @@ namespace SpireTest
 			while(distance > 0)
 			{
 				this.OnCaretNavigationHorizontalEvent(this, new NavigationHorizontalEventArgs(units, HorizontalDirection.Right));
+				distance--;
+			}
+		}
+
+		private void RaiseHighlightNavigationHorizontalEvent(TextUnit units, int distance)
+		{
+			while(distance < 0)
+			{
+				this.OnHighlightNavigationHorizontalEvent(this, new NavigationHorizontalEventArgs(units, HorizontalDirection.Left));
+				distance++;
+			}
+			while(distance > 0)
+			{
+				this.OnHighlightNavigationHorizontalEvent(this, new NavigationHorizontalEventArgs(units, HorizontalDirection.Right));
 				distance--;
 			}
 		}

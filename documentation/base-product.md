@@ -110,13 +110,29 @@ xx	type part of word, wait awhile, type more words, undo
 
 7b. Separate long running tests from fast tests.
 
---> current unit tests
-
 8. Click with mouse to navigate edit position.
 
---> current Linux developement
+	no unit tests?
 
 9. Shift + Arrow Keys to highlight text.
+
+	highlight left, right
+	highlight left then right, right then left
+	highlight left past beginning of document
+	highlight right past end of document
+	highlight up, down
+	highlight up then down, down then up
+	highlight up past beginning of document
+	highlight down past end of document
+	highlighting does not affect undo/redo list
+	after undo/redo, highlight is cleared
+	after highlight, caret is at the moved-to position
+
+	visually highlight left to previous line
+	visually highlight right to next line
+
+--> current unit tests
+--> current Linux developement
 
 9b. Drag and Drop to highlight text.
 

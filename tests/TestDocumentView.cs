@@ -29,6 +29,12 @@ namespace SpireTest
 			TestUtilities.RunTest(TestMovingDown, ref allTestsPassed);
 			TestUtilities.RunTest(TestSecondLineShorter, ref allTestsPassed);
 			TestUtilities.RunTest(TestFirstLineShorter, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightUp, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightDown, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightUpThenDown, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightDownThenUp, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightUpPastBeginningOfDocument, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightDownPastEndOfDocument, ref allTestsPassed);
 		}
 		
 		private void TestDisplayNoText()
@@ -125,9 +131,9 @@ namespace SpireTest
 			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
 			documentModel.AddCharacters("One Two Threeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
 			documentModel.MoveCaretTo(15);
-			documentView.MoveUpOrDown(1,1); //verify there are two lines
+			documentView.MoveCaretUpOrDown(1,1); //verify there are two lines
 			documentModel.DeleteCharacters(documentModel.Length-documentModel.CaretPosition, documentModel.Length-documentModel.CaretPosition);
-			documentView.MoveUpOrDown(1,0); //there should now be just one line
+			documentView.MoveCaretUpOrDown(1,0); //there should now be just one line
 		}
 		
 		private void TestMovingUp()
@@ -136,9 +142,9 @@ namespace SpireTest
 			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
 			documentModel.AddCharacters("We know little or nothing of Vermeer's personality, and it is dangerous to generalize from the evidence of his paintings. He left behind him a large family and many debts, and his life may have been sordid.");
 			documentModel.AddCharacters("But a mind that is troubled may seek a peaceful refuge in art. Vermeer is almost as much a mystery as Shakespeare, but he is perhaps nearer to another British poet, his comtemporary Thomas Traherne (1637-74), whose work was almost lost for centuries and then recovered.");
-			documentView.MoveUpOrDown(-1, -1);
+			documentView.MoveCaretUpOrDown(-1, -1);
 			documentModel.MoveCaretTo(12);
-			documentView.MoveUpOrDown(-1, 0);
+			documentView.MoveCaretUpOrDown(-1, 0);
 		}
 		
 		private void TestMovingDown()
@@ -147,9 +153,9 @@ namespace SpireTest
 			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
 			documentModel.AddCharacters("We know little or nothing of Vermeer's personality, and it is dangerous to generalize from the evidence of his paintings. He left behind him a large family and many debts, and his life may have been sordid.");
 			documentModel.AddCharacters("But a mind that is troubled may seek a peaceful refuge in art. Vermeer is almost as much a mystery as Shakespeare, but he is perhaps nearer to another British poet, his comtemporary Thomas Traherne (1637-74), whose work was almost lost for centuries and then recovered.");
-			documentView.MoveUpOrDown(1, 0);
+			documentView.MoveCaretUpOrDown(1, 0);
 			documentModel.MoveCaretTo(12);
-			documentView.MoveUpOrDown(1, 1);
+			documentView.MoveCaretUpOrDown(1, 1);
 		}
 		
 		private void TestSecondLineShorter()
@@ -162,7 +168,7 @@ namespace SpireTest
 			}
 			documentModel.AddCharacters("mushroom mushroom");
 			documentModel.MoveCaretTo(30);
-			documentView.MoveUpOrDown(1, 1);
+			documentView.MoveCaretUpOrDown(1, 1);
 			documentModel.MoveCaret(1,0); //should be at end of document now
 		}
 		
@@ -175,10 +181,92 @@ namespace SpireTest
 			{
 				documentModel.AddCharacters("eeeee");
 			}
-			documentView.MoveUpOrDown(-1, -1); //should be at end of first line
+			documentView.MoveCaretUpOrDown(-1, -1); //should be at end of first line
 			documentModel.MoveCaret(1,1); //move to beginning of second line
-			documentView.MoveUpOrDown(1,0); //should be on last line now
+			documentView.MoveCaretUpOrDown(1,0); //should be on last line now
 		}
+		
+		private void TestHighlightUp()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("In return for the promise ");
+			while(documentView.LineCount < 2)
+			{
+				documentModel.AddCharacters("of the King to send ");
+			}
+			documentView.MoveHighlightUpOrDown(-1, -1);
+		}
+		
+		private void TestHighlightDown()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("In return for the promise ");
+			while(documentView.LineCount < 2)
+			{
+				documentModel.AddCharacters("of the King to send ");
+			}
+			documentModel.MoveCaretTo(0);
+			documentView.MoveHighlightUpOrDown(1, 1);
+		}
+		
+		private void TestHighlightUpThenDown()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("In return for the promise ");
+			while(documentView.LineCount < 2)
+			{
+				documentModel.AddCharacters("of the King to send ");
+			}
+			documentView.MoveHighlightUpOrDown(-1, -1);
+			documentView.MoveHighlightUpOrDown(1, 1);
+			documentModel.VerifyHighlightedTextEquals("");
+		}
+
+		private void TestHighlightDownThenUp()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("In return for the promise ");
+			while(documentView.LineCount < 2)
+			{
+				documentModel.AddCharacters("of the King to send ");
+			}
+			documentModel.MoveCaretTo(0);
+			documentView.MoveHighlightUpOrDown(1, 1);
+			documentView.MoveHighlightUpOrDown(-1, -1);
+			documentModel.VerifyHighlightedTextEquals("");
+		}
+		
+		private void TestHighlightUpPastBeginningOfDocument()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("In return for the promise ");
+			while(documentView.LineCount < 2)
+			{
+				documentModel.AddCharacters("of the King to send ");
+			}
+			documentView.MoveHighlightUpOrDown(-1, -1);
+			documentView.MoveHighlightUpOrDown(-1, 0);
+		}
+		
+		private void TestHighlightDownPastEndOfDocument()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("In return for the promise ");
+			while(documentView.LineCount < 2)
+			{
+				documentModel.AddCharacters("of the King to send ");
+			}
+			documentModel.MoveCaretTo(0);
+			documentView.MoveHighlightUpOrDown(1, 1);
+			documentView.MoveHighlightUpOrDown(1, 0);
+		}
+		
 	}
 	
 	public class DocumentViewWrapper : DocumentView
@@ -206,7 +294,7 @@ namespace SpireTest
 			}
 		}
 		
-		public void MoveUpOrDown(int distance, int expectedChange)
+		public void MoveCaretUpOrDown(int distance, int expectedChange)
 		{
 			int previousPosition = this.CaretPosition;
 			RaiseCaretNavigationVerticalEvent(distance);
@@ -215,6 +303,18 @@ namespace SpireTest
 			else if(expectedChange < 0) success = (this.CaretPosition < previousPosition);
 			else if(expectedChange > 0) success = (this.CaretPosition > previousPosition);
 			TestUtilities.Assert(success, String.Format("error moving caret from {0} by {1} line(s), expected change {2}", previousPosition, distance, expectedChange));
+		}
+		
+		public void MoveHighlightUpOrDown(int distance, int expectedChange)
+		{
+			int previousCaretPosition = this.CaretPosition;
+			int previousHighlightPosition = this.HighlightPosition;
+			RaiseHighlightNavigationVerticalEvent(distance);
+			bool success = true;
+			if(expectedChange == 0) success = (previousCaretPosition == this.CaretPosition && previousHighlightPosition == this.HighlightPosition);
+			else if(expectedChange < 0) success = (this.CaretPosition < previousCaretPosition && previousHighlightPosition == this.HighlightPosition);
+			else if(expectedChange > 0) success = (this.CaretPosition > previousCaretPosition && previousHighlightPosition == this.HighlightPosition);
+			TestUtilities.Assert(success, String.Format("error moving highlight from {0} by {1} line(s), expected change {2}", previousCaretPosition, distance, expectedChange));
 		}
 		
 		private void RaiseCaretNavigationVerticalEvent(int distance)
@@ -227,6 +327,20 @@ namespace SpireTest
 			while(distance > 0)
 			{
 				this.OnCaretNavigationVerticalEvent(this, new NavigationVerticalEventArgs(VerticalDirection.Down));
+				distance--;
+			}
+		}
+		
+		private void RaiseHighlightNavigationVerticalEvent(int distance)
+		{
+			while(distance < 0)
+			{
+				this.OnHighlightNavigationVerticalEvent(this, new NavigationVerticalEventArgs(VerticalDirection.Up));
+				distance++;
+			}
+			while(distance > 0)
+			{
+				this.OnHighlightNavigationVerticalEvent(this, new NavigationVerticalEventArgs(VerticalDirection.Down));
 				distance--;
 			}
 		}
