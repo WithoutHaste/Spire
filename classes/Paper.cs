@@ -24,8 +24,11 @@ namespace Spire
 		public delegate void HighlightNavigationVerticalEventHandler(object sender, NavigationVerticalEventArgs e);
 		public event HighlightNavigationVerticalEventHandler OnHighlightNavigationVerticalEvent;
 		
-		public delegate void NavigationPointEventHandler(object sender, NavigationPointEventArgs e);
-		public event NavigationPointEventHandler OnNavigationPointEvent;
+		public delegate void CaretNavigationPointEventHandler(object sender, NavigationPointEventArgs e);
+		public event CaretNavigationPointEventHandler OnCaretNavigationPointEvent;
+		
+		public delegate void HighlightNavigationPointEventHandler(object sender, NavigationPointEventArgs e);
+		public event HighlightNavigationPointEventHandler OnHighlightNavigationPointEvent;
 		
 		public delegate void EraseEventHandler(object sender, EraseEventArgs e);
 		public event EraseEventHandler OnEraseEvent;
@@ -49,6 +52,8 @@ namespace Spire
 			this.KeyPress += new KeyPressEventHandler(UserKeyPress);
 			this.KeyDown += new KeyEventHandler(UserKeyDown);
 			this.MouseClick += new MouseEventHandler(UserMouseClick);
+			this.MouseDown += new MouseEventHandler(UserMouseDown);
+			this.MouseUp += new MouseEventHandler(UserMouseUp);
 		}
 		
 		public void SetView(DocumentView view)
@@ -56,13 +61,24 @@ namespace Spire
 			documentView = view;
 			this.OnCaretNavigationVerticalEvent += new Paper.CaretNavigationVerticalEventHandler(documentView.OnCaretNavigationVerticalEvent);
 			this.OnHighlightNavigationVerticalEvent += new Paper.HighlightNavigationVerticalEventHandler(documentView.OnHighlightNavigationVerticalEvent);
-			this.OnNavigationPointEvent += new Paper.NavigationPointEventHandler(documentView.OnNavigationPointEvent);
+			this.OnCaretNavigationPointEvent += new Paper.CaretNavigationPointEventHandler(documentView.OnCaretNavigationPointEvent);
+			this.OnHighlightNavigationPointEvent += new Paper.HighlightNavigationPointEventHandler(documentView.OnHighlightNavigationPointEvent);
 		}
 				
 		private void SetupDoubleBuffer()
 		{
 			this.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true);
 			this.UpdateStyles();
+		}
+		
+		private void SetupDragAndDrop()
+		{
+			this.MouseMove += new MouseEventHandler(UserMouseMove);
+		}
+		
+		private void TeardownDragAndDrop()
+		{
+			this.MouseMove -= UserMouseMove;
 		}
 		
 		private void EnableCaretTimer(object sender, EventArgs e)
@@ -228,9 +244,32 @@ namespace Spire
 		
 		private void UserMouseClick(object sender, MouseEventArgs e)
 		{
+			/*
 			if(e.Button == MouseButtons.Right) return;
-			RaiseNavigationPointEvent(e.X, e.Y);
+			RaiseCaretNavigationPointEvent(e.X, e.Y);
 			this.Invalidate();
+			*/
+		}
+		
+		private void UserMouseDown(object sender, MouseEventArgs e)
+		{
+			if(e.Button == MouseButtons.Right) return;
+			SetupDragAndDrop();
+			RaiseCaretNavigationPointEvent(e.X, e.Y);
+			this.Invalidate();
+		}
+		
+		private void UserMouseMove(object sender, MouseEventArgs e)
+		{
+			int caretPosition = documentView.CaretPosition;
+			RaiseHighlightNavigationPointEvent(e.X, e.Y);
+			if(caretPosition != documentView.CaretPosition)
+				this.Invalidate();
+		}
+		
+		private void UserMouseUp(object sender, MouseEventArgs e)
+		{
+			TeardownDragAndDrop();
 		}
 		
 		private void RaiseTextEvent(char text)
@@ -283,11 +322,17 @@ namespace Spire
 			OnRedoEvent(this, new EventArgs());
 		}
 		
-		private void RaiseNavigationPointEvent(int x, int y)
+		private void RaiseCaretNavigationPointEvent(int x, int y)
 		{
-			if(OnNavigationPointEvent == null) return;
+			if(OnCaretNavigationPointEvent == null) return;
 			EnableCaretMovingTimer();
-			OnNavigationPointEvent(this, new NavigationPointEventArgs(x, y));
+			OnCaretNavigationPointEvent(this, new NavigationPointEventArgs(x, y));
+		}
+
+		private void RaiseHighlightNavigationPointEvent(int x, int y)
+		{
+			if(OnHighlightNavigationPointEvent == null) return;
+			OnHighlightNavigationPointEvent(this, new NavigationPointEventArgs(x, y));
 		}
 
 		protected override void OnPaint(PaintEventArgs e)

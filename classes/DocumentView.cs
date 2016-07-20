@@ -86,8 +86,20 @@ namespace Spire
 				lineStart = displayArea.LineBreaks[lineBreakIndex] + 1;
 			return FindCindexClosestToX(graphics, lineStart, currentPoint.X);
 		}
+
+		public void OnCaretNavigationPointEvent(object sender, NavigationPointEventArgs e)
+		{
+			documentModel.ClearHighlight();
+			MoveCaretPoint(e);
+		}
+
+		public void OnHighlightNavigationPointEvent(object sender, NavigationPointEventArgs e)
+		{
+			documentModel.SetHighlight();
+			MoveCaretPoint(e);
+		}
 		
-		public void OnNavigationPointEvent(object sender, NavigationPointEventArgs e)
+		private void MoveCaretPoint(NavigationPointEventArgs e)
 		{
 			DisplayArea displayArea = displayAreas[0];
 			Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height);
@@ -97,7 +109,6 @@ namespace Spire
 			int lineStart = (lineBreakIndex >= 0) ? displayArea.LineBreaks[lineBreakIndex] + 1 : 0;
 			int cindex = FindCindexClosestToX(graphics, lineStart, e.X);
 			documentModel.CaretPosition = cindex;
-			documentModel.ClearHighlight();
 		}
 		
 		private Cindex FindCindexClosestToX(Graphics graphics, Cindex lineStart, int x)

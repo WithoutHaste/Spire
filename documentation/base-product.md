@@ -131,10 +131,12 @@ xx	type part of word, wait awhile, type more words, undo
 	visually highlight left to previous line
 	visually highlight right to next line
 
+9b. Drag and Drop to highlight text.
+
+	test visually
+
 --> current unit tests
 --> current Linux developement
-
-9b. Drag and Drop to highlight text.
 
 9c. Delete highlighted text.
 
