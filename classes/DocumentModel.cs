@@ -58,6 +58,11 @@ namespace Spire
 			}
 		}
 		
+		public bool HasHighlight
+		{
+			get { return (HighlightPosition != CaretPosition); }
+		}
+		
 		public char this[int cindex]
 		{
 			get
@@ -170,14 +175,18 @@ namespace Spire
 				default: throw new Exception(String.Format("Unit {0} not supported in document navigation", e.Unit));
 			}
 		}
-				
+
 		public void OnEraseEvent(object sender, EraseEventArgs e)
 		{
-			ClearHighlight();
+			if(HasHighlight)
+			{
+				EraseHighlight();
+				return;
+			}
 			switch(e.Unit)
 			{
 				case TextUnit.Character:
-					OnEraseCharactersEvent(e);
+					EraseCharacters(e);
 					break;
 				case TextUnit.Word:
 					throw new Exception("erase whole word not implemented");
@@ -186,7 +195,13 @@ namespace Spire
 			}
 		}
 		
-		private void OnEraseCharactersEvent(EraseEventArgs e)
+		private void EraseHighlight()
+		{
+			EraseCharacters(new EraseEventArgs(TextUnit.Character, _highlightPosition.Value - _caretPosition));
+			ClearHighlight();
+		}
+		
+		private void EraseCharacters(EraseEventArgs e)
 		{
 			int minCindex = CaretPosition;
 			int maxCindex = CaretPosition;

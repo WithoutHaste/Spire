@@ -135,12 +135,18 @@ xx	type part of word, wait awhile, type more words, undo
 
 	test visually
 
---> current unit tests
---> current Linux developement
-
 9c. Delete highlighted text.
 
-9d. Backspace hightlighted text.
+	highlight greater than caret, delete
+	highlight less than caret, delete
+
+9d. Backspace highlighted text.
+
+	highlight greater than caret, backspace
+	highlight less than caret, backspace
+
+--> current unit tests
+--> current Linux developement
 
 9e. Type over highlighted text.
 

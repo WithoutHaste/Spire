@@ -79,6 +79,10 @@ namespace SpireTest
 			TestUtilities.RunTest(TestHighlightIsClearedAfterUndo, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightIsClearedAfterRedo, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightingMovesCaret, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightGreaterThanCaretThenDelete, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightLessThanCaretThenDelete, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightGreaterThanCaretThenBackspace, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightLessThanCaretThenBackspace, ref allTestsPassed);
 		}
 		
 		private void TestAllKeyboardCharacters()
@@ -834,6 +838,52 @@ namespace SpireTest
 			documentModel.MoveHighlight(-10, -10);
 			TestUtilities.Assert(documentModel.CaretPosition == 46, String.Format("caret position after highlight = {0}", documentModel.CaretPosition));
 		}
+		
+		private void TestHighlightGreaterThanCaretThenDelete()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("Act now and enjoy");
+			documentModel.MoveHighlight(-5, -5);
+			TestUtilities.Assert(documentModel.HighlightPosition > documentModel.CaretPosition, "test not setup right");
+			documentModel.DeleteCharacters(1, 5);
+			documentModel.VerifyTextEquals("Act now and ");
+			documentModel.VerifyHighlightedTextEquals("");
+		}
+
+		private void TestHighlightLessThanCaretThenDelete()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("Act now and enjoy");
+			documentModel.MoveCaretTo(3);
+			documentModel.MoveHighlight(5, 5);
+			TestUtilities.Assert(documentModel.HighlightPosition < documentModel.CaretPosition, "test not setup right");
+			documentModel.DeleteCharacters(1, 5);
+			documentModel.VerifyTextEquals("Actand enjoy");
+			documentModel.VerifyHighlightedTextEquals("");
+		}
+		
+		private void TestHighlightGreaterThanCaretThenBackspace()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("Act now and enjoy");
+			documentModel.MoveHighlight(-5, -5);
+			TestUtilities.Assert(documentModel.HighlightPosition > documentModel.CaretPosition, "test not setup right");
+			documentModel.BackspaceCharacters(1, 5);
+			documentModel.VerifyTextEquals("Act now and ");
+			documentModel.VerifyHighlightedTextEquals("");
+		}
+		
+		private void TestHighlightLessThanCaretThenBackspace()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("Act now and enjoy");
+			documentModel.MoveCaretTo(3);
+			documentModel.MoveHighlight(5, 5);
+			TestUtilities.Assert(documentModel.HighlightPosition < documentModel.CaretPosition, "test not setup right");
+			documentModel.BackspaceCharacters(1, 5);
+			documentModel.VerifyTextEquals("Actand enjoy");
+			documentModel.VerifyHighlightedTextEquals("");
+		}
 	}
 	
 	public class DocumentModelWrapper : DocumentModel
@@ -844,19 +894,15 @@ namespace SpireTest
 		
 		public void BackspaceCharacters(int charCount, int expectedCharsRemoved)
 		{
-			int startIndex = this.CaretPosition;
 			int startLength = this.Length;
 			RaiseEraseEvent(TextUnit.Character, -1*charCount);
-			TestUtilities.Assert(this.Length == startLength - (Math.Min(startIndex, charCount)), String.Format("error backspacing {0} times", charCount));
 			TestUtilities.Assert(this.Length == startLength - expectedCharsRemoved, String.Format("error backspacing, length does not match expected"));
 		}
 		
 		public void DeleteCharacters(int charCount, int expectedCharsRemoved)
 		{
-			int startIndex = this.CaretPosition;
 			int startLength = this.Length;
 			RaiseEraseEvent(TextUnit.Character, charCount);
-			TestUtilities.Assert(this.Length == startLength - (Math.Min(startLength-startIndex, charCount)), String.Format("error deleting {0} characters", charCount));
 			TestUtilities.Assert(this.Length == startLength - expectedCharsRemoved, String.Format("error deleting, length does not match expected"));
 		}
 		
