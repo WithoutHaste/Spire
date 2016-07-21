@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Spire
 {
@@ -15,6 +17,49 @@ namespace Spire
 		public override string ToString()
 		{
 			return "no override for ToString";
+		}
+	}
+	
+	public class DocumentEdit_Multiple : DocumentEdit
+	{
+		private List<DocumentEdit> edits;
+		
+		public DocumentEdit_Multiple(params DocumentEdit[] edits)
+		{
+			if(edits.Length <= 1)
+				throw new Exception("Multiple edits required for DocumentEdit_Multiple");
+			this.edits = edits.ToList();
+		}
+		
+		public DocumentEdit_Multiple(List<DocumentEdit> edits)
+		{
+			this.edits = new List<DocumentEdit>(edits);
+		}
+		
+		public override void Undo(DocumentModel documentModel)
+		{
+			for(int i=edits.Count-1; i>=0; i--)
+			{
+				edits[i].Undo(documentModel);
+			}
+		}
+		
+		public override void Redo(DocumentModel documentModel)
+		{
+			for(int i=0; i<edits.Count; i++)
+			{
+				edits[i].Redo(documentModel);
+			}
+		}
+		
+		public override bool Concat(DocumentEdit edit)
+		{
+			return false;
+		}
+		
+		public override string ToString()
+		{
+			return String.Format("Multiple edits: {0}", String.Join(" | ", edits.Select(p=>p.ToString()).ToArray()));
 		}
 	}
 	

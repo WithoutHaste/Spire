@@ -145,10 +145,21 @@ xx	type part of word, wait awhile, type more words, undo
 	highlight greater than caret, backspace
 	highlight less than caret, backspace
 
+9e. Type over highlighted text.
+
+	type over highlighted text, highlight greater than caret
+	type over highlighted text, highlight less than caret
+	undo typing over highlighted text, highlight greater than caret
+	undo typing over highlighted text, highlight less than caret
+	undo typing over highlighted text, words with spaces
+	undo texting over highlighted text, words with spaces
+	redo typing over highlighted text, highlight greater than caret
+	redo typing over highlighted text, highlight less than caret
+	redo typing over highlighted text, words with spaces
+	redo texting over highlighted text, words with spaces
+
 --> current unit tests
 --> current Linux developement
-
-9e. Type over highlighted text.
 
 10. Home Key and End Key.
 

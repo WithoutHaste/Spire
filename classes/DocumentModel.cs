@@ -36,6 +36,10 @@ namespace Spire
 			}
 			set 
 			{
+				if(value == _highlightPosition)
+				{
+					_highlightPosition = null;
+				}
 				if(value < 0) value = 0;
 				if(value > Length) value = Length;
 				_caretPosition = value;
@@ -52,6 +56,11 @@ namespace Spire
 			}
 			set
 			{
+				if(value == _caretPosition)
+				{
+					_highlightPosition = null;
+					return;
+				}
 				if(value < 0) value = 0;
 				if(value > Length) value = Length;
 				_highlightPosition = value;
@@ -138,13 +147,34 @@ namespace Spire
 		
 		public void OnTextEvent(object sender, TextEventArgs e)
 		{
+			if(HasHighlight)
+			{
+				ReplaceHighlight(e);
+				return;
+			}
 			if(!e.IsHistoryEvent)
 			{
 				history.Add(new DocumentEdit_AddCharacters(CaretPosition, e.Text));
 			}
 			InsertText(e.Text, CaretPosition);
 			CaretPosition += e.Text.Length;
+		}
+		
+		private void ReplaceHighlight(TextEventArgs e)
+		{
+			if(!HasHighlight) 
+				throw new Exception("Cannot call ReplaceHighlight when nothing is highlighted.");
+			if(!e.IsHistoryEvent)
+			{
+				history.StartMultiEdit();
+			}
+			EraseHighlight();
 			ClearHighlight();
+			OnTextEvent(this, e);
+			if(!e.IsHistoryEvent)
+			{
+				history.EndMultiEdit();
+			}
 		}
 		
 		public void OnCaretNavigationHorizontalEvent(object sender, NavigationHorizontalEventArgs e)
@@ -304,6 +334,7 @@ namespace Spire
 		
 		private void SplitChunk(int chunkIndex, DocumentChunk chunk)
 		{
+			//todo: large text can be added to chunk in one go, so may need multiple splits
 			DocumentChunk secondChunk = chunk.Halve();
 			chunks.Insert(chunkIndex+1, secondChunk);
 		}

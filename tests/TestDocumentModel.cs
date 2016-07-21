@@ -61,6 +61,10 @@ namespace SpireTest
 			TestUtilities.RunTest(TestUndoDigitsInWord, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoDigitsEndingWord, ref allTestsPassed);
 			TestUtilities.RunTest(TestUndoDigitsStartingWord, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoTypingOverHighlightHighlightGreaterThanCaret, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoTypingOverHighlightHighlightLessThanCaret, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoTypingOverHighlightWordsWithSpaces, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoTextingOverHighlightWordsWithSpaces, ref allTestsPassed);
 			TestUtilities.RunTest(TestRedoInNewDocument, ref allTestsPassed);
 			TestUtilities.RunTest(TestRedoTyping, ref allTestsPassed);
 			TestUtilities.RunTest(TestRedoBackspace, ref allTestsPassed);
@@ -68,9 +72,14 @@ namespace SpireTest
 			TestUtilities.RunTest(TestRedoMoreThanAvailable, ref allTestsPassed);
 			TestUtilities.RunTest(TestRedoSeveralTimes, ref allTestsPassed);
 			TestUtilities.RunTest(TestRedoListClearsOnEdit, ref allTestsPassed);
+			TestUtilities.RunTest(TestRedoTypingOverHighlightHighlightGreaterThanCaret, ref allTestsPassed);
+			TestUtilities.RunTest(TestRedoTypingOverHighlightHighlightLessThanCaret, ref allTestsPassed);
+			TestUtilities.RunTest(TestRedoTypingOverHighlightWordsWithSpaces, ref allTestsPassed);
+			TestUtilities.RunTest(TestRedoTextingOverHighlightWordsWithSpaces, ref allTestsPassed);
 			TestUtilities.RunTest(TestNoHighlight, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightLeft, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightRight, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightIsClearedWhenUndone, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightLeftThenRight, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightRightThenLeft, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightThenUnhighlight, ref allTestsPassed);
@@ -83,6 +92,8 @@ namespace SpireTest
 			TestUtilities.RunTest(TestHighlightLessThanCaretThenDelete, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightGreaterThanCaretThenBackspace, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightLessThanCaretThenBackspace, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightGreaterThanCaretThenType, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightLessThanCaretThenType, ref allTestsPassed);
 		}
 		
 		private void TestAllKeyboardCharacters()
@@ -661,6 +672,62 @@ namespace SpireTest
 			documentModel.Undo(0, 0);
 		}
 
+		private void TestUndoTypingOverHighlightHighlightGreaterThanCaret()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("federally insured by");
+			documentModel.MoveHighlight(-5, -5);
+			TestUtilities.Assert(documentModel.HighlightPosition > documentModel.CaretPosition, "test not setup right");
+			documentModel.AddCharacters("CardValet");
+			documentModel.VerifyTextEquals("federally insurCardValet");
+			documentModel.VerifyHighlightedTextEquals("");
+			documentModel.Undo(16, 16);
+			documentModel.VerifyTextEquals("federally insurC");
+			documentModel.Undo(20, 15);
+		}
+		
+		private void TestUndoTypingOverHighlightHighlightLessThanCaret()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("federally insured by");
+			documentModel.MoveCaretTo(15);
+			documentModel.MoveHighlight(5, 5);
+			TestUtilities.Assert(documentModel.HighlightPosition < documentModel.CaretPosition, "test not setup right");
+			documentModel.AddCharacters("CardValet");
+			documentModel.VerifyTextEquals("federally insurCardValet");
+			documentModel.VerifyHighlightedTextEquals("");
+			documentModel.Undo(16, 16);
+			documentModel.VerifyTextEquals("federally insurC");
+			documentModel.Undo(20, 20);
+		}
+		
+		private void TestUndoTypingOverHighlightWordsWithSpaces()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("federally insured by");
+			documentModel.MoveHighlight(-5, -5);
+			documentModel.AddCharacters(" Card Valet");
+			documentModel.VerifyTextEquals("federally insur Card Valet");
+			documentModel.VerifyHighlightedTextEquals("");
+			documentModel.Undo(21, 21);
+			documentModel.VerifyTextEquals("federally insur Card ");
+			documentModel.Undo(16, 16);
+			documentModel.VerifyTextEquals("federally insur ");
+			documentModel.Undo(20, 15);
+		}
+		
+		private void TestUndoTextingOverHighlightWordsWithSpaces()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("federally insured by");
+			documentModel.MoveHighlight(-5, -5);
+			documentModel.AddText(" Card Valet");
+			documentModel.VerifyTextEquals("federally insur Card Valet");
+			documentModel.VerifyHighlightedTextEquals("");
+			documentModel.Undo(20, 15);
+			documentModel.VerifyTextEquals("federally insured by");
+		}
+
 		private void TestRedoInNewDocument()
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
@@ -737,8 +804,84 @@ namespace SpireTest
 			documentModel.AddCharacters("chubby bunny");
 			documentModel.Redo(16, 16);
 			documentModel.Redo(16, 16);
+		}		
+
+		private void TestRedoTypingOverHighlightHighlightGreaterThanCaret()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("federally insured by");
+			documentModel.MoveHighlight(-5, -5);
+			TestUtilities.Assert(documentModel.HighlightPosition > documentModel.CaretPosition, "test not setup right");
+			documentModel.AddCharacters("CardValet");
+			documentModel.VerifyTextEquals("federally insurCardValet");
+			documentModel.VerifyHighlightedTextEquals("");
+			documentModel.Undo(16, 16);
+			documentModel.VerifyTextEquals("federally insurC");
+			documentModel.Undo(20, 15);
+			
+			documentModel.Redo(16, 16);
+			documentModel.VerifyTextEquals("federally insurC");
+			documentModel.Redo(24, 24);
+			documentModel.VerifyTextEquals("federally insurCardValet");
 		}
 		
+		private void TestRedoTypingOverHighlightHighlightLessThanCaret()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("federally insured by");
+			documentModel.MoveCaretTo(15);
+			documentModel.MoveHighlight(5, 5);
+			TestUtilities.Assert(documentModel.HighlightPosition < documentModel.CaretPosition, "test not setup right");
+			documentModel.AddCharacters("CardValet");
+			documentModel.VerifyTextEquals("federally insurCardValet");
+			documentModel.VerifyHighlightedTextEquals("");
+			documentModel.Undo(16, 16);
+			documentModel.VerifyTextEquals("federally insurC");
+			documentModel.Undo(20, 20);
+			
+			documentModel.Redo(16, 16);
+			documentModel.VerifyTextEquals("federally insurC");
+			documentModel.Redo(24, 24);
+			documentModel.VerifyTextEquals("federally insurCardValet");
+		}
+		
+		private void TestRedoTypingOverHighlightWordsWithSpaces()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("federally insured by");
+			documentModel.MoveHighlight(-5, -5);
+			documentModel.AddCharacters(" Card Valet");
+			documentModel.VerifyTextEquals("federally insur Card Valet");
+			documentModel.VerifyHighlightedTextEquals("");
+			documentModel.Undo(21, 21);
+			documentModel.VerifyTextEquals("federally insur Card ");
+			documentModel.Undo(16, 16);
+			documentModel.VerifyTextEquals("federally insur ");
+			documentModel.Undo(20, 15);
+			
+			documentModel.Redo(16, 16);
+			documentModel.VerifyTextEquals("federally insur ");
+			documentModel.Redo(21, 21);
+			documentModel.VerifyTextEquals("federally insur Card ");
+			documentModel.Redo(26, 26);
+			documentModel.VerifyTextEquals("federally insur Card Valet");
+		}
+		
+		private void TestRedoTextingOverHighlightWordsWithSpaces()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("federally insured by");
+			documentModel.MoveHighlight(-5, -5);
+			documentModel.AddText(" Card Valet");
+			documentModel.VerifyTextEquals("federally insur Card Valet");
+			documentModel.VerifyHighlightedTextEquals("");
+			documentModel.Undo(20, 15);
+			documentModel.VerifyTextEquals("federally insured by");
+
+			documentModel.Redo(26, 26);
+			documentModel.VerifyTextEquals("federally insur Card Valet");
+		}
+
 		private void TestNoHighlight()
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
@@ -761,6 +904,39 @@ namespace SpireTest
 			documentModel.MoveCaretTo(11);
 			documentModel.MoveHighlight(4, 4);
 			documentModel.VerifyHighlightedTextEquals("ack ");
+		}
+		
+		private void TestHighlightIsClearedWhenUndone()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("When the Black Dragon seized the Deep of Ylferdun,");
+			documentModel.MoveCaretTo(11);
+			documentModel.MoveHighlight(4, 4);
+			documentModel.MoveHighlight(-4, -4);
+			documentModel.VerifyHighlightedTextEquals("");
+			documentModel.MoveCaretTo(3);
+			documentModel.VerifyHighlightedTextEquals("");
+
+			documentModel.MoveCaretTo(11);
+			documentModel.MoveHighlight(4, 4);
+			documentModel.MoveHighlight(-4, -4);
+			documentModel.VerifyHighlightedTextEquals("");
+			documentModel.BackspaceCharacters(3, 3);
+			documentModel.VerifyHighlightedTextEquals("");
+
+			documentModel.MoveCaretTo(11);
+			documentModel.MoveHighlight(4, 4);
+			documentModel.MoveHighlight(-4, -4);
+			documentModel.VerifyHighlightedTextEquals("");
+			documentModel.DeleteCharacters(3, 3);
+			documentModel.VerifyHighlightedTextEquals("");
+
+			documentModel.MoveCaretTo(11);
+			documentModel.MoveHighlight(4, 4);
+			documentModel.MoveHighlight(-4, -4);
+			documentModel.VerifyHighlightedTextEquals("");
+			documentModel.AddCharacters("hey");
+			documentModel.VerifyHighlightedTextEquals("");
 		}
 		
 		private void TestHighlightLeftThenRight()
@@ -884,6 +1060,29 @@ namespace SpireTest
 			documentModel.VerifyTextEquals("Actand enjoy");
 			documentModel.VerifyHighlightedTextEquals("");
 		}
+		
+		private void TestHighlightGreaterThanCaretThenType()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("Act now and enjoy");
+			documentModel.MoveHighlight(-5, -5);
+			TestUtilities.Assert(documentModel.HighlightPosition > documentModel.CaretPosition, "test not setup right");
+			documentModel.AddCharacters("ABC");
+			documentModel.VerifyTextEquals("Act now and ABC");
+			documentModel.VerifyHighlightedTextEquals("");
+		}
+		
+		private void TestHighlightLessThanCaretThenType()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("Act now and enjoy");
+			documentModel.MoveCaretTo(3);
+			documentModel.MoveHighlight(5, 5);
+			TestUtilities.Assert(documentModel.HighlightPosition < documentModel.CaretPosition, "test not setup right");
+			documentModel.AddCharacters("ABC");
+			documentModel.VerifyTextEquals("ActABCand enjoy");
+			documentModel.VerifyHighlightedTextEquals("");
+		}
 	}
 	
 	public class DocumentModelWrapper : DocumentModel
@@ -913,17 +1112,21 @@ namespace SpireTest
 		
 		public void AddCharacters(string characters)
 		{
-			int startIndex = this.CaretPosition;
-			int index = startIndex;
+			int startIndex = Math.Min(this.CaretPosition, this.HighlightPosition);
 			foreach(char c in characters)
 			{
-				int startLength = this.Length;
 				RaiseTextEvent(c);
-				TestUtilities.Assert(this.Length == startLength+1, String.Format("error adding character '{0}' to document model", c));
-				index++;
 			}
-			string observedCharacters = this.SubString(startIndex, index-1);
+			string observedCharacters = this.SubString(startIndex, startIndex+characters.Length-1);
 			TestUtilities.Assert(observedCharacters == characters, String.Format("error adding text '{0}' to document model.", characters));
+		}
+		
+		public void AddText(string text)
+		{
+			int startIndex = this.CaretPosition;
+			RaiseTextEvent(text);
+			string observedCharacters = this.SubString(startIndex, startIndex+text.Length-1);
+			TestUtilities.Assert(observedCharacters == text, String.Format("error adding text '{0}' to document model.", text));
 		}
 		
 		public void MoveCaretTo(int index)
@@ -964,8 +1167,8 @@ namespace SpireTest
 		public void Undo(int expectedLength, int expectedCaretPosition)
 		{
 			RaiseUndoEvent();
-			TestUtilities.Assert(this.Length == expectedLength, "wrong document length after undo");
-			TestUtilities.Assert(this.CaretPosition == expectedCaretPosition, "wrong caret position after undo");
+			TestUtilities.Assert(this.Length == expectedLength, String.Format("wrong document length after undo. length = '{0}' instead of '{1}'", this.Length, expectedLength));
+			TestUtilities.Assert(this.CaretPosition == expectedCaretPosition, String.Format("wrong caret position after undo. caret at '{0}' instead of '{1}'", this.CaretPosition, expectedCaretPosition));
 		}
 		
 		public void Redo()
@@ -984,10 +1187,11 @@ namespace SpireTest
 		{
 			if(this.Length == 0)
 			{
-				TestUtilities.Assert(text == "", "transcription error");
+				TestUtilities.Assert(text == "", String.Format("transcription error. text = '' instead of '{0}'", text));
 				return;
 			}
-			TestUtilities.Assert(this.SubString(0, this.Length-1) == text, "transcription error");
+			string actualText = this.SubString(0, this.Length-1);
+			TestUtilities.Assert(actualText == text, String.Format("transcription error. text = '{0}' instead of '{1}'", actualText, text));
 		}
 		
 		public void VerifyHighlightedTextEquals(string text)
@@ -1004,6 +1208,11 @@ namespace SpireTest
 		}
 		
 		private void RaiseTextEvent(char text)
+		{
+			this.OnTextEvent(this, new TextEventArgs(text));
+		}
+
+		private void RaiseTextEvent(string text)
 		{
 			this.OnTextEvent(this, new TextEventArgs(text));
 		}
