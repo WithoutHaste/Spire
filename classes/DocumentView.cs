@@ -41,6 +41,16 @@ namespace Spire
 			get { return displayAreas[0].LineBreaks.Count + 1; }
 		}
 		
+		public int LineNumber /*starts at 1*/
+		{
+			get { 
+				DisplayArea displayArea = displayAreas[0];
+				int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(CaretPosition);
+				if(lineBreakIndex < 0) return 1;
+				return lineBreakIndex + 2;
+			}
+		}
+		
 		public void OnModelUpdateEvent(object sender, UpdateAtEventArgs e)
 		{
 			UpdateLayoutFrom(Math.Min(layoutUpdatedTo, PreviousLineBreak(e.At)));
@@ -52,10 +62,34 @@ namespace Spire
 			MoveCaretVertical(e);
 		}
 		
+		public void OnCaretNavigationHomeEvent(object sender, EventArgs e)
+		{
+			documentModel.ClearHighlight();
+			MoveCaretHome();
+		}
+		
+		public void OnCaretNavigationEndEvent(object sender, EventArgs e)
+		{
+			documentModel.ClearHighlight();
+			MoveCaretEnd();
+		}
+		
 		public void OnHighlightNavigationVerticalEvent(object sender, NavigationVerticalEventArgs e)
 		{
 			documentModel.SetHighlight();
 			MoveCaretVertical(e);
+		}
+		
+		public void OnHighlightNavigationHomeEvent(object sender, EventArgs e)
+		{
+			documentModel.SetHighlight();
+			MoveCaretHome();
+		}
+		
+		public void OnHighlightNavigationEndEvent(object sender, EventArgs e)
+		{
+			documentModel.SetHighlight();
+			MoveCaretEnd();
 		}
 		
 		private void MoveCaretVertical(NavigationVerticalEventArgs e)
@@ -97,6 +131,19 @@ namespace Spire
 		{
 			documentModel.SetHighlight();
 			MoveCaretPoint(e);
+		}
+		
+		private void MoveCaretHome()
+		{
+			Cindex previousLineBreak = PreviousLineBreak(CaretPosition);
+			if(previousLineBreak == 0) documentModel.CaretPosition = previousLineBreak;
+			else documentModel.CaretPosition = Math.Min(previousLineBreak + 1, documentModel.Length);
+		}
+		
+		private void MoveCaretEnd()
+		{
+			Cindex nextLineBreak = NextLineBreak(CaretPosition);
+			documentModel.CaretPosition = nextLineBreak;
 		}
 		
 		private void MoveCaretPoint(NavigationPointEventArgs e)

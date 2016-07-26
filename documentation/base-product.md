@@ -159,9 +159,23 @@ xx	type part of word, wait awhile, type more words, undo
 	redo texting over highlighted text, words with spaces
 
 --> current unit tests
---> current Linux developement
 
 10. Home Key and End Key.
+
+	home when at home on first line
+	home when at home on not-first line
+	home on first line
+	home on not-first line
+	end when at end on last line
+	end when at end on not-last line
+	end on last line
+	end on not-last line
+	shift-home when at home
+	shift-home when at not-home
+	shift-end when at end
+	shift-end when at not-end
+
+--> current Linux developement
 
 11. Save, Save As, Load, New.
 

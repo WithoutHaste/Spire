@@ -35,6 +35,10 @@ namespace Spire
 
 		public event EventHandler OnUndoEvent;
 		public event EventHandler OnRedoEvent;
+		public event EventHandler OnCaretNavigationHomeEvent;
+		public event EventHandler OnCaretNavigationEndEvent;
+		public event EventHandler OnHighlightNavigationHomeEvent;
+		public event EventHandler OnHighlightNavigationEndEvent;
 	
 		private DocumentView documentView;
 		private System.Timers.Timer caretTimer;
@@ -56,13 +60,27 @@ namespace Spire
 			this.MouseUp += new MouseEventHandler(UserMouseUp);
 		}
 		
+		public void SetModel(DocumentModel documentModel)
+		{
+			OnTextEvent += new TextEventHandler(documentModel.OnTextEvent);
+			OnCaretNavigationHorizontalEvent += new CaretNavigationHorizontalEventHandler(documentModel.OnCaretNavigationHorizontalEvent);
+			OnHighlightNavigationHorizontalEvent += new HighlightNavigationHorizontalEventHandler(documentModel.OnHighlightNavigationHorizontalEvent);
+			OnEraseEvent += new EraseEventHandler(documentModel.OnEraseEvent);
+			OnUndoEvent += new EventHandler(documentModel.OnUndoEvent);
+			OnRedoEvent += new EventHandler(documentModel.OnRedoEvent);
+		}
+		
 		public void SetView(DocumentView view)
 		{
 			documentView = view;
-			this.OnCaretNavigationVerticalEvent += new Paper.CaretNavigationVerticalEventHandler(documentView.OnCaretNavigationVerticalEvent);
-			this.OnHighlightNavigationVerticalEvent += new Paper.HighlightNavigationVerticalEventHandler(documentView.OnHighlightNavigationVerticalEvent);
-			this.OnCaretNavigationPointEvent += new Paper.CaretNavigationPointEventHandler(documentView.OnCaretNavigationPointEvent);
-			this.OnHighlightNavigationPointEvent += new Paper.HighlightNavigationPointEventHandler(documentView.OnHighlightNavigationPointEvent);
+			OnCaretNavigationVerticalEvent += new CaretNavigationVerticalEventHandler(documentView.OnCaretNavigationVerticalEvent);
+			OnHighlightNavigationVerticalEvent += new HighlightNavigationVerticalEventHandler(documentView.OnHighlightNavigationVerticalEvent);
+			OnCaretNavigationPointEvent += new CaretNavigationPointEventHandler(documentView.OnCaretNavigationPointEvent);
+			OnHighlightNavigationPointEvent += new HighlightNavigationPointEventHandler(documentView.OnHighlightNavigationPointEvent);
+			OnCaretNavigationHomeEvent += new EventHandler(documentView.OnCaretNavigationHomeEvent);
+			OnCaretNavigationEndEvent += new EventHandler(documentView.OnCaretNavigationEndEvent);
+			OnHighlightNavigationHomeEvent += new EventHandler(documentView.OnHighlightNavigationHomeEvent);
+			OnHighlightNavigationEndEvent += new EventHandler(documentView.OnHighlightNavigationEndEvent);
 		}
 				
 		private void SetupDoubleBuffer()
@@ -167,6 +185,12 @@ namespace Spire
 				case Keys.Down:
 					RaiseCaretNavigationVerticalEvent(VerticalDirection.Down);
 					break;
+				case Keys.End:
+					RaiseCaretNavigationEndEvent();
+					break;
+				case Keys.Home:
+					RaiseCaretNavigationHomeEvent();
+					break;
 				case Keys.Left:
 					RaiseCaretNavigationHorizontalEvent(TextUnit.Character, HorizontalDirection.Left);
 					break;
@@ -211,6 +235,12 @@ namespace Spire
 				case Keys.Down:
 					RaiseHighlightNavigationVerticalEvent(VerticalDirection.Down);
 					break;
+				case Keys.End:
+					RaiseHighlightNavigationEndEvent();
+					break;
+				case Keys.Home:
+					RaiseHighlightNavigationHomeEvent();
+					break;
 				case Keys.Left:
 					RaiseHighlightNavigationHorizontalEvent(TextUnit.Character, HorizontalDirection.Left);
 					break;
@@ -244,11 +274,6 @@ namespace Spire
 		
 		private void UserMouseClick(object sender, MouseEventArgs e)
 		{
-			/*
-			if(e.Button == MouseButtons.Right) return;
-			RaiseCaretNavigationPointEvent(e.X, e.Y);
-			this.Invalidate();
-			*/
 		}
 		
 		private void UserMouseDown(object sender, MouseEventArgs e)
@@ -333,6 +358,30 @@ namespace Spire
 		{
 			if(OnHighlightNavigationPointEvent == null) return;
 			OnHighlightNavigationPointEvent(this, new NavigationPointEventArgs(x, y));
+		}
+		
+		private void RaiseCaretNavigationHomeEvent()
+		{
+			if(OnCaretNavigationHomeEvent == null) return;
+			OnCaretNavigationHomeEvent(this, new EventArgs());
+		}
+		
+		private void RaiseCaretNavigationEndEvent()
+		{
+			if(OnCaretNavigationEndEvent == null) return;
+			OnCaretNavigationEndEvent(this, new EventArgs());
+		}
+
+		private void RaiseHighlightNavigationHomeEvent()
+		{
+			if(OnHighlightNavigationHomeEvent == null) return;
+			OnHighlightNavigationHomeEvent(this, new EventArgs());
+		}
+		
+		private void RaiseHighlightNavigationEndEvent()
+		{
+			if(OnHighlightNavigationEndEvent == null) return;
+			OnHighlightNavigationEndEvent(this, new EventArgs());
 		}
 
 		protected override void OnPaint(PaintEventArgs e)

@@ -35,6 +35,20 @@ namespace SpireTest
 			TestUtilities.RunTest(TestHighlightDownThenUp, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightUpPastBeginningOfDocument, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightDownPastEndOfDocument, ref allTestsPassed);
+			TestUtilities.RunTest(TestHomeFromHomeOnFirstLine, ref allTestsPassed);
+			TestUtilities.RunTest(TestHomeFromNotHomeOnFirstLine, ref allTestsPassed);
+			TestUtilities.RunTest(TestHomeFromHomeOnNotFirstLine, ref allTestsPassed);
+			TestUtilities.RunTest(TestHomeFromNotHomeOnNotFirstLine, ref allTestsPassed);
+			TestUtilities.RunTest(TestEndFromEndOnLastLine, ref allTestsPassed);
+			TestUtilities.RunTest(TestEndFromNotEndOnLastLine, ref allTestsPassed);
+			TestUtilities.RunTest(TestEndFromEndOnNotLastLine, ref allTestsPassed);
+			TestUtilities.RunTest(TestEndFromNotEndOnNotLastLine, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightHomeFromHome, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightHomeFromNotHome, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightHomeWithCurrentHighlight, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightEndFromEnd, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightEndFromNotEnd, ref allTestsPassed);
+			TestUtilities.RunTest(TestHighlightEndWithCurrentHighlight, ref allTestsPassed);
 		}
 		
 		private void TestDisplayNoText()
@@ -267,6 +281,173 @@ namespace SpireTest
 			documentView.MoveHighlightUpOrDown(1, 0);
 		}
 		
+		private void TestHomeFromHomeOnFirstLine()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("competed in the modern pentathlon");
+			documentModel.MoveCaretTo(0);
+			documentView.MoveCaretHome(0);
+		}
+		
+		private void TestHomeFromNotHomeOnFirstLine()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("competed in the modern pentathlon");
+			documentView.MoveCaretHome(0);
+		}
+		
+		private void TestHomeFromHomeOnNotFirstLine()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("competed in the modern pentathlon");
+			while(documentView.LineCount < 2)
+			{
+				documentModel.AddCharacters("competition or no competition");
+			}
+			int previousLineNumber = documentView.LineNumber;
+			while(documentView.LineNumber == previousLineNumber)
+			{
+				documentModel.MoveCaret(-1, -1);
+			}
+			documentModel.MoveCaret(1, 1);
+			int previousCaret = documentModel.CaretPosition;
+			documentView.MoveCaretHome();
+			TestUtilities.Assert(previousCaret == documentModel.CaretPosition, String.Format("'home' at beginning of line moved caret"));
+		}
+		
+		private void TestHomeFromNotHomeOnNotFirstLine()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("competed in the modern pentathlon");
+			while(documentView.LineCount < 2)
+			{
+				documentModel.AddCharacters("competition or no competition");
+			}
+			int previousLineNumber = documentView.LineNumber;
+			documentView.MoveCaretHome();
+			TestUtilities.Assert(previousLineNumber == documentView.LineNumber, String.Format("'home' moved caret to a different line"));
+			documentModel.MoveCaret(-1, -1);
+			TestUtilities.Assert(previousLineNumber == 1 + documentView.LineNumber, String.Format("'home' did not move caret to beginning of line"));
+		}
+		
+		private void TestEndFromEndOnLastLine()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("competed in the modern pentathlon");
+			documentView.MoveCaretEnd(documentModel.Length);
+		}
+		
+		private void TestEndFromNotEndOnLastLine()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("competed in the modern pentathlon");
+			documentModel.MoveCaretTo(2);
+			documentView.MoveCaretEnd(documentModel.Length);
+		}
+		
+		private void TestEndFromEndOnNotLastLine()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("competed in the modern pentathlon");
+			while(documentView.LineCount < 2)
+			{
+				documentModel.AddCharacters("competition or no competition");
+			}
+			int previousLineNumber = documentView.LineNumber;
+			while(documentView.LineNumber == previousLineNumber)
+			{
+				documentModel.MoveCaret(-1, -1);
+			}
+			int previousCaret = documentModel.CaretPosition;
+			documentView.MoveCaretEnd();
+			TestUtilities.Assert(previousCaret == documentModel.CaretPosition, String.Format("'end' at end of line moved caret"));
+		}
+		
+		private void TestEndFromNotEndOnNotLastLine()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("competed in the modern pentathlon");
+			while(documentView.LineCount < 2)
+			{
+				documentModel.AddCharacters("competition or no competition");
+			}
+			documentModel.MoveCaretTo(3);
+			int previousLineNumber = documentView.LineNumber;
+			documentView.MoveCaretEnd();
+			TestUtilities.Assert(previousLineNumber == documentView.LineNumber, String.Format("'end' moved caret to a different line"));
+			documentModel.MoveCaret(1, 1);
+			TestUtilities.Assert(previousLineNumber + 1 == documentView.LineNumber, String.Format("'end' did not move caret to end of line"));
+		}
+		
+		private void TestHighlightHomeFromHome()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("competed in the modern pentathlon");
+			documentModel.MoveCaretTo(0);
+			documentView.MoveHighlightHome(0);
+			TestUtilities.Assert(!documentModel.HasHighlight, String.Format("highlighting from home to home should not result in highlight"));
+		}
+		
+		private void TestHighlightHomeFromNotHome()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("competed in the modern pentathlon");
+			documentModel.MoveCaretTo(5);
+			documentView.MoveHighlightHome(0);
+			documentModel.VerifyHighlightedTextEquals("compe");
+		}
+		
+		private void TestHighlightHomeWithCurrentHighlight()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("competed in the modern pentathlon");
+			documentModel.MoveCaretTo(8);
+			documentModel.MoveHighlight(-3, -3);
+			documentView.MoveHighlightHome(0);
+			documentModel.VerifyHighlightedTextEquals("competed");
+		}
+		
+		private void TestHighlightEndFromEnd()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("competed in the modern pentathlon");
+			documentView.MoveHighlightEnd(documentModel.Length);
+			TestUtilities.Assert(!documentModel.HasHighlight, String.Format("highlighting from end to end should not result in highlight"));
+		}
+		
+		private void TestHighlightEndFromNotEnd()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("competed in the modern pentathlon");
+			documentModel.MoveCaretTo(5);
+			documentView.MoveHighlightEnd(documentModel.Length);
+			documentModel.VerifyHighlightedTextEquals("ted in the modern pentathlon");
+		}
+		
+		private void TestHighlightEndWithCurrentHighlight()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("competed in the modern pentathlon");
+			documentModel.MoveCaretTo(5);
+			documentModel.MoveHighlight(3, 3);
+			documentView.MoveHighlightEnd(documentModel.Length);
+			documentModel.VerifyHighlightedTextEquals("ted in the modern pentathlon");
+		}
+		
 	}
 	
 	public class DocumentViewWrapper : DocumentView
@@ -317,6 +498,50 @@ namespace SpireTest
 			TestUtilities.Assert(success, String.Format("error moving highlight from {0} by {1} line(s), expected change {2}", previousCaretPosition, distance, expectedChange));
 		}
 		
+		public void MoveCaretHome()
+		{
+			RaiseCaretNavigationHomeEvent();
+		}
+		
+		public void MoveCaretHome(int expectedCaret)
+		{
+			RaiseCaretNavigationHomeEvent();
+			TestUtilities.Assert(this.CaretPosition == expectedCaret, String.Format("error moving caret home, is at {0}, expected {1}", this.CaretPosition, expectedCaret));
+		}
+		
+		public void MoveCaretEnd()
+		{
+			RaiseCaretNavigationEndEvent();
+		}
+		
+		public void MoveCaretEnd(int expectedCaret)
+		{
+			RaiseCaretNavigationEndEvent();
+			TestUtilities.Assert(this.CaretPosition == expectedCaret, String.Format("error moving caret end, is at {0}, expected {1}", this.CaretPosition, expectedCaret));
+		}
+		
+		public void MoveHighlightHome()
+		{
+			RaiseHighlightNavigationHomeEvent();
+		}
+		
+		public void MoveHighlightHome(int expectedCaret)
+		{
+			RaiseHighlightNavigationHomeEvent();
+			TestUtilities.Assert(this.CaretPosition == expectedCaret, String.Format("error moving highlight home, is at {0}, expected {1}", this.CaretPosition, expectedCaret));
+		}
+		
+		public void MoveHighlightEnd()
+		{
+			RaiseHighlightNavigationEndEvent();
+		}
+		
+		public void MoveHighlightEnd(int expectedCaret)
+		{
+			RaiseHighlightNavigationEndEvent();
+			TestUtilities.Assert(this.CaretPosition == expectedCaret, String.Format("error moving highlight end, is at {0}, expected {1}", this.CaretPosition, expectedCaret));
+		}
+				
 		private void RaiseCaretNavigationVerticalEvent(int distance)
 		{
 			while(distance < 0)
@@ -343,6 +568,26 @@ namespace SpireTest
 				this.OnHighlightNavigationVerticalEvent(this, new NavigationVerticalEventArgs(VerticalDirection.Down));
 				distance--;
 			}
+		}
+		
+		private void RaiseCaretNavigationHomeEvent()
+		{
+			this.OnCaretNavigationHomeEvent(this, new EventArgs());
+		}
+		
+		private void RaiseCaretNavigationEndEvent()
+		{
+			this.OnCaretNavigationEndEvent(this, new EventArgs());
+		}
+		
+		private void RaiseHighlightNavigationHomeEvent()
+		{
+			this.OnHighlightNavigationHomeEvent(this, new EventArgs());
+		}
+		
+		private void RaiseHighlightNavigationEndEvent()
+		{
+			this.OnHighlightNavigationEndEvent(this, new EventArgs());
 		}
 		
 	}

@@ -40,12 +40,7 @@ namespace Spire
 			paper.Focus();
 			
 			documentModel = new DocumentModel();
-			paper.OnTextEvent += new Paper.TextEventHandler(documentModel.OnTextEvent);
-			paper.OnCaretNavigationHorizontalEvent += new Paper.CaretNavigationHorizontalEventHandler(documentModel.OnCaretNavigationHorizontalEvent);
-			paper.OnHighlightNavigationHorizontalEvent += new Paper.HighlightNavigationHorizontalEventHandler(documentModel.OnHighlightNavigationHorizontalEvent);
-			paper.OnEraseEvent += new Paper.EraseEventHandler(documentModel.OnEraseEvent);
-			paper.OnUndoEvent += new EventHandler(documentModel.OnUndoEvent);
-			paper.OnRedoEvent += new EventHandler(documentModel.OnRedoEvent);
+			paper.SetModel(documentModel);
 			
 			documentView = new DocumentView(documentModel);
 			documentView.AppendDisplayArea(new DisplayArea(paper.Width, paper.Height));
