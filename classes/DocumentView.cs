@@ -17,7 +17,7 @@ namespace Spire
 		{
 			documentModel = model;
 			displayAreas = new List<DisplayArea>();
-			stringFormat = new StringFormat(StringFormat.GenericTypographic) { FormatFlags = StringFormatFlags.MeasureTrailingSpaces };
+			stringFormat = GenerateStringFormat();
 			layoutUpdatedTo = 0;
 		}
 		
@@ -49,6 +49,13 @@ namespace Spire
 				if(lineBreakIndex < 0) return 1;
 				return lineBreakIndex + 2;
 			}
+		}
+		
+		private StringFormat GenerateStringFormat()
+		{
+			StringFormat stringFormat = new StringFormat(StringFormat.GenericTypographic) { FormatFlags = StringFormatFlags.MeasureTrailingSpaces };
+			//stringFormat.SetTabStops(0.0f, new float[] {100f, 100f, 100f, 100f, 100f});
+			return stringFormat;
 		}
 		
 		public void OnModelUpdateEvent(object sender, UpdateAtEventArgs e)
@@ -294,7 +301,7 @@ namespace Spire
 		{
 			DrawHighlightLine(graphics, y, lineStart, lineEnd);
 			Brush textBrush = new SolidBrush(Color.Black);
-			graphics.DrawString(documentModel.SubString(lineStart, lineEnd), Application.GlobalFont, textBrush, new Point(0, y), stringFormat);
+			graphics.DrawString(documentModel.SubString(lineStart, lineEnd).Replace("\t", Constants.TabEquivalent), Application.GlobalFont, textBrush, new Point(0, y), stringFormat);
 		}
 		
 		private void DrawHighlightLine(Graphics graphics, int y, Cindex lineStart, Cindex lineEnd)
@@ -363,7 +370,7 @@ namespace Spire
 		
 		private SizeF MeasureString(Graphics graphics, string text)
 		{
-			return graphics.MeasureString(text, Application.GlobalFont, new PointF(0,0), stringFormat);
+			return graphics.MeasureString(text.Replace("\t", Constants.TabEquivalent), Application.GlobalFont, new PointF(0,0), stringFormat);
 		}
 		
 		private int StringHeight(Graphics graphics, string text)

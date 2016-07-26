@@ -159,6 +159,7 @@ namespace Spire
 				case Keys.Down:
 				case Keys.Left:
 				case Keys.Right:
+				case Keys.Tab:
 				case Keys.Up:
 					e.IsInputKey = true;
 					break;
@@ -196,6 +197,9 @@ namespace Spire
 					break;
 				case Keys.Right:
 					RaiseCaretNavigationHorizontalEvent(TextUnit.Character, HorizontalDirection.Right);
+					break;
+				case Keys.Tab:
+					RaiseTextEvent('\t');
 					break;
 				case Keys.Up:
 					RaiseCaretNavigationVerticalEvent(VerticalDirection.Up);

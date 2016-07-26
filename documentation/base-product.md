@@ -178,10 +178,12 @@ xx	type part of word, wait awhile, type more words, undo
 	end-line character always causes new line
 	when caret is after end-line character, it appears at the beginning of the next line
 
+12. Tab Key
+
+	test visually
+
 --> current unit tests
 --> current Linux developement
-
-12. Tab Key
 
 13. Save, Save As, Load, New.
 
