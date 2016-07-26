@@ -225,6 +225,8 @@ namespace Spire
 			int? lastSpace = null;
 			while(end < documentModel.Length)
 			{
+				if(documentModel[end] == (char)13/*endline*/)
+					return end;			
 				if(documentModel[end] == ' ')
 					lastSpace = end;
 				SizeF textSize = graphics.MeasureString(documentModel.SubString(start, end), Application.GlobalFont, new PointF(0,0), stringFormat);
@@ -329,6 +331,10 @@ namespace Spire
 			{
 				lineStart = displayArea.LineBreaks[lineBreakIndex] + 1;
 				y = (lineBreakIndex+1) * lineHeight;
+			}
+			if(cindex == documentModel.Length && cindex-1 >= 0 && documentModel[cindex-1] == (char)13/*endline*/)
+			{
+				return new Point(0, y + lineHeight);
 			}
 			string textToCaret = "";
 			if(lineStart < documentModel.Length && lineStart < cindex)

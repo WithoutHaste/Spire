@@ -158,8 +158,6 @@ xx	type part of word, wait awhile, type more words, undo
 	redo typing over highlighted text, words with spaces
 	redo texting over highlighted text, words with spaces
 
---> current unit tests
-
 10. Home Key and End Key.
 
 	home when at home on first line
@@ -175,13 +173,17 @@ xx	type part of word, wait awhile, type more words, undo
 	shift-end when at end
 	shift-end when at not-end
 
+--> current unit tests
 --> current Linux developement
 
-11. Save, Save As, Load, New.
+11. Enter Key
 
-12. Enter Key
+	end-line character always causes new line
+	when caret is after end-line character, it appears at the beginning of the next line
 
-13. Tab Key
+12. Tab Key
+
+13. Save, Save As, Load, New.
 
 14. Copy, Paste, Cut.
 
