@@ -49,6 +49,7 @@ namespace SpireTest
 			TestUtilities.RunTest(TestHighlightEndFromEnd, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightEndFromNotEnd, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightEndWithCurrentHighlight, ref allTestsPassed);
+			TestUtilities.RunTest(TestEndLineCharacterCausesLineBreak, ref allTestsPassed);
 		}
 		
 		private void TestDisplayNoText()
@@ -446,6 +447,16 @@ namespace SpireTest
 			documentModel.MoveHighlight(3, 3);
 			documentView.MoveHighlightEnd(documentModel.Length);
 			documentModel.VerifyHighlightedTextEquals("ted in the modern pentathlon");
+		}
+		
+		private void TestEndLineCharacterCausesLineBreak()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			DocumentViewWrapper documentView = DocumentViewWrapper.Init(documentModel);
+			documentModel.AddCharacters("Having decided to be her champion, he was unwilling to believe there was anything beyond her power.");
+			int previousLineNumber = documentView.LineNumber;
+			documentModel.AddCharacters(Constants.EndLineCharacter);
+			TestUtilities.Assert(previousLineNumber + 1 == documentView.LineNumber, String.Format("end line character did not cause line break"));
 		}
 		
 	}

@@ -103,6 +103,7 @@ namespace SpireTest
 			documentModel.AddCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 			documentModel.AddCharacters("`1234567890-=[]\\;',./ ");
 			documentModel.AddCharacters("~!@#$%^&*()_+{}|:\"<>?");
+			documentModel.AddCharacters(Constants.EndLineCharacter);
 		}
 		
 		private void TestNavigateLeft()

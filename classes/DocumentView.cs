@@ -208,7 +208,7 @@ namespace Spire
 				while(endCindex < documentModel.Length-1)
 				{
 					endCindex = FindEndOfLine(displayArea, graphics, cindex);
-					if(endCindex < documentModel.Length-1)
+					if(endCindex < documentModel.Length-1 || (endCindex < documentModel.Length && documentModel[endCindex] == Constants.EndLineCharacter))
 					{
 						displayArea.LineBreaks.Add(endCindex);
 						layoutUpdatedTo = endCindex + 1;
@@ -225,7 +225,7 @@ namespace Spire
 			int? lastSpace = null;
 			while(end < documentModel.Length)
 			{
-				if(documentModel[end] == (char)13/*endline*/)
+				if(documentModel[end] == Constants.EndLineCharacter)
 					return end;			
 				if(documentModel[end] == ' ')
 					lastSpace = end;
@@ -331,10 +331,6 @@ namespace Spire
 			{
 				lineStart = displayArea.LineBreaks[lineBreakIndex] + 1;
 				y = (lineBreakIndex+1) * lineHeight;
-			}
-			if(cindex == documentModel.Length && cindex-1 >= 0 && documentModel[cindex-1] == (char)13/*endline*/)
-			{
-				return new Point(0, y + lineHeight);
 			}
 			string textToCaret = "";
 			if(lineStart < documentModel.Length && lineStart < cindex)

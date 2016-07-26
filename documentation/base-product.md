@@ -173,13 +173,13 @@ xx	type part of word, wait awhile, type more words, undo
 	shift-end when at end
 	shift-end when at not-end
 
---> current unit tests
---> current Linux developement
-
 11. Enter Key
 
 	end-line character always causes new line
 	when caret is after end-line character, it appears at the beginning of the next line
+
+--> current unit tests
+--> current Linux developement
 
 12. Tab Key
 
