@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Spire
@@ -16,8 +17,7 @@ namespace Spire
 	
 		public DocumentModel()
 		{
-			chunks = new List<DocumentChunk>();
-			chunks.Add(new DocumentChunk()); //list is never left empty
+			InitializeDocumentChunks();
 			UpdateChunksIndexesFrom(0);
 			CaretPosition = 0;
 			history = new History();
@@ -143,6 +143,20 @@ namespace Spire
 		private DocumentChunk LastChunk
 		{
 			get { return chunks[chunks.Count-1]; }
+		}
+		
+		private void InitializeDocumentChunks()
+		{
+			if(chunks == null)
+			{
+				chunks = new List<DocumentChunk>();
+			}
+			else
+			{
+				chunks.Clear();
+			}
+			chunks.Add(new DocumentChunk());
+			_caretPosition = 0;
 		}
 		
 		public void OnTextEvent(object sender, TextEventArgs e)
@@ -394,6 +408,34 @@ namespace Spire
 				chunkIndex--; //insert at end of last chunk
 			}		
 			return chunkIndex;
+		}
+		
+		public void SaveTXT(StreamWriter stream)
+		{
+			foreach(DocumentChunk chunk in chunks)
+			{
+				stream.Write(chunk.Text);
+			}
+		}
+		
+		public void LoadTXT(StreamReader stream)
+		{
+			InitializeDocumentChunks();
+			int index = 0;
+			char[] buffer = new char[DocumentChunk.UpperChunkLength];
+			int readCount = 0;
+			while((readCount = stream.Read(buffer, 0, buffer.Length)) > 0)
+			{
+				if(readCount < buffer.Length)
+				{
+					InsertText((new String(buffer)).Substring(0, readCount), index);
+				}
+				else
+				{
+					InsertText(new String(buffer), index);
+				}
+				index += readCount;
+			}
 		}
 	}
 }

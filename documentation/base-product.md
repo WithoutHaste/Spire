@@ -181,11 +181,24 @@ xx	type part of word, wait awhile, type more words, undo
 12. Tab Key
 
 	test visually
+	tabs equal 4 spaces, not using tab stops (regular columns)
 
 --> current unit tests
 --> current Linux developement
 
-13. Save, Save As, Load, New.
+13. Save, Save As, Load, New. (TXT only)
+
+	bug: two enters in a row does not update cursor position right
+
+	new file opens automatically when program loads
+	Ctrl-N for new file
+	Ctrl-S for save file
+	Ctrl-O for open file
+	check doc length after load == at save
+	check doc text after load == at save
+	open, edit, save -> saves changes to same filename as was opened
+	new, save -> save as
+	open, edit, save as, edit, save -> saves changes to same filename as saved as
 
 14. Copy, Paste, Cut.
 

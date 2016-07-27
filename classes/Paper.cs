@@ -198,9 +198,6 @@ namespace Spire
 				case Keys.Right:
 					RaiseCaretNavigationHorizontalEvent(TextUnit.Character, HorizontalDirection.Right);
 					break;
-				case Keys.Tab:
-					RaiseTextEvent('\t');
-					break;
 				case Keys.Up:
 					RaiseCaretNavigationVerticalEvent(VerticalDirection.Up);
 					break;

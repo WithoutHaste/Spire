@@ -5,8 +5,8 @@ namespace Spire
 {
 	public class DocumentChunk
 	{
-		private static int lowerChunkLength = 15;
-		private static int upperChunkLength = 75;
+		private const int LowerChunkLength = 15;
+		public const int UpperChunkLength = 75;
 
 		private List<char> _text;
 		private int _length;
@@ -61,12 +61,12 @@ namespace Spire
 		
 		public bool IsTooShort
 		{
-			get { return (_length < lowerChunkLength); }
+			get { return (_length < LowerChunkLength); }
 		}
 		
 		public bool IsTooLong
 		{
-			get { return (_length > upperChunkLength); }
+			get { return (_length > UpperChunkLength); }
 		}
 		
 		public bool IsEmpty

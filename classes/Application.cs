@@ -19,6 +19,7 @@ namespace Spire
 		private Panel scrollPanel;
 		private Paper paper;
 		private string iconPath = Path.Combine("images", "SpireIcon1.ico");
+		private string saveAsFilename;
 		
 		public Application()
 		{
@@ -30,22 +31,12 @@ namespace Spire
 			{
 				Icon = new Icon(iconPath);
 			}
+			Menu = BuildMainMenu();
 			
 			scrollPanel = BuildScrollPanel();
 			scrollPanel.Parent = this;
 
-			paper = BuildPaper();
-			paper.Anchor = AnchorStyles.Top;
-			paper.Parent = scrollPanel;
-			paper.Focus();
-			
-			documentModel = new DocumentModel();
-			paper.SetModel(documentModel);
-			
-			documentView = new DocumentView(documentModel);
-			documentView.AppendDisplayArea(new DisplayArea(paper.Width, paper.Height));
-			documentModel.OnUpdateAtEvent += new DocumentModel.UpdateAtEventHandler(documentView.OnModelUpdateEvent);
-			paper.SetView(documentView);
+			OnNewFile();
 
 			ResumeLayout(false);
 		}
@@ -68,6 +59,101 @@ namespace Spire
 			paper.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
 			paper.BackColor = Color.White;
 			return paper;
+		}
+		
+		private MainMenu BuildMainMenu()
+		{
+			MainMenu mainMenu = new MainMenu();
+			mainMenu.MenuItems.Add(BuildFileMenu());
+			return mainMenu;
+		}
+		
+		private MenuItem BuildFileMenu()
+		{
+			MenuItem menu = new MenuItem("File");
+			menu.MenuItems.Add(BuildMenuItem("New", new EventHandler(OnNewFile), Shortcut.CtrlN));
+			menu.MenuItems.Add(BuildMenuItem("Open", new EventHandler(OnOpenFile), Shortcut.CtrlO));
+			menu.MenuItems.Add(BuildMenuItem("Save", new EventHandler(OnSaveFile), Shortcut.CtrlS));
+			menu.MenuItems.Add(BuildMenuItem("Save As", new EventHandler(OnSaveAsFile), Shortcut.None));
+			return menu;
+		}
+		
+		private MenuItem BuildMenuItem(string text, EventHandler eventHandler, Shortcut shortcut)
+		{
+			MenuItem menuItem = new MenuItem(text);
+			menuItem.Shortcut = shortcut;
+			menuItem.Click += eventHandler;
+			menuItem.ShowShortcut = true;
+			return menuItem;
+		}
+		
+		private void OnNewFile(object sender, EventArgs e)
+		{
+			OnNewFile();
+		}
+		
+		private void OnNewFile()
+		{
+			scrollPanel.Controls.Clear();
+			
+			paper = BuildPaper();
+			paper.Anchor = AnchorStyles.Top;
+			paper.Parent = scrollPanel;
+			paper.Focus();
+			
+			documentModel = new DocumentModel();
+			paper.SetModel(documentModel);
+			
+			documentView = new DocumentView(documentModel);
+			documentView.AppendDisplayArea(new DisplayArea(paper.Width, paper.Height));
+			documentModel.OnUpdateAtEvent += new DocumentModel.UpdateAtEventHandler(documentView.OnModelUpdateEvent);
+			paper.SetView(documentView);
+		}
+		
+		private void OnOpenFile(object sender, EventArgs e)
+		{
+			using(OpenFileDialog dialog = new OpenFileDialog())
+			{
+				dialog.Filter = "txt (*.txt) |*.txt";
+				if(dialog.ShowDialog() == DialogResult.OK)
+				{
+					saveAsFilename = dialog.FileName;
+					using(StreamReader stream = new StreamReader(dialog.OpenFile()))
+					{
+						documentModel.LoadTXT(stream);
+					}
+					paper.Invalidate();
+				}
+			}
+		}
+		
+		private void OnSaveFile(object sender, EventArgs e)
+		{
+			if(String.IsNullOrEmpty(saveAsFilename))
+			{
+				OnSaveAsFile(sender, e);
+				return;
+			}
+			using(StreamWriter stream = new StreamWriter(File.Open(saveAsFilename, FileMode.Open)))
+			{
+				documentModel.SaveTXT(stream);
+			}
+		}
+		
+		private void OnSaveAsFile(object sender, EventArgs e)
+		{
+			using(SaveFileDialog dialog = new SaveFileDialog())
+			{
+				dialog.Filter = "txt (*.txt) |*.txt";
+				if(dialog.ShowDialog() == DialogResult.OK)
+				{
+					saveAsFilename = dialog.FileName;
+					using(StreamWriter stream = new StreamWriter(dialog.OpenFile()))
+					{
+						documentModel.SaveTXT(stream);
+					}
+				}
+			}
 		}
 
 	}
