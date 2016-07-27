@@ -12,8 +12,9 @@ namespace SpireTest
 		
 		public void RunLongTests(ref bool allTestsPassed)
 		{
-			TestUtilities.RunTest(TestLoad_AddAndRemoveInOrder, ref allTestsPassed);
-			TestUtilities.RunTest(TestLoad_AddAndRemoveRandomly, ref allTestsPassed);
+			TestUtilities.RunTest(TestLoadAddAndRemoveInOrder, ref allTestsPassed);
+			TestUtilities.RunTest(TestLoadAddAndRemoveRandomly, ref allTestsPassed);
+			TestUtilities.RunTest(TestLoadSaveAndLoad, ref allTestsPassed);
 		}
 		
 		public void RunTests(ref bool allTestsPassed)
@@ -94,6 +95,7 @@ namespace SpireTest
 			TestUtilities.RunTest(TestHighlightLessThanCaretThenBackspace, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightGreaterThanCaretThenType, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightLessThanCaretThenType, ref allTestsPassed);
+			TestUtilities.RunTest(TestSaveAndLoad, ref allTestsPassed);
 		}
 		
 		private void TestAllKeyboardCharacters()
@@ -177,7 +179,7 @@ namespace SpireTest
 			documentModel.BackspaceCharacters(3, 2);
 		}
 		
-		private void TestLoad_AddAndRemoveInOrder()
+		private void TestLoadAddAndRemoveInOrder()
 		{	
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
 			int charCount = 100000;
@@ -213,7 +215,7 @@ namespace SpireTest
 				String.Format("deleted {0} characters but still found {1}", charCount, documentModel.Length));
 		}
 		
-		private void TestLoad_AddAndRemoveRandomly()
+		private void TestLoadAddAndRemoveRandomly()
 		{
 			DocumentModelWrapper documentModel = new DocumentModelWrapper();
 			int editCount = 100000;
@@ -251,6 +253,29 @@ namespace SpireTest
 			TestUtilities.Assert(
 				duration.Ticks < TimeSpan.TicksPerSecond * maxSeconds, 
 				String.Format("Random editing {0} times took {1}h {2}m {3}s, longer than {4}s allowance", editCount, duration.Hours, duration.Minutes, duration.Seconds, maxSeconds));
+		}
+		
+		private void TestLoadSaveAndLoad()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			int charCount = 100000;
+			int maxSeconds = 5;
+			Random random = new Random(1);
+			
+			DateTime startTime = DateTime.Now;
+			for(int i=0; i<charCount; i++)
+			{
+				documentModel.AddCharacters((char)(random.Next((int)'a', (int)'z')));
+			}
+			documentModel.SaveTXT("TestLoadSave.txt");
+			int previousLength = documentModel.Length;
+			documentModel.LoadTXT("TestLoadSave.txt");
+			TestUtilities.Assert(previousLength == documentModel.Length, String.Format("large save did not reload with same length, expected length {0}, actual length {1}", previousLength, documentModel.Length));
+			
+			TimeSpan duration = DateTime.Now - startTime;
+			TestUtilities.Assert(
+				duration.Ticks > TimeSpan.TicksPerSecond * maxSeconds, 
+				String.Format("Save and Load {0} characters took {1}h {2}m {3}s, longer than {4}s allowance", charCount, duration.Hours, duration.Minutes, duration.Seconds, maxSeconds));
 		}
 		
 		private void TestUndoInNewDocument()
@@ -1085,6 +1110,20 @@ namespace SpireTest
 			documentModel.VerifyTextEquals("ActABCand enjoy");
 			documentModel.VerifyHighlightedTextEquals("");
 		}
+		
+		private void TestSaveAndLoad()
+		{
+			string text = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 `~!@#$%^&*()-_=+ \t \n {}[];':\",./<>?";
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters(text);
+			documentModel.SaveTXT("allCharacters.txt");
+			documentModel.LoadTXT("allCharacters.txt");
+			documentModel.VerifyTextEquals(text);
+			
+			documentModel = new DocumentModelWrapper();
+			documentModel.LoadTXT("allCharacters.txt");
+			documentModel.VerifyTextEquals(text);
+		}
 	}
 	
 	public class DocumentModelWrapper : DocumentModel
@@ -1207,6 +1246,33 @@ namespace SpireTest
 			Cindex max = Math.Max(this.CaretPosition, this.HighlightPosition);
 			string substring = this.SubString(min, max-1);
 			TestUtilities.Assert(substring == text, String.Format("highlighted text error: cindex {0} to {1} = '{2}', not '{3}'", min, max, substring, text));
+		}
+		
+		public void SaveTXT(string filename)
+		{
+			string filenameAndPath = BuildDocumentPath(filename);
+			if(!File.Exists(filenameAndPath))
+			{
+				File.Create(filenameAndPath);
+			}
+			using(StreamWriter stream = new StreamWriter(File.Open(filenameAndPath, FileMode.Truncate)))
+			{
+				this.SaveTXT(stream);
+			}
+		}
+		
+		public void LoadTXT(string filename)
+		{
+			string filenameAndPath = BuildDocumentPath(filename);
+			using(StreamReader stream = new StreamReader(File.Open(filenameAndPath, FileMode.Open)))
+			{
+				this.LoadTXT(stream);
+			}
+		}
+		
+		private string BuildDocumentPath(string filename)
+		{
+			return String.Format("tests{0}docs{0}{1}", Path.DirectorySeparatorChar, filename);
 		}
 		
 		private void RaiseTextEvent(char text)
