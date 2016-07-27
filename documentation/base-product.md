@@ -183,9 +183,6 @@ xx	type part of word, wait awhile, type more words, undo
 	test visually
 	tabs equal 4 spaces, not using tab stops (regular columns)
 
---> current unit tests
---> current Linux developement
-
 13. Save, Save As, Load, New. (TXT only)
 
 	bug: two enters in a row does not update cursor position right
@@ -199,6 +196,9 @@ xx	type part of word, wait awhile, type more words, undo
 	open, edit, save -> saves changes to same filename as was opened
 	new, save -> save as
 	open, edit, save as, edit, save -> saves changes to same filename as saved as
+
+--> current unit tests
+--> current Linux developement
 
 14. Copy, Paste, Cut.
 

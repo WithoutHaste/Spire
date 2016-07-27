@@ -212,7 +212,7 @@ namespace Spire
 			using(Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height))
 			{
 				int endCindex = cindex;
-				while(endCindex < documentModel.Length-1)
+				while(endCindex < documentModel.Length)
 				{
 					endCindex = FindEndOfLine(displayArea, graphics, cindex);
 					if(endCindex < documentModel.Length-1 || (endCindex < documentModel.Length && documentModel[endCindex] == Constants.EndLineCharacter))
