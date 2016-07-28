@@ -167,6 +167,7 @@ namespace Spire
 		
 		private Cindex FindCindexClosestToX(Graphics graphics, Cindex lineStart, int x)
 		{
+			if(documentModel.Length == 0) return 0;
 			string textToX = "";
 			int charCount = 0;
 			int max = NextLineBreak(lineStart);

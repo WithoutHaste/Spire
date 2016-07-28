@@ -198,7 +198,6 @@ xx	type part of word, wait awhile, type more words, undo
 	open, edit, save as, edit, save -> saves changes to same filename as saved as
 
 --> current unit tests
---> current Linux developement
 
 14. Copy, Paste, Cut.
 
@@ -222,6 +221,8 @@ xx	type part of word, wait awhile, type more words, undo
 	redo paste with no highlight
 	redo paste with highlight
 	redo cut
+
+--> current Linux developement
 
 15. Show page breaks.
 
