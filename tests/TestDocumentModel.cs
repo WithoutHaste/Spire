@@ -1,6 +1,7 @@
 using Spire;
 using System;
 using System.IO;
+using System.Windows.Forms;
 
 namespace SpireTest
 {
@@ -96,6 +97,22 @@ namespace SpireTest
 			TestUtilities.RunTest(TestHighlightGreaterThanCaretThenType, ref allTestsPassed);
 			TestUtilities.RunTest(TestHighlightLessThanCaretThenType, ref allTestsPassed);
 			TestUtilities.RunTest(TestSaveAndLoad, ref allTestsPassed);
+			TestUtilities.RunTest(TestCopyNothing, ref allTestsPassed);
+			TestUtilities.RunTest(TestCopySomething, ref allTestsPassed);
+			TestUtilities.RunTest(TestCopyThenPaste, ref allTestsPassed);
+			TestUtilities.RunTest(TestPasteWithNoHighlight, ref allTestsPassed);
+			TestUtilities.RunTest(TestPasteWithHighlight, ref allTestsPassed);
+			TestUtilities.RunTest(TestPasteNothing, ref allTestsPassed);
+			TestUtilities.RunTest(TestPasteSeveralTimes, ref allTestsPassed);
+			TestUtilities.RunTest(TestCutNothing, ref allTestsPassed);
+			TestUtilities.RunTest(TestCutSomething, ref allTestsPassed);
+			TestUtilities.RunTest(TestCutThenPaste, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoPasteWithNoHighlight, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoPasteWithHighlight, ref allTestsPassed);
+			TestUtilities.RunTest(TestUndoCut, ref allTestsPassed);
+			TestUtilities.RunTest(TestRedoPasteWithNoHighlight, ref allTestsPassed);
+			TestUtilities.RunTest(TestRedoPasteWithHighlight, ref allTestsPassed);
+			TestUtilities.RunTest(TestRedoCut, ref allTestsPassed);
 		}
 		
 		private void TestAllKeyboardCharacters()
@@ -1124,6 +1141,167 @@ namespace SpireTest
 			documentModel.LoadTXT("allCharacters.txt");
 			documentModel.VerifyTextEquals(text);
 		}
+		
+		private void TestCopyNothing()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			documentModel.Copy(Clipboard.GetText());
+		}
+		
+		private void TestCopySomething()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Copy("ghi");
+		}
+		
+		private void TestCopyThenPaste()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Copy("ghi");
+			documentModel.MoveHighlight(3, 3);
+			documentModel.Paste("abcdefghighi");
+		}
+		
+		private void TestPasteWithNoHighlight()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Copy("ghi");
+			documentModel.MoveHighlight(3, 3);
+			documentModel.Paste("abcdefghighi");
+		}
+		
+		private void TestPasteWithHighlight()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Copy("ghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Paste("abcghi");
+		}
+		
+		private void TestPasteNothing()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			Clipboard.Clear();
+			documentModel.Paste("abcdefghi");
+		}
+		
+		private void TestPasteSeveralTimes()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Copy("ghi");
+			documentModel.MoveHighlight(3, 3);
+			documentModel.Paste("abcdefghighi");
+			documentModel.Paste("abcdefghighighi");
+			documentModel.Paste("abcdefghighighighi");
+		}
+		
+		private void TestCutNothing()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			documentModel.Cut(Clipboard.GetText(), "abcdefghi");
+		}
+		
+		private void TestCutSomething()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Cut("ghi", "abcdef");
+		}
+		
+		private void TestCutThenPaste()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Cut("ghi", "abcdef");
+			documentModel.Paste("abcdefghi");
+		}
+		
+		private void TestUndoPasteWithNoHighlight()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Copy("ghi");
+			documentModel.MoveHighlight(3, 3);
+			documentModel.Paste("abcdefghighi");
+			documentModel.Undo(9, 9);
+			documentModel.VerifyTextEquals("abcdefghi");
+		}
+		
+		private void TestUndoPasteWithHighlight()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Copy("ghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Paste("abcghi");
+			documentModel.Undo(9, 3);
+			documentModel.VerifyTextEquals("abcdefghi");
+		}
+		
+		private void TestUndoCut()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Cut("ghi", "abcdef");
+			documentModel.Undo(9, 6);
+			documentModel.VerifyTextEquals("abcdefghi");
+		}
+		
+		private void TestRedoPasteWithNoHighlight()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Copy("ghi");
+			documentModel.MoveHighlight(3, 3);
+			documentModel.Paste("abcdefghighi");
+			documentModel.Undo(9, 9);
+			documentModel.Redo(12, 12);
+			documentModel.VerifyTextEquals("abcdefghighi");
+		}
+		
+		private void TestRedoPasteWithHighlight()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Copy("ghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Paste("abcghi");
+			documentModel.Undo(9, 3);
+			documentModel.Redo(6, 6);
+			documentModel.VerifyTextEquals("abcghi");
+		}
+		
+		private void TestRedoCut()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			documentModel.AddCharacters("abcdefghi");
+			documentModel.MoveHighlight(-3, -3);
+			documentModel.Cut("ghi", "abcdef");
+			documentModel.Undo(9, 6);
+			documentModel.Redo(6, 6);
+			documentModel.VerifyTextEquals("abcdef");
+		}
+
 	}
 	
 	public class DocumentModelWrapper : DocumentModel
@@ -1270,6 +1448,43 @@ namespace SpireTest
 			}
 		}
 		
+		public void Copy()
+		{
+			RaiseCopyEvent();
+		}
+		
+		public void Copy(string expectedText)
+		{
+			RaiseCopyEvent();
+			TestUtilities.Assert(Clipboard.GetText() == expectedText, String.Format("copy did not result in expected text. expected='{0}'. actual='{1}'", expectedText, Clipboard.GetText()));
+		}
+		
+		public void Cut()
+		{
+			RaiseCutEvent();
+			VerifyHighlightedTextEquals("");
+		}
+		
+		public void Cut(string expectedClipboardText, string expectedDocumentText)
+		{
+			Cut();
+			TestUtilities.Assert(Clipboard.GetText() == expectedClipboardText, String.Format("cut did not result in expected text. expected='{0}'. actual='{1}'", expectedClipboardText, Clipboard.GetText()));
+			VerifyTextEquals(expectedDocumentText);
+		}
+		
+		public void Paste()
+		{
+			string previousClipboardText = Clipboard.GetText();
+			RaisePasteEvent();
+			TestUtilities.Assert(Clipboard.GetText() == previousClipboardText, String.Format("paste changed clipboard contents"));
+		}
+		
+		public void Paste(string expectedDocumentText)
+		{
+			Paste();
+			VerifyTextEquals(expectedDocumentText);
+		}
+		
 		private string BuildDocumentPath(string filename)
 		{
 			return String.Format("tests{0}docs{0}{1}", Path.DirectorySeparatorChar, filename);
@@ -1326,6 +1541,21 @@ namespace SpireTest
 		private void RaiseRedoEvent()
 		{
 			this.OnRedoEvent(this, new EventArgs());
+		}
+		
+		private void RaiseCopyEvent()
+		{
+			this.OnCopyEvent(this, new EventArgs());
+		}
+		
+		private void RaiseCutEvent()
+		{
+			this.OnCutEvent(this, new EventArgs());
+		}
+		
+		private void RaisePasteEvent()
+		{
+			this.OnPasteEvent(this, new EventArgs());
 		}
 	}
 }

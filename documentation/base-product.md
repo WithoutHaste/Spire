@@ -197,8 +197,6 @@ xx	type part of word, wait awhile, type more words, undo
 	new, save -> save as
 	open, edit, save as, edit, save -> saves changes to same filename as saved as
 
---> current unit tests
-
 14. Copy, Paste, Cut.
 
 	bug: clicking on Paper with empty document gives SubString out of range error
@@ -216,12 +214,13 @@ xx	type part of word, wait awhile, type more words, undo
 	cut some text
 	cut then paste some text
 	undo paste with no highlight
-	undo paste with higlight
+	undo paste with highlight
 	undo cut
 	redo paste with no highlight
 	redo paste with highlight
 	redo cut
 
+--> current unit tests
 --> current Linux developement
 
 15. Show page breaks.

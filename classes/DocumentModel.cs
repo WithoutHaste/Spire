@@ -295,14 +295,18 @@ namespace Spire
 		public void OnCutEvent(object sender, EventArgs e)
 		{
 			if(!HasHighlight) return;
+			history.AddEditBreak();
 			OnCopyEvent(sender, e);
 			EraseHighlight();
+			history.AddEditBreak();
 		}
 		
 		public void OnPasteEvent(object sender, EventArgs e)
 		{
 			if(!Clipboard.ContainsText()) return;
+			history.AddEditBreak();
 			OnTextEvent(sender, new TextEventArgs(Clipboard.GetText()));
+			history.AddEditBreak();
 		}
 		
 		private void InsertText(string text, Cindex at)

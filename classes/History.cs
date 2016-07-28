@@ -9,12 +9,14 @@ namespace Spire
 		private Stack<DocumentEdit> pendingUndos;
 		private Stack<DocumentEdit> pendingRedos;
 		private int? countMultiEdits;
+		private bool doNotConcatNextEdit;
 		
 		public History()
 		{
 			pendingUndos = new Stack<DocumentEdit>();
 			pendingRedos = new Stack<DocumentEdit>();
 			countMultiEdits = null;
+			doNotConcatNextEdit = false;
 		}
 		
 		private bool InMultiEdit
@@ -25,7 +27,7 @@ namespace Spire
 		public void Add(DocumentEdit edit)
 		{
 			pendingRedos.Clear();
-			if(pendingUndos.Count > 0)
+			if(pendingUndos.Count > 0 && !doNotConcatNextEdit)
 			{
 				bool success = pendingUndos.First().Concat(edit);
 				if(success)
@@ -34,6 +36,7 @@ namespace Spire
 			pendingUndos.Push(edit);
 			if(InMultiEdit)
 				countMultiEdits++;
+			doNotConcatNextEdit = false;
 		}
 		
 		public void Undo(DocumentModel documentModel)
@@ -70,6 +73,11 @@ namespace Spire
 			}
 			pendingUndos.Push(new DocumentEdit_Multiple(edits));
 			countMultiEdits = null;
+		}
+		
+		public void AddEditBreak()
+		{
+			doNotConcatNextEdit = true;
 		}
 	}
 }
