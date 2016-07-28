@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Windows.Forms;
 
 namespace Spire
 {
@@ -281,6 +282,27 @@ namespace Spire
 		{
 			history.Redo(this);
 			ClearHighlight();
+		}
+		
+		public void OnCopyEvent(object sender, EventArgs e)
+		{
+			if(!HasHighlight) return;
+			Cindex min = Math.Min(CaretPosition, HighlightPosition);
+			Cindex max = Math.Max(CaretPosition, HighlightPosition) - 1;
+			Clipboard.SetText(SubString(min, max));
+		}
+		
+		public void OnCutEvent(object sender, EventArgs e)
+		{
+			if(!HasHighlight) return;
+			OnCopyEvent(sender, e);
+			EraseHighlight();
+		}
+		
+		public void OnPasteEvent(object sender, EventArgs e)
+		{
+			if(!Clipboard.ContainsText()) return;
+			OnTextEvent(sender, new TextEventArgs(Clipboard.GetText()));
 		}
 		
 		private void InsertText(string text, Cindex at)

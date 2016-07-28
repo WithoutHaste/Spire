@@ -39,6 +39,9 @@ namespace Spire
 		public event EventHandler OnCaretNavigationEndEvent;
 		public event EventHandler OnHighlightNavigationHomeEvent;
 		public event EventHandler OnHighlightNavigationEndEvent;
+		public event EventHandler OnCopyEvent;
+		public event EventHandler OnCutEvent;
+		public event EventHandler OnPasteEvent;
 	
 		private DocumentView documentView;
 		private System.Timers.Timer caretTimer;
@@ -68,6 +71,9 @@ namespace Spire
 			OnEraseEvent += new EraseEventHandler(documentModel.OnEraseEvent);
 			OnUndoEvent += new EventHandler(documentModel.OnUndoEvent);
 			OnRedoEvent += new EventHandler(documentModel.OnRedoEvent);
+			OnCopyEvent += new EventHandler(documentModel.OnCopyEvent);
+			OnCutEvent += new EventHandler(documentModel.OnCutEvent);
+			OnPasteEvent += new EventHandler(documentModel.OnPasteEvent);
 		}
 		
 		public void SetView(DocumentView view)
@@ -212,8 +218,17 @@ namespace Spire
 		{
 			if(!e.Control) 
 				throw new Exception("Control key required for function UserControlKeyDown.");
-			switch(e.KeyCode)
+/*			switch(e.KeyCode)
 			{
+				case Keys.C:
+					RaiseCopyEvent();
+					break;
+				case Keys.V:
+					RaisePasteEvent();
+					break;
+				case Keys.X:
+					RaiseCutEvent();
+					break;
 				case Keys.Y:
 					RaiseRedoEvent();
 					break;
@@ -225,7 +240,7 @@ namespace Spire
 			}
 			e.Handled = true;
 			this.Invalidate();
-		}
+*/		}
 		
 		private void UserShiftKeyDown(KeyEventArgs e)
 		{
@@ -336,13 +351,13 @@ namespace Spire
 			OnEraseEvent(this, new EraseEventArgs(unit, amount));
 		}
 		
-		private void RaiseUndoEvent()
+		public void RaiseUndoEvent()
 		{
 			if(OnUndoEvent == null) return;
 			OnUndoEvent(this, new EventArgs());
 		}
 
-		private void RaiseRedoEvent()
+		public void RaiseRedoEvent()
 		{
 			if(OnRedoEvent == null) return;
 			OnRedoEvent(this, new EventArgs());
@@ -383,6 +398,24 @@ namespace Spire
 		{
 			if(OnHighlightNavigationEndEvent == null) return;
 			OnHighlightNavigationEndEvent(this, new EventArgs());
+		}
+		
+		public void RaiseCopyEvent()
+		{
+			if(OnCopyEvent == null) return;
+			OnCopyEvent(this, new EventArgs());
+		}
+		
+		public void RaiseCutEvent()
+		{
+			if(OnCutEvent == null) return;
+			OnCutEvent(this, new EventArgs());
+		}
+		
+		public void RaisePasteEvent()
+		{
+			if(OnPasteEvent == null) return;
+			OnPasteEvent(this, new EventArgs());
 		}
 
 		protected override void OnPaint(PaintEventArgs e)

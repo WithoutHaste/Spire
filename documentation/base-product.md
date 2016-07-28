@@ -202,8 +202,26 @@ xx	type part of word, wait awhile, type more words, undo
 
 14. Copy, Paste, Cut.
 
+	bug: clicking on Paper with empty document gives SubString out of range error
+
 	Test copy from other programs.
 	Test copy to other programs.
+	copy no text
+	copy some text
+	copy then paste some text
+	paste with no higlight
+	paste with highlight
+	paste with nothing to paste
+	paste several times
+	cut no text
+	cut some text
+	cut then paste some text
+	undo paste with no highlight
+	undo paste with higlight
+	undo cut
+	redo paste with no highlight
+	redo paste with highlight
+	redo cut
 
 15. Show page breaks.
 
@@ -222,4 +240,6 @@ xx	type part of word, wait awhile, type more words, undo
 21. Print.
 
 22. Break words with hyphen if word is longer than line.
+
+23. Memory management
 

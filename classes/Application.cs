@@ -65,6 +65,7 @@ namespace Spire
 		{
 			MainMenu mainMenu = new MainMenu();
 			mainMenu.MenuItems.Add(BuildFileMenu());
+			mainMenu.MenuItems.Add(BuildEditMenu());
 			return mainMenu;
 		}
 		
@@ -78,6 +79,17 @@ namespace Spire
 			return menu;
 		}
 		
+		private MenuItem BuildEditMenu()
+		{
+			MenuItem menu = new MenuItem("Edit");
+			menu.MenuItems.Add(BuildMenuItem("Undo", new EventHandler(OnUndo), Shortcut.CtrlZ));
+			menu.MenuItems.Add(BuildMenuItem("Redo", new EventHandler(OnRedo), Shortcut.CtrlY));
+			menu.MenuItems.Add(BuildMenuItem("Copy", new EventHandler(OnCopy), Shortcut.CtrlC));
+			menu.MenuItems.Add(BuildMenuItem("Cut", new EventHandler(OnCut), Shortcut.CtrlX));
+			menu.MenuItems.Add(BuildMenuItem("Paste", new EventHandler(OnPaste), Shortcut.CtrlV));
+			return menu;
+		}
+		
 		private MenuItem BuildMenuItem(string text, EventHandler eventHandler, Shortcut shortcut)
 		{
 			MenuItem menuItem = new MenuItem(text);
@@ -85,6 +97,35 @@ namespace Spire
 			menuItem.Click += eventHandler;
 			menuItem.ShowShortcut = true;
 			return menuItem;
+		}
+		
+		private void OnUndo(object sender, EventArgs e)
+		{
+			paper.RaiseUndoEvent();
+			paper.Invalidate();
+		}
+		
+		private void OnRedo(object sender, EventArgs e)
+		{
+			paper.RaiseRedoEvent();
+			paper.Invalidate();
+		}
+		
+		private void OnCopy(object sender, EventArgs e)
+		{
+			paper.RaiseCopyEvent();
+		}
+		
+		private void OnCut(object sender, EventArgs e)
+		{
+			paper.RaiseCutEvent();
+			paper.Invalidate();
+		}
+		
+		private void OnPaste(object sender, EventArgs e)
+		{
+			paper.RaisePasteEvent();
+			paper.Invalidate();
 		}
 		
 		private void OnNewFile(object sender, EventArgs e)
