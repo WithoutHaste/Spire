@@ -56,10 +56,28 @@ namespace Spire
 			}
 		}
 		
+		public bool ContainsCindex(Cindex cindex)
+		{
+			return (cindex >= Start && cindex <= End);
+		}
+		
 		public List<Cindex> LineBreaks
 		{
 			get { return _lineBreaks; }
 			set { _lineBreaks = value; }
+		}
+		
+		public int LineCountToCindex(Cindex cindex)
+		{
+			if(cindex < Start) return 0;
+			if(cindex > End) return LineCount;
+			int lineCount = 1;
+			foreach(Cindex lineBreak in _lineBreaks)
+			{
+				if(cindex <= lineBreak) break;
+				lineCount++;
+			}
+			return lineCount;
 		}
 		
 		public int GetLineBreakIndexBeforeCharIndex(Cindex cindex)

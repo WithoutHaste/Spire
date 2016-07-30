@@ -48,18 +48,24 @@ namespace Spire
 		
 		public int LineNumber /*starts at 1*/
 		{
-			get { 
-				DisplayArea displayArea = displayAreas[0];
-				int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(CaretPosition);
-				if(lineBreakIndex < 0) return 1;
-				return lineBreakIndex + 2;
+			get {
+				int lineNumber = 0;
+				foreach(DisplayArea displayArea in displayAreas)
+				{
+					if(displayArea.ContainsCindex(CaretPosition))
+					{
+						lineNumber += displayArea.LineCountToCindex(CaretPosition);
+						break;
+					}
+					lineNumber += displayArea.LineCount;
+				}
+				return lineNumber;
 			}
 		}
 		
 		private StringFormat GenerateStringFormat()
 		{
 			StringFormat stringFormat = new StringFormat(StringFormat.GenericTypographic) { FormatFlags = StringFormatFlags.MeasureTrailingSpaces };
-			//stringFormat.SetTabStops(0.0f, new float[] {100f, 100f, 100f, 100f, 100f});
 			return stringFormat;
 		}
 		
@@ -109,18 +115,66 @@ namespace Spire
 			int amount = 0;
 			switch(e.Direction)
 			{
-				case VerticalDirection.Up: amount = -1; break;
-				case VerticalDirection.Down: amount = 1; break;
+				case VerticalDirection.Up:
+					amount = -1;
+					break;
+				case VerticalDirection.Down:
+					amount = 1;
+					break;
 				default: throw new Exception(String.Format("VerticalDirection {0} not supported in document navigation", e.Direction));
 			}
-			DisplayArea displayArea = displayAreas[0];
+			DisplayArea displayArea = GetDisplayAreaByCindex(CaretPosition);
 			Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height);
 			documentModel.CaretPosition = CalculateVerticalMove(graphics, displayArea, CaretPosition, amount);
 		}
 		
+		private DisplayArea GetDisplayAreaByCindex(Cindex cindex)
+		{
+			foreach(DisplayArea displayArea in displayAreas)
+			{
+				if(displayArea.ContainsCindex(cindex))
+					return displayArea;
+			}
+			if(cindex == documentModel.Length && displayAreas.Count > 0)
+				return displayAreas.Last();
+			return null;
+		}
+		
+		private DisplayArea PreviousDisplayArea(DisplayArea displayArea)
+		{
+			int index = displayAreas.IndexOf(displayArea);
+			if(index == 0)
+				return null;
+			return displayAreas[index-1];
+		}
+		
+		private DisplayArea NextDisplayArea(DisplayArea displayArea)
+		{
+			int index = displayAreas.IndexOf(displayArea);
+			if(index >= displayAreas.Count-1)
+				return null;
+			return displayAreas[index+1];
+		}
+		
 		private Cindex CalculateVerticalMove(Graphics graphics, DisplayArea displayArea, Cindex currentPosition, int moveAmount)
 		{
+		
 			Point currentPoint = CindexLocation(graphics, displayArea, currentPosition);
+		/*	if(moveAmount < 0)
+			{
+				currentPosition = PreviousLineBreak(currentPosition);
+			}
+			while(moveAmount < 0)
+			{
+				lineBreak = 
+				moveAmount++;
+			}
+			while(moveAmount > 0)
+			{
+				CurrentPosition = NextLineBreak(currentPosition) + 1;
+				moveAmount--;
+			}
+			*/
 			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(currentPosition);
 			lineBreakIndex += moveAmount;
 			if(lineBreakIndex < -1)
