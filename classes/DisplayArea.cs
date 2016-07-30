@@ -1,24 +1,21 @@
 using System;
 using System.Collections.Generic;
-//using System.Drawing;
 using System.Linq;
 
 namespace Spire
 {
-	public struct DisplayArea
+	public class DisplayArea
 	{
-		//private GraphicsUnit _units;
 		private int _width;
 		private int _height;
-		private Cindex _start;
 		private List<Cindex> _lineBreaks;
 		
 		public DisplayArea(int width, int height)
 		{
-			//_units = GraphicsUnit.Pixel;
 			_width = width;
 			_height = height;
-			_start = -1;
+			Start = -1;
+			End = -1;
 			_lineBreaks = new List<Cindex>();
 		}
 		
@@ -34,8 +31,29 @@ namespace Spire
 		
 		public Cindex Start
 		{
-			get { return _start; }
-			set { _start = value; }
+			get;
+			set;
+		}
+		
+		public Cindex End
+		{
+			get;
+			set;
+		}
+		
+		public bool IsEmpty
+		{
+			get { return (Start == -1 || End == -1); }
+		}
+		
+		public int LineCount
+		{
+			get
+			{
+				if(IsEmpty)
+					return 0;
+				return _lineBreaks.Count + 1;
+			}
 		}
 		
 		public List<Cindex> LineBreaks

@@ -223,23 +223,33 @@ xx	type part of word, wait awhile, type more words, undo
 --> current unit tests
 --> current Linux developement
 
+14b. Update DocumentView to handle multiple display areas.
+
+	up/down navigation among display areas, some too small to contain text
+
+14c. Separate DocumentChunkCollection from DocumentModel.
+
 15. Show page breaks.
 
-16. Page Up, Page Down.
+16. Regenerate View when loading TXT file.
 
-17. Control + Arrow Keys to move by word chunks.
+17. Save and Load SPI file with View intact.
 
-18. Control + Delete or Backspace to remove by word chunks.
+18. Page Up, Page Down.
 
-	Always stop at punctuation, any punctuation.
+19. Control + Arrow Keys to move by word chunks.
+
+20. Control + Delete or Backspace to remove by word chunks.
+
+	Always treat strings of punctuation as their own word type
 	
-19. Find.
+21. Find.
 
-20. Replace.
+22. Replace.
 
-21. Print.
+23. Print.
 
-22. Break words with hyphen if word is longer than line.
+24. Break words with hyphen if word is longer than line.
 
-23. Memory management
+25. Memory management
 

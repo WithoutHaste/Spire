@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
+using System.Linq;
 
 namespace Spire
 {
@@ -38,7 +39,11 @@ namespace Spire
 		
 		public int LineCount
 		{
-			get { return displayAreas[0].LineBreaks.Count + 1; }
+			get { 
+				if(layoutUpdatedTo < documentModel.Length-1)
+					UpdateLayoutFrom(layoutUpdatedTo);
+				return displayAreas.Sum(p=>p.LineCount); 
+			}
 		}
 		
 		public int LineNumber /*starts at 1*/
@@ -209,6 +214,8 @@ namespace Spire
 		{
 			//assuming one infinite display area to start with
 			DisplayArea displayArea = displayAreas[0];
+			if(documentModel.Length > 0)
+				displayArea.Start = 0;
 			cindex = displayArea.ClearLineBreaksAfter(cindex);
 			using(Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height))
 			{
@@ -225,6 +232,7 @@ namespace Spire
 					endCindex++;
 				}
 			}
+			displayArea.End = documentModel.Length-1;
 		}
 		
 		private Cindex FindEndOfLine(DisplayArea displayArea, Graphics graphics, Cindex start)
@@ -251,7 +259,6 @@ namespace Spire
 
 		public void AppendDisplayArea(DisplayArea displayArea)
 		{
-			displayArea.Start = 0;
 			displayAreas.Add(displayArea);
 		}
 		
