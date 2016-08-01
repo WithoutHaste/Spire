@@ -8,15 +8,29 @@ namespace Spire
 	{
 		private int _width;
 		private int _height;
+		private int _x;
+		private int _y;
 		private List<Cindex> _lineBreaks;
 		
-		public DisplayArea(int width, int height)
+		public DisplayArea(int x, int y, int width, int height)
 		{
+			_x = x;
+			_y = y;
 			_width = width;
 			_height = height;
 			Start = -1;
 			End = -1;
 			_lineBreaks = new List<Cindex>();
+		}
+		
+		public int X
+		{
+			get { return _x; }
+		}
+		
+		public int Y
+		{
+			get { return _y; }
 		}
 		
 		public int Width
@@ -61,6 +75,37 @@ namespace Spire
 			return (cindex >= Start && cindex <= End);
 		}
 		
+		public Line? GetLine(Cindex cindex)
+		{
+			if(!ContainsCindex(cindex)) return null;
+			if(_lineBreaks.Count == 0) return new Line(Start, End);
+			for(int i=0; i<_lineBreaks.Count; i++)
+			{
+				if(_lineBreaks[i] >= cindex)
+				{
+					if(i == 0) return new Line(Start, _lineBreaks[0]);
+					return new Line(_lineBreaks[i-1], _lineBreaks[i]);
+				}
+			}
+			return new Line(_lineBreaks.Last(), End);
+		}
+		
+		public List<Line> GetLines()
+		{
+			List<Line> lines = new List<Line>();
+			Cindex start = Start;
+			foreach(Cindex lineBreak in _lineBreaks)
+			{
+				lines.Add(new Line(start, lineBreak));
+				start = lineBreak + 1;
+			}
+			if(!IsEmpty && start <= End)
+			{
+				lines.Add(new Line(start, End));
+			}
+			return lines;
+		}
+		
 		public List<Cindex> LineBreaks
 		{
 			get { return _lineBreaks; }
@@ -79,6 +124,30 @@ namespace Spire
 			}
 			return lineCount;
 		}
+		
+		public Cindex? PreviousLineBreak(Cindex cindex)
+		{
+			Cindex? previousLineBreak = null;
+			foreach(Cindex lineBreak in _lineBreaks)
+			{
+				if(lineBreak >= cindex)
+					break;
+				previousLineBreak = lineBreak;
+			}
+			return previousLineBreak;
+		}
+		
+		public Cindex? NextLineBreak(Cindex cindex)
+		{
+			foreach(Cindex lineBreak in _lineBreaks)
+			{
+				if(lineBreak > cindex)
+					return lineBreak;
+			}
+			return null;
+		}
+		
+		
 		
 		public int GetLineBreakIndexBeforeCharIndex(Cindex cindex)
 		{

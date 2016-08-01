@@ -146,7 +146,7 @@ namespace Spire
 			paper.SetModel(documentModel);
 			
 			documentView = new DocumentView(documentModel);
-			documentView.AppendDisplayArea(new DisplayArea(paper.Width, paper.Height));
+			documentView.AppendDisplayArea(new DisplayArea(0, 0, paper.Width, paper.Height));
 			documentModel.OnUpdateAtEvent += new DocumentModel.UpdateAtEventHandler(documentView.OnModelUpdateEvent);
 			paper.SetView(documentView);
 		}

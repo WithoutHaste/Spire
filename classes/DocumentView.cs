@@ -343,19 +343,20 @@ namespace Spire
 		
 		private void DrawText(Graphics graphics)
 		{
-			int lineHeight = StringHeight(graphics, "X");
-			DisplayArea displayArea = displayAreas[0];
-			int y = 0;
-			Cindex lineStart = 0;
-			foreach(Cindex lineBreak in displayArea.LineBreaks)
+			foreach(DisplayArea displayArea in displayAreas)
 			{
-				DrawTextLine(graphics, y, lineStart, lineBreak);
-				y += lineHeight;
-				lineStart = lineBreak+1;
+				DrawText(graphics, displayArea);
 			}
-			if(lineStart < documentModel.Length)
+		}
+		
+		private void DrawText(Graphics graphics, DisplayArea displayArea)
+		{
+			int lineHeight = StringHeight(graphics, "X");
+			int y = 0;
+			foreach(Line line in displayArea.GetLines())
 			{
-				DrawTextLine(graphics, y, lineStart, documentModel.Length-1);
+				DrawTextLine(graphics, displayArea.Y+y, line.First, line.Last);
+				y += lineHeight;
 			}
 		}
 		
