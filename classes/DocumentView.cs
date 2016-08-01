@@ -355,30 +355,30 @@ namespace Spire
 			int y = 0;
 			foreach(Line line in displayArea.GetLines())
 			{
-				DrawTextLine(graphics, displayArea.Y+y, line.First, line.Last);
+				DrawTextLine(graphics, displayArea.Y+y, line);
 				y += lineHeight;
 			}
 		}
 		
-		private void DrawTextLine(Graphics graphics, int y, Cindex lineStart, Cindex lineEnd)
+		private void DrawTextLine(Graphics graphics, int y, Line line)
 		{
-			DrawHighlightLine(graphics, y, lineStart, lineEnd);
+			DrawHighlightLine(graphics, y, line);
 			Brush textBrush = new SolidBrush(Color.Black);
-			graphics.DrawString(documentModel.SubString(lineStart, lineEnd).Replace("\t", Constants.TabEquivalent), Application.GlobalFont, textBrush, new Point(0, y), stringFormat);
+			graphics.DrawString(documentModel.SubString(line.First, line.Last).Replace("\t", Constants.TabEquivalent), Application.GlobalFont, textBrush, new Point(0, y), stringFormat);
 		}
 		
-		private void DrawHighlightLine(Graphics graphics, int y, Cindex lineStart, Cindex lineEnd)
+		private void DrawHighlightLine(Graphics graphics, int y, Line line)
 		{
 			if(!HighlightOn) return;
 			Cindex highlightStart = Math.Min(HighlightPosition, CaretPosition);
 			Cindex highlightEnd = Math.Max(HighlightPosition, CaretPosition);
-			if(highlightStart > lineEnd) return;
-			if(highlightEnd < lineStart) return;
+			if(highlightStart > line.Last) return;
+			if(highlightEnd < line.First) return;
 			Brush highlightBrush = new SolidBrush(Color.FromArgb(255, 205, 255, 255));
-			Point start = CindexLocation(graphics, displayAreas[0], Math.Max(highlightStart, lineStart));
-			Point end = (highlightEnd > lineEnd) ? 
-				LetterEndLocation(graphics, displayAreas[0], Math.Min(highlightEnd, lineEnd)) :
-				CindexLocation(graphics, displayAreas[0], Math.Min(highlightEnd, lineEnd));
+			Point start = CindexLocation(graphics, displayAreas[0], Math.Max(highlightStart, line.First));
+			Point end = (highlightEnd > line.Last) ? 
+				LetterEndLocation(graphics, displayAreas[0], Math.Min(highlightEnd, line.Last)) :
+				CindexLocation(graphics, displayAreas[0], Math.Min(highlightEnd, line.Last));
 			int lineHeight = StringHeight(graphics, "X");
 			graphics.FillRectangle(highlightBrush, start.X, start.Y, end.X-start.X, lineHeight);
 		}
