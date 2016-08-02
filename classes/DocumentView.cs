@@ -71,7 +71,7 @@ namespace Spire
 		
 		public void OnModelUpdateEvent(object sender, UpdateAtEventArgs e)
 		{
-			UpdateLayoutFrom(Math.Min(layoutUpdatedTo, PreviousLineBreak(e.At)));
+			UpdateLayoutFrom(Math.Min(layoutUpdatedTo, e.At));
 		}
 		
 		public void OnCaretNavigationVerticalEvent(object sender, NavigationVerticalEventArgs e)
@@ -135,7 +135,7 @@ namespace Spire
 				if(displayArea.ContainsCindex(cindex))
 					return displayArea;
 			}
-			if(cindex == documentModel.Length && displayAreas.Count > 0)
+			if(cindex <= documentModel.Length && displayAreas.Count > 0)
 				return displayAreas.Last();
 			return null;
 		}
@@ -264,29 +264,67 @@ namespace Spire
 			return documentModel.Length;
 		}
 		
+		private void DuplicateLastDisplayArea()
+		{
+			if(displayAreas.Count == 0) throw new Exception("No display are to duplicate.");
+			DisplayArea previousDisplayArea = displayAreas.Last();
+			DisplayArea newDisplayArea = new DisplayArea(previousDisplayArea.X, previousDisplayArea.Y + previousDisplayArea.Height, previousDisplayArea.Width, previousDisplayArea.Height);
+			newDisplayArea.Start = previousDisplayArea.End + 1;
+			displayAreas.Add(newDisplayArea);
+		}
+		
 		private void UpdateLayoutFrom(Cindex cindex)
 		{
-			//assuming one infinite display area to start with
-			DisplayArea displayArea = displayAreas[0];
-			if(documentModel.Length > 0)
-				displayArea.Start = 0;
-			cindex = displayArea.ClearLineBreaksAfter(cindex);
+			DisplayArea displayArea = GetDisplayAreaByCindex(cindex);
+			if(displayArea == null)
+			{
+	Console.WriteLine("no display area found, cindex {0}", cindex);
+				return;
+			}
+			displayArea.ClearThroughPreviousLine(cindex);
+			while(true)
+			{
+				UpdateLayout(displayArea);
+				int end = displayArea.End;
+				displayArea = NextDisplayArea(displayArea);
+				if(displayArea == null)
+				{
+//					if(end == documentModel.Length-1)
+//					{
+						return;
+//					}
+//					else
+//					{
+						//ensure that the new display area is large enough to fit some text into
+						//so that we don't enter an infinite loop of small display areas
+//						DuplicateLastDisplayArea();
+//						displayArea = GetDisplayAreaByCindex(cindex);
+//					}
+				}
+				displayArea.Reset(end+1);
+			}
+		}
+		
+		private void UpdateLayout(DisplayArea displayArea)
+		{
+			Cindex lineStart = displayArea.LastLineStart;
+			Cindex lineEnd = lineStart;
 			using(Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height))
 			{
-				int endCindex = cindex;
-				while(endCindex < documentModel.Length)
+				int lineHeight = StringHeight(graphics, "X");
+				while(lineEnd < documentModel.Length && (displayArea.LineCount + 1)*lineHeight < displayArea.Height)
 				{
-					endCindex = FindEndOfLine(displayArea, graphics, cindex);
-					if(endCindex < documentModel.Length-1 || (endCindex < documentModel.Length && documentModel[endCindex] == Constants.EndLineCharacter))
+					lineEnd = FindEndOfLine(displayArea, graphics, lineEnd);
+					if(lineEnd < documentModel.Length-1 || (lineEnd < documentModel.Length && documentModel[lineEnd] == Constants.EndLineCharacter))
 					{
-						displayArea.LineBreaks.Add(endCindex);
-						layoutUpdatedTo = endCindex + 1;
-						cindex = endCindex + 1;
+						displayArea.AddLineBreak(lineEnd);
+						layoutUpdatedTo = lineEnd + 1;
+						lineStart = lineEnd + 1;
 					}
-					endCindex++;
+					lineEnd++;
 				}
 			}
-			displayArea.End = documentModel.Length-1;
+			displayArea.End = lineEnd - 1;
 		}
 		
 		private Cindex FindEndOfLine(DisplayArea displayArea, Graphics graphics, Cindex start)
@@ -313,6 +351,8 @@ namespace Spire
 
 		public void AppendDisplayArea(DisplayArea displayArea)
 		{
+			if(displayAreas.Count == 0)
+				displayArea.Start = 0;
 			displayAreas.Add(displayArea);
 		}
 		

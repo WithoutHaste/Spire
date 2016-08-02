@@ -147,6 +147,43 @@ namespace Spire
 			return null;
 		}
 		
+		public void ClearThroughPreviousLine(Cindex cindex)
+		{
+			End = -1;
+			while(_lineBreaks.Count > 0 && _lineBreaks.Last() > cindex)
+			{
+				_lineBreaks.RemoveAt(_lineBreaks.Count-1);
+			}
+			if(_lineBreaks.Count > 0)
+			{
+				_lineBreaks.RemoveAt(_lineBreaks.Count-1);
+			}
+		}
+		
+		public void Reset(Cindex start)
+		{
+			End = -1;
+			Start = start;
+			_lineBreaks.Clear();
+		}
+		
+		public Cindex LastLineStart
+		{
+			get
+			{
+				if(_lineBreaks.Count == 0) return Start;
+				return _lineBreaks.Last() + 1;
+			}
+		}
+		
+		public void AddLineBreak(Cindex cindex)
+		{
+			if(cindex < Start) throw new Exception("Cannot add line break less than start.");
+			if(_lineBreaks.Count > 0 && _lineBreaks.Last() >= cindex) throw new Exception("Cannot add line break less than or equal to previous line break.");
+			_lineBreaks.Add(cindex);
+		}
+		
+		
 		
 		
 		public int GetLineBreakIndexBeforeCharIndex(Cindex cindex)
