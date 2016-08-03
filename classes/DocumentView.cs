@@ -264,13 +264,13 @@ namespace Spire
 			return documentModel.Length;
 		}
 		
-		private void DuplicateLastDisplayArea()
+		private DisplayArea DuplicateLastDisplayArea()
 		{
 			if(displayAreas.Count == 0) throw new Exception("No display are to duplicate.");
 			DisplayArea previousDisplayArea = displayAreas.Last();
 			DisplayArea newDisplayArea = new DisplayArea(previousDisplayArea.X, previousDisplayArea.Y + previousDisplayArea.Height, previousDisplayArea.Width, previousDisplayArea.Height);
-			newDisplayArea.Start = previousDisplayArea.End + 1;
-			displayAreas.Add(newDisplayArea);
+			AppendDisplayArea(newDisplayArea);
+			return newDisplayArea;
 		}
 		
 		private void UpdateLayoutFrom(Cindex cindex)
@@ -278,10 +278,10 @@ namespace Spire
 			DisplayArea displayArea = GetDisplayAreaByCindex(cindex);
 			if(displayArea == null)
 			{
-	Console.WriteLine("no display area found, cindex {0}", cindex);
 				return;
 			}
 			displayArea.ClearThroughPreviousLine(cindex);
+			Cindex? cindexBeforeGeneratingNewDisplayArea = null;
 			while(true)
 			{
 				UpdateLayout(displayArea);
@@ -289,17 +289,17 @@ namespace Spire
 				displayArea = NextDisplayArea(displayArea);
 				if(displayArea == null)
 				{
-//					if(end == documentModel.Length-1)
-//					{
+					if(end == documentModel.Length-1)
+					{
 						return;
-//					}
-//					else
-//					{
-						//ensure that the new display area is large enough to fit some text into
-						//so that we don't enter an infinite loop of small display areas
-//						DuplicateLastDisplayArea();
-//						displayArea = GetDisplayAreaByCindex(cindex);
-//					}
+					}
+					if(cindexBeforeGeneratingNewDisplayArea.HasValue && cindexBeforeGeneratingNewDisplayArea == end)
+					{
+						return;
+					}
+					cindexBeforeGeneratingNewDisplayArea = end;
+					DuplicateLastDisplayArea();
+					displayArea = GetDisplayAreaByCindex(end);
 				}
 				displayArea.Reset(end+1);
 			}
@@ -353,6 +353,10 @@ namespace Spire
 		{
 			if(displayAreas.Count == 0)
 				displayArea.Start = 0;
+			else if(!displayAreas.Last().IsEmpty)
+				displayArea.Start = displayAreas.Last().End + 1;
+			else if(displayAreas.Last().Start >= 0)
+				displayArea.Start = displayAreas.Last().Start;
 			displayAreas.Add(displayArea);
 		}
 		
