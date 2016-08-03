@@ -1,0 +1,5 @@
+Debug
+========================
+mono --debug program.exe
+//make sure -debug is in the build command
+//or you'll get error: Symbol file does not match PDB file, and you won't get the line numbers in the stack trace

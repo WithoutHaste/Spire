@@ -125,7 +125,7 @@ namespace Spire
 			}
 			DisplayArea displayArea = GetDisplayAreaByCindex(CaretPosition);
 			Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height);
-			documentModel.CaretPosition = CalculateVerticalMove(graphics, displayArea, CaretPosition, amount);
+			documentModel.CaretPosition = CalculateVerticalMove(graphics, CaretPosition, amount);
 		}
 		
 		private DisplayArea GetDisplayAreaByCindex(Cindex cindex)
@@ -156,35 +156,72 @@ namespace Spire
 			return displayAreas[index+1];
 		}
 		
-		private Cindex CalculateVerticalMove(Graphics graphics, DisplayArea displayArea, Cindex currentPosition, int moveAmount)
+		private Cindex CalculateVerticalMove(Graphics graphics, Cindex currentPosition, int moveAmount)
 		{
-		
+			DisplayArea displayArea = GetDisplayAreaByCindex(currentPosition);
+			if(displayArea == null)
+				return 0;
+			if(displayArea.IsEmpty)
+				return documentModel.Length;
 			Point currentPoint = CindexLocation(graphics, displayArea, currentPosition);
-		/*	if(moveAmount < 0)
+			Line? line = displayArea.GetLine(currentPosition);
+			if(currentPosition == documentModel.Length)
 			{
-				currentPosition = PreviousLineBreak(currentPosition);
+				line = displayArea.GetLine(currentPosition-1);
 			}
 			while(moveAmount < 0)
 			{
-				lineBreak = 
+				Line nextLine = line.Value;
+				line = PreviousLine(displayArea, line.Value);
+				if(line == null)
+				{
+					line = nextLine;
+					moveAmount = 0;
+					break;
+				}
 				moveAmount++;
 			}
 			while(moveAmount > 0)
 			{
-				CurrentPosition = NextLineBreak(currentPosition) + 1;
+				Line previousLine = line.Value;
+				line = NextLine(displayArea, line.Value);
+				if(line == null)
+				{
+					line = previousLine;
+					moveAmount = 0;
+					break;
+				}
 				moveAmount--;
 			}
-			*/
-			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(currentPosition);
-			lineBreakIndex += moveAmount;
-			if(lineBreakIndex < -1)
-				return currentPosition;
-			if(lineBreakIndex >= displayArea.LineBreaks.Count)
-				return currentPosition;
-			Cindex lineStart = 0;
-			if(lineBreakIndex > -1)
-				lineStart = displayArea.LineBreaks[lineBreakIndex] + 1;
-			return FindCindexClosestToX(graphics, lineStart, currentPoint.X);
+			return FindCindexClosestToX(graphics, line.Value.First, currentPoint.X);
+		}
+		
+		private Line? PreviousLine(DisplayArea displayArea, Line line)
+		{
+			Line? previousLine = displayArea.GetLine(line.First-1);
+			if(previousLine.HasValue)
+				return previousLine;
+			do
+			{
+				displayArea = PreviousDisplayArea(displayArea);
+			} while(displayArea != null && displayArea.IsEmpty);
+			if(displayArea == null)
+				return null;
+			return displayArea.LastLine;
+		}
+		
+		private Line? NextLine(DisplayArea displayArea, Line line)
+		{
+			Line? nextLine = displayArea.GetLine(line.Last+1);
+			if(nextLine.HasValue)
+				return nextLine;
+			do
+			{
+				displayArea = NextDisplayArea(displayArea);
+			} while(displayArea != null && displayArea.IsEmpty);
+			if(displayArea == null)
+				return null;
+			return displayArea.FirstLine;
 		}
 
 		public void OnCaretNavigationPointEvent(object sender, NavigationPointEventArgs e)

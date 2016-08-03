@@ -84,10 +84,10 @@ namespace Spire
 				if(_lineBreaks[i] >= cindex)
 				{
 					if(i == 0) return new Line(Start, _lineBreaks[0]);
-					return new Line(_lineBreaks[i-1], _lineBreaks[i]);
+					return new Line(_lineBreaks[i-1]+1, _lineBreaks[i]);
 				}
 			}
-			return new Line(_lineBreaks.Last(), End);
+			return new Line(_lineBreaks.Last()+1, End);
 		}
 		
 		public List<Line> GetLines()
@@ -173,6 +173,26 @@ namespace Spire
 			{
 				if(_lineBreaks.Count == 0) return Start;
 				return _lineBreaks.Last() + 1;
+			}
+		}
+		
+		public Line? LastLine
+		{
+			get
+			{
+				if(IsEmpty) return null;
+				if(_lineBreaks.Count == 0) return new Line(Start, End);
+				return new Line(_lineBreaks.Last() + 1, End);
+			}
+		}
+		
+		public Line? FirstLine
+		{
+			get
+			{
+				if(IsEmpty) return null;
+				if(_lineBreaks.Count == 0) return new Line(Start, End);
+				return new Line(Start, _lineBreaks[0]);
 			}
 		}
 		
