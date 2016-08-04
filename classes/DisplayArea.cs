@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 
 namespace Spire
@@ -70,9 +71,45 @@ namespace Spire
 			}
 		}
 		
+		public Cindex LastLineStart
+		{
+			get
+			{
+				if(_lineBreaks.Count == 0) return Start;
+				return _lineBreaks.Last() + 1;
+			}
+		}
+		
+		public Line? LastLine
+		{
+			get
+			{
+				if(IsEmpty) return null;
+				if(_lineBreaks.Count == 0) return new Line(Start, End);
+				return new Line(_lineBreaks.Last() + 1, End);
+			}
+		}
+		
+		public Line? FirstLine
+		{
+			get
+			{
+				if(IsEmpty) return null;
+				if(_lineBreaks.Count == 0) return new Line(Start, End);
+				return new Line(Start, _lineBreaks[0]);
+			}
+		}
+		
 		public bool ContainsCindex(Cindex cindex)
 		{
 			return (cindex >= Start && cindex <= End);
+		}
+		
+		public bool ContainsPoint(Point point)
+		{
+			if(point.X < X || point.X > X+Width) return false;
+			if(point.Y < Y || point.Y > Y+Height) return false;
+			return true;
 		}
 		
 		public Line? GetLine(Cindex cindex)
@@ -88,6 +125,13 @@ namespace Spire
 				}
 			}
 			return new Line(_lineBreaks.Last()+1, End);
+		}
+		
+		public Line? GetIthLine(int lineNumber)
+		{
+			List<Line> lines = GetLines();
+			if(lines.Count < lineNumber) return null;
+			return lines[lineNumber-1];
 		}
 		
 		public List<Line> GetLines()
@@ -165,35 +209,6 @@ namespace Spire
 			End = -1;
 			Start = start;
 			_lineBreaks.Clear();
-		}
-		
-		public Cindex LastLineStart
-		{
-			get
-			{
-				if(_lineBreaks.Count == 0) return Start;
-				return _lineBreaks.Last() + 1;
-			}
-		}
-		
-		public Line? LastLine
-		{
-			get
-			{
-				if(IsEmpty) return null;
-				if(_lineBreaks.Count == 0) return new Line(Start, End);
-				return new Line(_lineBreaks.Last() + 1, End);
-			}
-		}
-		
-		public Line? FirstLine
-		{
-			get
-			{
-				if(IsEmpty) return null;
-				if(_lineBreaks.Count == 0) return new Line(Start, End);
-				return new Line(Start, _lineBreaks[0]);
-			}
 		}
 		
 		public void AddLineBreak(Cindex cindex)

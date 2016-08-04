@@ -123,9 +123,7 @@ namespace Spire
 					break;
 				default: throw new Exception(String.Format("VerticalDirection {0} not supported in document navigation", e.Direction));
 			}
-			DisplayArea displayArea = GetDisplayAreaByCindex(CaretPosition);
-			Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height);
-			documentModel.CaretPosition = CalculateVerticalMove(graphics, CaretPosition, amount);
+			documentModel.CaretPosition = CalculateVerticalMove(CaretPosition, amount);
 		}
 		
 		private DisplayArea GetDisplayAreaByCindex(Cindex cindex)
@@ -156,13 +154,14 @@ namespace Spire
 			return displayAreas[index+1];
 		}
 		
-		private Cindex CalculateVerticalMove(Graphics graphics, Cindex currentPosition, int moveAmount)
+		private Cindex CalculateVerticalMove(Cindex currentPosition, int moveAmount)
 		{
 			DisplayArea displayArea = GetDisplayAreaByCindex(currentPosition);
 			if(displayArea == null)
 				return 0;
 			if(displayArea.IsEmpty)
 				return documentModel.Length;
+			Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height);
 			Point currentPoint = CindexLocation(graphics, displayArea, currentPosition);
 			Line? line = displayArea.GetLine(currentPosition);
 			if(currentPosition == documentModel.Length)
@@ -249,16 +248,30 @@ namespace Spire
 			documentModel.CaretPosition = nextLineBreak;
 		}
 		
+		private DisplayArea GetDisplayAreaByPoint(Point point)
+		{
+			foreach(DisplayArea displayArea in displayAreas)
+			{
+				if(displayArea.ContainsPoint(point))
+					return displayArea;
+			}
+			return null;
+		}
+		
 		private void MoveCaretPoint(NavigationPointEventArgs e)
 		{
-			DisplayArea displayArea = displayAreas[0];
+			DisplayArea displayArea = GetDisplayAreaByPoint(new Point(e.X, e.Y));
+			if(displayArea == null)
+				return;
 			Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height);
 			decimal lineHeight = StringHeight(graphics, "X");
-			int lineIndex = (int)Math.Floor(e.Y / lineHeight);
-			int lineBreakIndex = Math.Min(lineIndex - 1, displayArea.LineBreaks.Count - 1);
-			int lineStart = (lineBreakIndex >= 0) ? displayArea.LineBreaks[lineBreakIndex] + 1 : 0;
-			int cindex = FindCindexClosestToX(graphics, lineStart, e.X);
-			documentModel.CaretPosition = cindex;
+			int lineNumber = (int)Math.Ceiling(e.Y / lineHeight);
+			Line? line = displayArea.GetIthLine(lineNumber);
+			if(line == null)
+				line = displayArea.LastLine;
+			if(line == null)
+				return;
+			documentModel.CaretPosition = FindCindexClosestToX(graphics, line.Value.First, e.X);
 		}
 		
 		private Cindex FindCindexClosestToX(Graphics graphics, Cindex lineStart, int x)
