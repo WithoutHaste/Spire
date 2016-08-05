@@ -237,15 +237,26 @@ namespace Spire
 		
 		private void MoveCaretHome()
 		{
-			Cindex previousLineBreak = PreviousLineBreak(CaretPosition);
-			if(previousLineBreak == 0) documentModel.CaretPosition = previousLineBreak;
-			else documentModel.CaretPosition = Math.Min(previousLineBreak + 1, documentModel.Length);
+			Cindex currentPosition = CaretPosition;
+			if(currentPosition == documentModel.Length)
+				currentPosition--;
+			DisplayArea displayArea = GetDisplayAreaByCindex(currentPosition);
+			if(displayArea == null) return;
+			Line? line = displayArea.GetLine(currentPosition);
+			if(line == null) return;
+			documentModel.CaretPosition = line.Value.First;
 		}
 		
 		private void MoveCaretEnd()
 		{
-			Cindex nextLineBreak = NextLineBreak(CaretPosition);
-			documentModel.CaretPosition = nextLineBreak;
+			DisplayArea displayArea = GetDisplayAreaByCindex(CaretPosition);
+			if(displayArea == null) return;
+			Line? line = displayArea.GetLine(CaretPosition);
+			if(line == null) return;
+			if(line.Value.Last == documentModel.Length-1)
+				documentModel.CaretPosition = documentModel.Length;
+			else
+				documentModel.CaretPosition = line.Value.Last;
 		}
 		
 		private DisplayArea GetDisplayAreaByPoint(Point point)
@@ -292,26 +303,6 @@ namespace Spire
 			if(Math.Abs(x-currentSize.Width) < Math.Abs(x-previousSize.Width))
 				return Math.Min(max, line.First + charCount + 1);
 			return Math.Min(max, line.First + charCount);
-		}
-		
-		private Cindex PreviousLineBreak(Cindex cindex)
-		{
-			//assuming one infinite display area to start with
-			DisplayArea displayArea = displayAreas[0];
-			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(cindex);
-			if(lineBreakIndex < 0) return 0;
-			return displayArea.LineBreaks[lineBreakIndex];
-		}
-		
-		private Cindex NextLineBreak(Cindex cindex)
-		{
-			//assuming one infinite display area to start with
-			DisplayArea displayArea = displayAreas[0];
-			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(cindex);
-			lineBreakIndex++;
-			if(lineBreakIndex < displayArea.LineBreaks.Count)
-				return displayArea.LineBreaks[lineBreakIndex];
-			return documentModel.Length;
 		}
 		
 		private DisplayArea DuplicateLastDisplayArea()
