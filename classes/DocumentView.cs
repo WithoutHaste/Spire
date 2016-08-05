@@ -192,7 +192,7 @@ namespace Spire
 				}
 				moveAmount--;
 			}
-			return FindCindexClosestToX(graphics, line.Value.First, currentPoint.X);
+			return FindCindexClosestToX(graphics, line.Value, currentPoint.X);
 		}
 		
 		private Line? PreviousLine(DisplayArea displayArea, Line line)
@@ -271,18 +271,18 @@ namespace Spire
 				line = displayArea.LastLine;
 			if(line == null)
 				return;
-			documentModel.CaretPosition = FindCindexClosestToX(graphics, line.Value.First, e.X);
+			documentModel.CaretPosition = FindCindexClosestToX(graphics, line.Value, e.X);
 		}
 		
-		private Cindex FindCindexClosestToX(Graphics graphics, Cindex lineStart, int x)
+		private Cindex FindCindexClosestToX(Graphics graphics, Line line, int x)
 		{
 			if(documentModel.Length == 0) return 0;
 			string textToX = "";
 			int charCount = 0;
-			int max = NextLineBreak(lineStart);
-			while(lineStart+charCount <= max)
+			Cindex max = (line.Last == documentModel.Length-1) ? (Cindex)documentModel.Length : line.Last;
+			while(line.First+charCount <= max)
 			{
-				textToX = documentModel.SubString(lineStart, Math.Min(documentModel.Length-1, lineStart+charCount));
+				textToX = documentModel.SubString(line.First, Math.Min(documentModel.Length-1, line.First+charCount));
 				if((MeasureString(graphics, textToX)).Width > x)
 					break;
 				charCount++;
@@ -290,8 +290,8 @@ namespace Spire
 			SizeF currentSize = MeasureString(graphics, textToX);
 			SizeF previousSize = MeasureString(graphics, textToX.Substring(0, textToX.Length-1));
 			if(Math.Abs(x-currentSize.Width) < Math.Abs(x-previousSize.Width))
-				return Math.Min(max, lineStart + charCount + 1);
-			return Math.Min(max, lineStart + charCount);
+				return Math.Min(max, line.First + charCount + 1);
+			return Math.Min(max, line.First + charCount);
 		}
 		
 		private Cindex PreviousLineBreak(Cindex cindex)
