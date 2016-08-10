@@ -220,12 +220,12 @@ xx	type part of word, wait awhile, type more words, undo
 	redo paste with highlight
 	redo cut
 
---> current unit tests
---> current Linux developement
-
 14b. Update DocumentView to handle multiple display areas.
 
 	up/down navigation among display areas, some too small to contain text
+
+--> current unit tests
+--> current Linux developement
 
 14c. Separate DocumentChunkCollection from DocumentModel.
 

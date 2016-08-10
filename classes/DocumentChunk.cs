@@ -146,6 +146,15 @@ namespace Spire
 			return new String(_text.GetRange(localStartIndex, localEndIndex-localStartIndex+1).ToArray());
 		}
 		
+		public DocumentChunk SplitEnd()
+		{
+			if(!IsTooLong) throw new Exception("Cannot call DocumentChunk.SplitEnd when chunk length is within bounds.");
+			Cindex splitAt = this.End - UpperChunkLength + 1;
+			DocumentChunk secondChunk = new DocumentChunk(this.SubStringFromCharIndex(splitAt));
+			this.RemoveText(splitAt, UpperChunkLength);
+			return secondChunk;
+		}
+		
 		public DocumentChunk Halve()
 		{
 			DocumentChunk secondChunk = new DocumentChunk();
