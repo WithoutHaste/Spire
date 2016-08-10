@@ -149,13 +149,7 @@ namespace Spire
 			}
 			return lines;
 		}
-		
-		public List<Cindex> LineBreaks
-		{
-			get { return _lineBreaks; }
-			set { _lineBreaks = value; }
-		}
-		
+
 		public int LineCountToCindex(Cindex cindex)
 		{
 			if(cindex < Start) return 0;
@@ -168,29 +162,7 @@ namespace Spire
 			}
 			return lineCount;
 		}
-		
-		public Cindex? PreviousLineBreak(Cindex cindex)
-		{
-			Cindex? previousLineBreak = null;
-			foreach(Cindex lineBreak in _lineBreaks)
-			{
-				if(lineBreak >= cindex)
-					break;
-				previousLineBreak = lineBreak;
-			}
-			return previousLineBreak;
-		}
-		
-		public Cindex? NextLineBreak(Cindex cindex)
-		{
-			foreach(Cindex lineBreak in _lineBreaks)
-			{
-				if(lineBreak > cindex)
-					return lineBreak;
-			}
-			return null;
-		}
-		
+
 		public void ClearThroughPreviousLine(Cindex cindex)
 		{
 			End = -1;
@@ -218,32 +190,9 @@ namespace Spire
 			_lineBreaks.Add(cindex);
 		}
 		
-		
-		
-		
-		public int GetLineBreakIndexBeforeCharIndex(Cindex cindex)
-		{
-			int lineBreakIndex = -1;
-			while(lineBreakIndex+1 < _lineBreaks.Count && cindex > _lineBreaks[lineBreakIndex+1])
-			{
-				lineBreakIndex++;
-			}
-			return lineBreakIndex;
-		}
-		
-		public Cindex ClearLineBreaksAfter(Cindex cindex)
-		{
-			while(_lineBreaks.Count > 0 && _lineBreaks.Last() >= cindex)
-			{
-				_lineBreaks.RemoveAt(_lineBreaks.Count-1);
-			}
-			if(_lineBreaks.Count == 0) return 0;
-			return _lineBreaks.Last() + 1;
-		}
-		
 		public override string ToString()
 		{
-			return "LineBreaks: " + String.Join(", ", _lineBreaks.Select(p=>p.ToString()).ToArray());
+			return String.Format("{0}x{1} at ({2},{3})", Width, Height, X, Y);
 		}
 	}
 }

@@ -476,44 +476,46 @@ namespace Spire
 			graphics.DrawLine(pen, caretLocation.X, caretLocation.Y, caretLocation.X, caretLocation.Y + lineHeight);
 		}
 		
+		//returns the top left point of the character at Cindex, ie the space before the character
 		private Point CindexLocation(Graphics graphics, DisplayArea displayArea, Cindex cindex)
 		{
-			int lineHeight = StringHeight(graphics, "X");
-			Cindex lineStart = 0;
-			int y = 0;
-			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(cindex);
-			if(lineBreakIndex > -1)
+			Line? line = displayArea.GetLine(cindex);
+			if(line == null && IsLastDisplayArea(displayArea))
 			{
-				lineStart = displayArea.LineBreaks[lineBreakIndex] + 1;
-				y = (lineBreakIndex+1) * lineHeight;
+				line = displayArea.GetLine(cindex-1);
+				if(line == null)
+				{
+					return new Point(0,0);
+				}
 			}
+			int lineHeight = StringHeight(graphics, "X");
+			int y = (displayArea.LineCountToCindex(cindex) - 1) * lineHeight;
 			string textToCaret = "";
-			if(lineStart < documentModel.Length && lineStart < cindex)
+			if(line.Value.First < documentModel.Length && line.Value.First < cindex)
 			{
-				textToCaret = documentModel.SubString(lineStart, cindex-1);
+				textToCaret = documentModel.SubString(line.Value.First, cindex-1);
 			}
 			SizeF textSize = MeasureString(graphics, textToCaret);
 			return new Point((int)Math.Ceiling(textSize.Width), y);
 		}
 		
+		//returns the bottom right point of the character at Cindex
 		private Point LetterEndLocation(Graphics graphics, DisplayArea displayArea, Cindex cindex)
 		{
+			Line? line = displayArea.GetLine(cindex);
+			if(line == null)
+			{
+				return new Point(0,0);
+			}
 			int lineHeight = StringHeight(graphics, "X");
-			Cindex lineStart = 0;
-			int y = 0;
-			int lineBreakIndex = displayArea.GetLineBreakIndexBeforeCharIndex(cindex);
-			if(lineBreakIndex > -1)
+			int y = displayArea.LineCountToCindex(cindex) * lineHeight;
+			string textToCaret = "";
+			if(line.Value.First < documentModel.Length && line.Value.First < cindex)
 			{
-				lineStart = displayArea.LineBreaks[lineBreakIndex] + 1;
-				y = (lineBreakIndex+1) * lineHeight;
+				textToCaret = documentModel.SubString(line.Value.First, cindex);
 			}
-			string text = "";
-			if(lineStart < documentModel.Length && lineStart < cindex)
-			{
-				text = documentModel.SubString(lineStart, cindex);
-			}
-			SizeF textSize = MeasureString(graphics, text);
-			return new Point((int)Math.Ceiling(textSize.Width), y+lineHeight);
+			SizeF textSize = MeasureString(graphics, textToCaret);
+			return new Point((int)Math.Ceiling(textSize.Width), y);
 		}
 		
 		private SizeF MeasureString(Graphics graphics, string text)
@@ -524,6 +526,18 @@ namespace Spire
 		private int StringHeight(Graphics graphics, string text)
 		{
 			return (int)Math.Ceiling(MeasureString(graphics, text).Height);
+		}
+
+		private bool IsLastDisplayArea(DisplayArea displayArea)
+		{
+			if(displayAreas.Count == 0) throw new Exception("No display areas found in DocumentView.");
+			DisplayArea lastDisplayArea = displayAreas[0];
+			foreach(DisplayArea	nextDisplayArea in displayAreas)
+			{
+				if(!nextDisplayArea.IsEmpty)
+					lastDisplayArea = nextDisplayArea;
+			}
+			return (displayArea == lastDisplayArea);
 		}
 		
 	}
