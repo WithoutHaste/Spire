@@ -27,6 +27,12 @@ namespace Spire
 			_length = 1;
 		}
 		
+		public DocumentChunk(char[] text)
+		{
+			_text = new List<char>(text);
+			_length = _text.Count;
+		}
+		
 		public DocumentChunk(string text)
 		{
 			_text = new List<char>(text.ToCharArray(0, text.Length));
@@ -74,6 +80,11 @@ namespace Spire
 			get { return (_length == 0); }
 		}
 		
+		public bool Contains(Cindex cindex)
+		{
+			return (Start <= cindex && End >= cindex);
+		}
+		
 		public void InsertText(string text, Cindex index)
 		{
 			int localIndex = LocalIndex(index);
@@ -101,12 +112,6 @@ namespace Spire
 		private void InsertChar(char c, int localIndex)
 		{
 			_text.Insert(localIndex, c);
-			_length++;
-		}
-		
-		private void AppendChar(char c)
-		{
-			_text.Insert(_length, c);
 			_length++;
 		}
 		
@@ -146,25 +151,12 @@ namespace Spire
 			return new String(_text.GetRange(localStartIndex, localEndIndex-localStartIndex+1).ToArray());
 		}
 		
-		public DocumentChunk SplitEnd()
-		{
-			if(!IsTooLong) throw new Exception("Cannot call DocumentChunk.SplitEnd when chunk length is within bounds.");
-			Cindex splitAt = this.End - UpperChunkLength + 1;
-			DocumentChunk secondChunk = new DocumentChunk(this.SubStringFromCharIndex(splitAt));
-			this.RemoveText(splitAt, UpperChunkLength);
-			return secondChunk;
-		}
-		
 		public DocumentChunk Halve()
 		{
-			DocumentChunk secondChunk = new DocumentChunk();
-			if(_length <= 1) return secondChunk;
-			int halfIndex = (int)Math.Floor(_length / 2D);
-			while(halfIndex < _length)
-			{
-				secondChunk.AppendChar(this._text[halfIndex]);
-				this.RemoveChar(halfIndex);
-			}
+			if(!IsTooLong) throw new Exception("Cannot call DocumentChunk.Halve when chunk length is within bounds.");
+			Cindex splitAt = Start + (int)Math.Ceiling(_length / 2D);
+			DocumentChunk secondChunk = new DocumentChunk(this.SubStringFromCharIndex(splitAt));
+			this.RemoveText(splitAt, End-splitAt+1);
 			return secondChunk;
 		}
 		
@@ -172,6 +164,11 @@ namespace Spire
 		{
 			this._text.AddRange(secondChunk._text);
 			this._length += secondChunk._length;
+		}
+		
+		public override string ToString()
+		{
+			return String.Format("Chunk[{0}-{1}]={2}", Start, End, Text);
 		}
 		
 	}

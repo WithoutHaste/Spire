@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Windows.Forms;
 
 namespace Spire
@@ -13,20 +12,19 @@ namespace Spire
 
 		private Cindex _caretPosition;
 		private Cindex? _highlightPosition;
-		private List<DocumentChunk> chunks;
+		private DocumentChunkCollection chunks;
 		private History history;
 	
 		public DocumentModel()
 		{
-			InitializeDocumentChunks();
-			UpdateChunksIndexesFrom(0);
+			chunks = new DocumentChunkCollection();
 			CaretPosition = 0;
 			history = new History();
 		}
 		
 		public int Length
 		{
-			get { return LastChunk.End + 1; }
+			get { return chunks.Length; }
 		}
 		
 		public Cindex CaretPosition
@@ -75,12 +73,7 @@ namespace Spire
 		
 		public char this[int cindex]
 		{
-			get
-			{
-				int chunkIndex = FindChunkByCharIndex(cindex);
-				DocumentChunk chunk = chunks[chunkIndex];
-				return chunk[cindex];
-			}
+			get { return chunks[cindex]; }
 		}
 		
 		public void ClearHighlight()
@@ -96,68 +89,7 @@ namespace Spire
 		
 		public string SubString(Cindex from, Cindex to)
 		{
-			if(from < 0) throw new Exception("Document substring start index out of lower bounds.");
-			if(to > LastChunk.End) throw new Exception("Document substring end index out of upper bounds.");
-			if(to < from) throw new Exception("Document 'to' is less than 'from'.");
-		
-			int startChunkIndex = FindChunkByCharIndex(from);
-			int endChunkIndex = FindChunkByCharIndex(to);
-			
-			if(startChunkIndex == endChunkIndex)
-			{
-				return chunks[startChunkIndex].SubStringByCharIndex(from, to);
-			}
-			
-			if(endChunkIndex - startChunkIndex < 3)
-			{
-				return SubStringWithConcat(startChunkIndex, endChunkIndex, from, to);
-			}
-			else
-			{
-				return SubStringWithStringBuilder(startChunkIndex, endChunkIndex, from, to);
-			}
-		}
-		
-		private string SubStringWithConcat(int startChunkIndex, int endChunkIndex, Cindex from, Cindex to)
-		{
-			string subString = chunks[startChunkIndex].SubStringFromCharIndex(from);
-			for(int i=startChunkIndex+1; i<endChunkIndex; i++)
-			{
-				subString += chunks[i].Text;
-			}
-			subString += chunks[endChunkIndex].SubStringToCharIndex(to);
-			return subString;
-		}
-		
-		private string SubStringWithStringBuilder(int startChunkIndex, int endChunkIndex, Cindex from, Cindex to)
-		{
-			StringBuilder stringBuilder = new StringBuilder();
-			stringBuilder.Append(chunks[startChunkIndex].SubStringFromCharIndex(from));
-			for(int i=startChunkIndex+1; i<endChunkIndex; i++)
-			{
-				stringBuilder.Append(chunks[i].Text);
-			}
-			stringBuilder.Append(chunks[endChunkIndex].SubStringToCharIndex(to));
-			return stringBuilder.ToString();
-		}
-		
-		private DocumentChunk LastChunk
-		{
-			get { return chunks[chunks.Count-1]; }
-		}
-		
-		private void InitializeDocumentChunks()
-		{
-			if(chunks == null)
-			{
-				chunks = new List<DocumentChunk>();
-			}
-			else
-			{
-				chunks.Clear();
-			}
-			chunks.Add(new DocumentChunk());
-			_caretPosition = 0;
+			return chunks.SubString(from, to);
 		}
 		
 		public void OnTextEvent(object sender, TextEventArgs e)
@@ -311,95 +243,25 @@ namespace Spire
 		
 		private void InsertText(string text, Cindex at)
 		{
-			int chunkIndex = FindChunkByCharIndex(at);
-			DocumentChunk chunk = chunks[chunkIndex];
-			chunk.InsertText(text, at);
-			CheckChunkLength(chunkIndex, chunk);
+			chunks.AddAt(text, at);
 			RaiseUpdateAtEvent(at);
 		}
 
-		private void BackspaceCharacters(int count)
+		private void BackspaceCharacters(int length)
 		{
 			if(_caretPosition == 0) return;
-			
-			while(count > 0)
-			{
-				if(_caretPosition == 0) break;
-				_caretPosition--;
-				int chunkIndex = FindChunkByCharIndex(_caretPosition);
-				DocumentChunk chunk = chunks[chunkIndex];
-				chunk.RemoveText(_caretPosition, 1);
-				CheckChunkLength(chunkIndex, chunk);
-				count--;
-			}
+			int availableLength = Math.Min(length, _caretPosition);
+			chunks.RemoveAt(_caretPosition - availableLength, availableLength);
+			_caretPosition -= availableLength;
 			RaiseUpdateAtEvent(_caretPosition);
 		}
 		
-		private void DeleteCharacters(int count)
+		private void DeleteCharacters(int length)
 		{
 			if(_caretPosition >= Length) return;
-
-			while(count > 0)
-			{
-				if(_caretPosition >= Length) break;
-				int chunkIndex = FindChunkByCharIndex(_caretPosition);
-				DocumentChunk chunk = chunks[chunkIndex];
-				chunk.RemoveText(_caretPosition, 1);
-				CheckChunkLength(chunkIndex, chunk);
-				count--;
-			}
+			int availableLength = Math.Min(length, Length - _caretPosition);
+			chunks.RemoveAt(_caretPosition, availableLength);
 			RaiseUpdateAtEvent(_caretPosition);
-		}
-		
-		private void CheckChunkLength(int chunkIndex, DocumentChunk chunk)
-		{
-			int updateFromChunkIndex = chunkIndex;
-			if(chunk.IsEmpty)
-			{
-				if(chunks.Count > 1)
-				{
-					chunks.RemoveAt(chunkIndex);
-				}
-			}
-			else if(chunk.IsTooLong)
-			{
-				SplitChunk(chunkIndex, chunk);
-			}
-			else if(chunk.IsTooShort)
-			{
-				updateFromChunkIndex = CombineChunks(chunkIndex, chunk);
-			}
-			UpdateChunksIndexesFrom(updateFromChunkIndex);
-		}
-		
-		private void SplitChunk(int chunkIndex, DocumentChunk chunk)
-		{
-			//todo: large text can be added to chunk in one go, so may need multiple splits
-			DocumentChunk secondChunk = chunk.Halve();
-			chunks.Insert(chunkIndex+1, secondChunk);
-		}
-		
-		private int CombineChunks(int chunkIndex, DocumentChunk chunk)
-		{
-			if(chunkIndex > 0)
-			{
-				if(chunks[chunkIndex-1].IsTooShort)
-				{
-					chunks[chunkIndex-1].Append(chunk);
-					chunks.RemoveAt(chunkIndex);
-					chunkIndex--;
-					chunk = chunks[chunkIndex];
-				}
-			}
-			if(chunkIndex < chunks.Count-1)
-			{
-				if(chunks[chunkIndex+1].IsTooShort)
-				{
-					chunk.Append(chunks[chunkIndex+1]);
-					chunks.RemoveAt(chunkIndex+1);
-				}
-			}
-			return chunkIndex;
 		}
 		
 		private void RaiseUpdateAtEvent(Cindex at)
@@ -408,60 +270,14 @@ namespace Spire
 			OnUpdateAtEvent(this, new UpdateAtEventArgs(at));
 		}
 		
-		private void UpdateChunksIndexesFrom(int chunkIndex)
-		{
-			if(chunkIndex == 0)
-			{
-				chunks[chunkIndex].Start = 0;
-				chunkIndex++;
-			}
-			while(chunkIndex < chunks.Count)
-			{
-				chunks[chunkIndex].Start = chunks[chunkIndex-1].End + 1;
-				chunkIndex++;
-			}
-		}
-		
-		private int FindChunkByCharIndex(Cindex cindex)
-		{
-			int chunkIndex = 0;
-			while(chunkIndex < chunks.Count && chunks[chunkIndex].End != -1 && chunks[chunkIndex].End < cindex)
-			{
-				chunkIndex++;
-			}
-			if(chunkIndex >= chunks.Count)
-			{
-				chunkIndex--; //insert at end of last chunk
-			}		
-			return chunkIndex;
-		}
-		
 		public void SaveTXT(StreamWriter stream)
 		{
-			foreach(DocumentChunk chunk in chunks)
-			{
-				stream.Write(chunk.Text);
-			}
+			chunks.SaveTXT(stream);
 		}
 		
 		public void LoadTXT(StreamReader stream)
 		{
-			InitializeDocumentChunks();
-			int index = 0;
-			char[] buffer = new char[DocumentChunk.UpperChunkLength];
-			int readCount = 0;
-			while((readCount = stream.Read(buffer, 0, buffer.Length)) > 0)
-			{
-				if(readCount < buffer.Length)
-				{
-					InsertText((new String(buffer)).Substring(0, readCount), index);
-				}
-				else
-				{
-					InsertText(new String(buffer), index);
-				}
-				index += readCount;
-			}
+			chunks.LoadTXT(stream);
 		}
 	}
 }

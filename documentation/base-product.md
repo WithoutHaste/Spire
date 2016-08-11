@@ -224,10 +224,10 @@ xx	type part of word, wait awhile, type more words, undo
 
 	up/down navigation among display areas, some too small to contain text
 
+14c. Separate DocumentChunkCollection from DocumentModel.
+
 --> current unit tests
 --> current Linux developement
-
-14c. Separate DocumentChunkCollection from DocumentModel.
 
 15. Show page breaks.
 

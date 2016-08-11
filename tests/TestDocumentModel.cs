@@ -104,6 +104,7 @@ namespace SpireTest
 			TestUtilities.RunTest(TestPasteWithHighlight, ref allTestsPassed);
 			TestUtilities.RunTest(TestPasteNothing, ref allTestsPassed);
 			TestUtilities.RunTest(TestPasteSeveralTimes, ref allTestsPassed);
+			TestUtilities.RunTest(TestPasteLargeText, ref allTestsPassed);
 			TestUtilities.RunTest(TestCutNothing, ref allTestsPassed);
 			TestUtilities.RunTest(TestCutSomething, ref allTestsPassed);
 			TestUtilities.RunTest(TestCutThenPaste, ref allTestsPassed);
@@ -1205,6 +1206,14 @@ namespace SpireTest
 			documentModel.Paste("abcdefghighi");
 			documentModel.Paste("abcdefghighighi");
 			documentModel.Paste("abcdefghighighighi");
+		}
+		
+		private void TestPasteLargeText()
+		{
+			DocumentModelWrapper documentModel = new DocumentModelWrapper();
+			Clipboard.SetText("One Two Three Four Five Six Seven Eight Nine Ten Eleven Twelve Thirteen Fourteen Fifteen Sixteen Seventeen Eighteen Nineteen Twenty TwentyOne TwentyTwo TwentyThree TwentyFour TwentyFive TwentySix TwentySeven TwentyEight TwentyNine Thirty");
+			documentModel.Paste("One Two Three Four Five Six Seven Eight Nine Ten Eleven Twelve Thirteen Fourteen Fifteen Sixteen Seventeen Eighteen Nineteen Twenty TwentyOne TwentyTwo TwentyThree TwentyFour TwentyFive TwentySix TwentySeven TwentyEight TwentyNine Thirty");
+			documentModel.MoveCaret(-30, -30);
 		}
 		
 		private void TestCutNothing()
