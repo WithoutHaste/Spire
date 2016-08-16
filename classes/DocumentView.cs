@@ -9,6 +9,8 @@ namespace Spire
 {
 	public class DocumentView
 	{
+		public event EventHandler OnDocumentTooShortEvent;
+
 		private DocumentModel documentModel;
 		private List<DisplayArea> displayAreas;
 		private StringFormat stringFormat;
@@ -305,15 +307,6 @@ namespace Spire
 			return Math.Min(max, line.First + charCount);
 		}
 		
-		private DisplayArea DuplicateLastDisplayArea()
-		{
-			if(displayAreas.Count == 0) throw new Exception("No display are to duplicate.");
-			DisplayArea previousDisplayArea = displayAreas.Last();
-			DisplayArea newDisplayArea = new DisplayArea(previousDisplayArea.X, previousDisplayArea.Y + previousDisplayArea.Height, previousDisplayArea.Width, previousDisplayArea.Height);
-			AppendDisplayArea(newDisplayArea);
-			return newDisplayArea;
-		}
-		
 		private void UpdateLayoutFrom(Cindex cindex)
 		{
 			DisplayArea displayArea = GetDisplayAreaByCindex(cindex);
@@ -338,9 +331,8 @@ namespace Spire
 					{
 						return;
 					}
-					cindexBeforeGeneratingNewDisplayArea = end;
-					DuplicateLastDisplayArea();
-					displayArea = GetDisplayAreaByCindex(end);
+					RaiseDocumentTooShortEvent();
+					return;
 				}
 				displayArea.Reset(end+1);
 			}
@@ -399,6 +391,12 @@ namespace Spire
 			else if(displayAreas.Last().Start >= 0)
 				displayArea.Start = displayAreas.Last().Start;
 			displayAreas.Add(displayArea);
+		}
+		
+		public void RaiseDocumentTooShortEvent()
+		{
+			if(OnDocumentTooShortEvent == null) return;
+			OnDocumentTooShortEvent(this, new EventArgs());
 		}
 		
 		public void Paint(Graphics graphics, bool drawCaret)

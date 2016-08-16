@@ -14,10 +14,10 @@ namespace Spire
 		public static Font GlobalFont = new Font("Times New Roman", 12);
 		public static int DocumentWidth = 600;
 	
+		private DocumentController documentController;
 		private DocumentModel documentModel;
 		private DocumentView documentView;
 		private Panel scrollPanel;
-		private Paper paper;
 		private string iconPath = Path.Combine("images", "SpireIcon1.ico");
 		private string saveAsFilename;
 		
@@ -27,18 +27,24 @@ namespace Spire
 			
 			Size = new Size(800,600);
 			Text = "Spire";
-			if(File.Exists(iconPath))
-			{
-				Icon = new Icon(iconPath);
-			}
+			SetIcon();
 			Menu = BuildMainMenu();
 			
 			scrollPanel = BuildScrollPanel();
 			scrollPanel.Parent = this;
-
+			
+			documentController = new DocumentController(scrollPanel);
 			OnNewFile();
 
 			ResumeLayout(false);
+		}
+		
+		private void SetIcon()
+		{
+			if(File.Exists(iconPath))
+			{
+				this.Icon = new Icon(iconPath);
+			}
 		}
 
 		private Panel BuildScrollPanel()
@@ -50,17 +56,6 @@ namespace Spire
 			return panel;
 		}
 
-		private Paper BuildPaper()
-		{
-			Paper paper = new Paper();
-			paper.Size = new Size(600, 800);
-			paper.Left = 30;
-			paper.Top = 20;
-			paper.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
-			paper.BackColor = Color.White;
-			return paper;
-		}
-		
 		private MainMenu BuildMainMenu()
 		{
 			MainMenu mainMenu = new MainMenu();
@@ -101,31 +96,27 @@ namespace Spire
 		
 		private void OnUndo(object sender, EventArgs e)
 		{
-			paper.RaiseUndoEvent();
-			paper.Invalidate();
+			documentController.RaiseUndoEvent();
 		}
 		
 		private void OnRedo(object sender, EventArgs e)
 		{
-			paper.RaiseRedoEvent();
-			paper.Invalidate();
+			documentController.RaiseRedoEvent();
 		}
 		
 		private void OnCopy(object sender, EventArgs e)
 		{
-			paper.RaiseCopyEvent();
+			documentController.RaiseCopyEvent();
 		}
 		
 		private void OnCut(object sender, EventArgs e)
 		{
-			paper.RaiseCutEvent();
-			paper.Invalidate();
+			documentController.RaiseCutEvent();
 		}
 		
 		private void OnPaste(object sender, EventArgs e)
 		{
-			paper.RaisePasteEvent();
-			paper.Invalidate();
+			documentController.RaisePasteEvent();
 		}
 		
 		private void OnNewFile(object sender, EventArgs e)
@@ -135,20 +126,10 @@ namespace Spire
 		
 		private void OnNewFile()
 		{
-			scrollPanel.Controls.Clear();
-			
-			paper = BuildPaper();
-			paper.Anchor = AnchorStyles.Top;
-			paper.Parent = scrollPanel;
-			paper.Focus();
-			
 			documentModel = new DocumentModel();
-			paper.SetModel(documentModel);
-			
 			documentView = new DocumentView(documentModel);
-			documentView.AppendDisplayArea(new DisplayArea(0, 0, paper.Width, paper.Height));
 			documentModel.OnUpdateAtEvent += new DocumentModel.UpdateAtEventHandler(documentView.OnModelUpdateEvent);
-			paper.SetView(documentView);
+			documentController.OnNewFile(documentModel, documentView);
 		}
 		
 		private void OnOpenFile(object sender, EventArgs e)
@@ -163,7 +144,7 @@ namespace Spire
 					{
 						documentModel.LoadTXT(stream);
 					}
-					paper.Invalidate();
+					documentController.OnOpenFile();
 				}
 			}
 		}

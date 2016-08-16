@@ -231,6 +231,9 @@ xx	type part of word, wait awhile, type more words, undo
 
 15. Show page breaks.
 
+	bug: on first Enter after a line a text, caret is displayed at x position of previous line
+	bug: view does not move to next display area when text runs off the current area
+
 16. Regenerate View when loading TXT file.
 
 17. Save and Load SPI file with View intact.

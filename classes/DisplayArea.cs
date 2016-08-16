@@ -11,14 +11,16 @@ namespace Spire
 		private int _height;
 		private int _x;
 		private int _y;
+		private int _pageNumber;
 		private List<Cindex> _lineBreaks;
 		
-		public DisplayArea(int x, int y, int width, int height)
+		public DisplayArea(int x, int y, int width, int height, int pageNumber)
 		{
 			_x = x;
 			_y = y;
 			_width = width;
 			_height = height;
+			_pageNumber = pageNumber;
 			Start = -1;
 			End = -1;
 			_lineBreaks = new List<Cindex>();
@@ -42,6 +44,11 @@ namespace Spire
 		public int Height
 		{
 			get { return _height; }
+		}
+		
+		public int PageNumber
+		{
+			get { return _pageNumber; }
 		}
 		
 		public Cindex Start

@@ -43,14 +43,16 @@ namespace Spire
 		public event EventHandler OnCutEvent;
 		public event EventHandler OnPasteEvent;
 	
+		private int pageNumber;
 		private DocumentView documentView;
 		private System.Timers.Timer caretTimer;
 		private System.Timers.Timer caretMovingTimer;
 		private bool caretOn = false;
 		private bool caretMoving = false;
 		
-		public Paper()
+		public Paper(int pageNumber)
 		{
+			this.pageNumber = pageNumber;
 			SetupDoubleBuffer();
 			this.Cursor = Cursors.IBeam;
 			this.GotFocus += new EventHandler(EnableCaretTimer);
@@ -79,6 +81,7 @@ namespace Spire
 		public void SetView(DocumentView view)
 		{
 			documentView = view;
+			documentView.AppendDisplayArea(new DisplayArea(0, 0, this.Width, this.Height, pageNumber));
 			OnCaretNavigationVerticalEvent += new CaretNavigationVerticalEventHandler(documentView.OnCaretNavigationVerticalEvent);
 			OnHighlightNavigationVerticalEvent += new HighlightNavigationVerticalEventHandler(documentView.OnHighlightNavigationVerticalEvent);
 			OnCaretNavigationPointEvent += new CaretNavigationPointEventHandler(documentView.OnCaretNavigationPointEvent);
@@ -355,12 +358,14 @@ namespace Spire
 		{
 			if(OnUndoEvent == null) return;
 			OnUndoEvent(this, new EventArgs());
+			this.Invalidate();
 		}
 
 		public void RaiseRedoEvent()
 		{
 			if(OnRedoEvent == null) return;
 			OnRedoEvent(this, new EventArgs());
+			this.Invalidate();
 		}
 		
 		private void RaiseCaretNavigationPointEvent(int x, int y)
@@ -410,12 +415,14 @@ namespace Spire
 		{
 			if(OnCutEvent == null) return;
 			OnCutEvent(this, new EventArgs());
+			this.Invalidate();
 		}
 		
 		public void RaisePasteEvent()
 		{
 			if(OnPasteEvent == null) return;
 			OnPasteEvent(this, new EventArgs());
+			this.Invalidate();
 		}
 
 		protected override void OnPaint(PaintEventArgs e)

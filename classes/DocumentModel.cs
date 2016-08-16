@@ -278,6 +278,7 @@ namespace Spire
 		public void LoadTXT(StreamReader stream)
 		{
 			chunks.LoadTXT(stream);
+			_caretPosition = 0;
 		}
 	}
 }
