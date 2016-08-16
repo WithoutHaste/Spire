@@ -472,7 +472,7 @@ namespace SpireTest
 		public static DocumentViewWrapper Init(DocumentModel documentModel)
 		{
 			DocumentViewWrapper documentView = new DocumentViewWrapper(documentModel);
-			documentView.AppendDisplayArea(new DisplayArea(0, 0, pageSize.Width, pageSize.Height));
+			documentView.AppendDisplayArea(new DisplayArea(0, 0, pageSize.Width, pageSize.Height, 1));
 			documentModel.OnUpdateAtEvent += new DocumentModel.UpdateAtEventHandler(documentView.OnModelUpdateEvent);
 			return documentView;
 		}

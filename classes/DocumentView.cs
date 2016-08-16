@@ -21,7 +21,7 @@ namespace Spire
 			documentModel = model;
 			displayAreas = new List<DisplayArea>();
 			stringFormat = GenerateStringFormat();
-			layoutUpdatedTo = 0;
+			layoutUpdatedTo = -1;
 		}
 		
 		public Cindex CaretPosition
@@ -130,14 +130,13 @@ namespace Spire
 		
 		private DisplayArea GetDisplayAreaByCindex(Cindex cindex)
 		{
+			UpdateLayoutFrom(layoutUpdatedTo);
 			foreach(DisplayArea displayArea in displayAreas)
 			{
 				if(displayArea.ContainsCindex(cindex))
 					return displayArea;
 			}
-			if(cindex <= documentModel.Length && displayAreas.Count > 0)
-				return displayAreas.Last();
-			return null;
+			throw new Exception(String.Format("Cindex {0} not found in any display area. Layout updated to cindex {1}.", cindex, layoutUpdatedTo));
 		}
 		
 		private DisplayArea PreviousDisplayArea(DisplayArea displayArea)
@@ -159,17 +158,11 @@ namespace Spire
 		private Cindex CalculateVerticalMove(Cindex currentPosition, int moveAmount)
 		{
 			DisplayArea displayArea = GetDisplayAreaByCindex(currentPosition);
-			if(displayArea == null)
-				return 0;
 			if(displayArea.IsEmpty)
 				return documentModel.Length;
 			Graphics graphics = CreateDummyGraphics(displayArea.Width, displayArea.Height);
 			Point currentPoint = CindexLocation(graphics, displayArea, currentPosition);
 			Line? line = displayArea.GetLine(currentPosition);
-			if(currentPosition == documentModel.Length)
-			{
-				line = displayArea.GetLine(currentPosition-1);
-			}
 			while(moveAmount < 0)
 			{
 				Line nextLine = line.Value;
@@ -239,26 +232,16 @@ namespace Spire
 		
 		private void MoveCaretHome()
 		{
-			Cindex currentPosition = CaretPosition;
-			if(currentPosition == documentModel.Length)
-				currentPosition--;
-			DisplayArea displayArea = GetDisplayAreaByCindex(currentPosition);
-			if(displayArea == null) return;
-			Line? line = displayArea.GetLine(currentPosition);
-			if(line == null) return;
-			documentModel.CaretPosition = line.Value.First;
+			DisplayArea displayArea = GetDisplayAreaByCindex(CaretPosition);
+			Line line = displayArea.GetLine(CaretPosition).Value;
+			documentModel.CaretPosition = line.First;
 		}
 		
 		private void MoveCaretEnd()
 		{
 			DisplayArea displayArea = GetDisplayAreaByCindex(CaretPosition);
-			if(displayArea == null) return;
-			Line? line = displayArea.GetLine(CaretPosition);
-			if(line == null) return;
-			if(line.Value.Last == documentModel.Length-1)
-				documentModel.CaretPosition = documentModel.Length;
-			else
-				documentModel.CaretPosition = line.Value.Last;
+			Line line = displayArea.GetLine(CaretPosition).Value;
+			documentModel.CaretPosition = line.Last;
 		}
 		
 		private DisplayArea GetDisplayAreaByPoint(Point point)
@@ -289,52 +272,62 @@ namespace Spire
 		
 		private Cindex FindCindexClosestToX(Graphics graphics, Line line, int x)
 		{
-			if(documentModel.Length == 0) return 0;
 			string textToX = "";
 			int charCount = 0;
-			Cindex max = (line.Last == documentModel.Length-1) ? (Cindex)documentModel.Length : line.Last;
-			while(line.First+charCount <= max)
+			while(line.First+charCount <= line.Last)
 			{
 				textToX = documentModel.SubString(line.First, Math.Min(documentModel.Length-1, line.First+charCount));
 				if((MeasureString(graphics, textToX)).Width > x)
 					break;
 				charCount++;
 			}
+			if(textToX.Length == 0)
+			{
+				return line.First;
+			}
 			SizeF currentSize = MeasureString(graphics, textToX);
 			SizeF previousSize = MeasureString(graphics, textToX.Substring(0, textToX.Length-1));
 			if(Math.Abs(x-currentSize.Width) < Math.Abs(x-previousSize.Width))
-				return Math.Min(max, line.First + charCount + 1);
-			return Math.Min(max, line.First + charCount);
+				return Math.Min(line.Last, line.First + charCount + 1);
+			return Math.Min(line.Last, line.First + charCount);
 		}
 		
 		private void UpdateLayoutFrom(Cindex cindex)
 		{
-			DisplayArea displayArea = GetDisplayAreaByCindex(cindex);
-			if(displayArea == null)
+			if(cindex > documentModel.Length) return;
+			if(cindex < 0) cindex = 0;
+			//cannot call GetDisplayAreaByCindex due to that function calling this one
+			DisplayArea displayArea = null;
+			foreach(DisplayArea d in displayAreas)
 			{
-				return;
+				displayArea = d;
+				if(displayArea.ContainsCindex(cindex))
+					break;
 			}
+			if(displayArea == null)
+				throw new Exception("No display areas found in UpdateLayoutFrom.");
 			displayArea.ClearThroughPreviousLine(cindex);
-			Cindex? cindexBeforeGeneratingNewDisplayArea = null;
 			while(true)
 			{
 				UpdateLayout(displayArea);
-				int end = displayArea.End;
+				if(displayArea.IncludesEndOfDocument)
+				{
+					displayArea = NextDisplayArea(displayArea);
+					while(displayArea != null)
+					{
+						displayArea.ResetBlank();
+						displayArea = NextDisplayArea(displayArea);
+					}
+					return;
+				}
+				Cindex previousEndCindex = displayArea.End;
 				displayArea = NextDisplayArea(displayArea);
 				if(displayArea == null)
 				{
-					if(end == documentModel.Length-1)
-					{
-						return;
-					}
-					if(cindexBeforeGeneratingNewDisplayArea.HasValue && cindexBeforeGeneratingNewDisplayArea == end)
-					{
-						return;
-					}
 					RaiseDocumentTooShortEvent();
 					return;
 				}
-				displayArea.Reset(end+1);
+				displayArea.Reset(previousEndCindex+1);
 			}
 		}
 		
@@ -348,16 +341,25 @@ namespace Spire
 				while(lineEnd < documentModel.Length && (displayArea.LineCount + 1)*lineHeight < displayArea.Height)
 				{
 					lineEnd = FindEndOfLine(displayArea, graphics, lineEnd);
-					if(lineEnd < documentModel.Length-1 || (lineEnd < documentModel.Length && documentModel[lineEnd] == Constants.EndLineCharacter))
+					if(lineEnd < documentModel.Length)
 					{
 						displayArea.AddLineBreak(lineEnd);
-						layoutUpdatedTo = lineEnd + 1;
+						layoutUpdatedTo = Math.Min(documentModel.Length-1, lineEnd);
 						lineStart = lineEnd + 1;
+					}
+					if(lineEnd == documentModel.Length)
+					{
+						break;
 					}
 					lineEnd++;
 				}
 			}
-			displayArea.End = lineEnd - 1;
+			displayArea.End = lineEnd;
+			layoutUpdatedTo = Math.Min(documentModel.Length-1, lineEnd);
+			if(lineEnd == documentModel.Length)
+			{
+				displayArea.IncludesEndOfDocument = true;
+			}
 		}
 		
 		private Cindex FindEndOfLine(DisplayArea displayArea, Graphics graphics, Cindex start)
@@ -379,7 +381,7 @@ namespace Spire
 				}
 				end++;
 			}
-			return end-1;
+			return end;
 		}
 
 		public void AppendDisplayArea(DisplayArea displayArea)
@@ -438,19 +440,22 @@ namespace Spire
 			int y = 0;
 			foreach(Line line in displayArea.GetLines())
 			{
-				DrawTextLine(graphics, displayArea.Y+y, line);
+				DrawTextLine(graphics, displayArea, displayArea.Y+y, line);
 				y += lineHeight;
 			}
 		}
 		
-		private void DrawTextLine(Graphics graphics, int y, Line line)
+		private void DrawTextLine(Graphics graphics, DisplayArea displayArea, int y, Line line)
 		{
-			DrawHighlightLine(graphics, y, line);
+			if(line.Length == 0) return;
+			DrawHighlightLine(graphics, displayArea, y, line);
 			Brush textBrush = new SolidBrush(Color.Black);
-			graphics.DrawString(documentModel.SubString(line.First, line.Last).Replace("\t", Constants.TabEquivalent), Application.GlobalFont, textBrush, new Point(0, y), stringFormat);
+			String text = documentModel.SubString(line.First, Math.Min(documentModel.Length-1, line.Last));
+			text = text.Replace("\t", Constants.TabEquivalent);
+			graphics.DrawString(text, Application.GlobalFont, textBrush, new Point(0, y), stringFormat);
 		}
 		
-		private void DrawHighlightLine(Graphics graphics, int y, Line line)
+		private void DrawHighlightLine(Graphics graphics, DisplayArea displayArea, int y, Line line)
 		{
 			if(!HighlightOn) return;
 			Cindex highlightStart = Math.Min(HighlightPosition, CaretPosition);
@@ -458,10 +463,10 @@ namespace Spire
 			if(highlightStart > line.Last) return;
 			if(highlightEnd < line.First) return;
 			Brush highlightBrush = new SolidBrush(Color.FromArgb(255, 205, 255, 255));
-			Point start = CindexLocation(graphics, displayAreas[0], Math.Max(highlightStart, line.First));
+			Point start = CindexLocation(graphics, displayArea, Math.Max(highlightStart, line.First));
 			Point end = (highlightEnd > line.Last) ? 
-				LetterEndLocation(graphics, displayAreas[0], Math.Min(highlightEnd, line.Last)) :
-				CindexLocation(graphics, displayAreas[0], Math.Min(highlightEnd, line.Last));
+				LetterEndLocation(graphics, displayArea, Math.Min(documentModel.Length-1, Math.Min(highlightEnd, line.Last))) :
+				CindexLocation(graphics, displayArea, Math.Min(highlightEnd, line.Last));
 			int lineHeight = StringHeight(graphics, "X");
 			graphics.FillRectangle(highlightBrush, start.X, start.Y, end.X-start.X, lineHeight);
 		}
@@ -470,28 +475,23 @@ namespace Spire
 		{
 			Pen pen = new Pen(Color.Black, 0.5f);
 			int lineHeight = StringHeight(graphics, "X");
-			Point caretLocation = CindexLocation(graphics, displayAreas[0], CaretPosition);
+			DisplayArea displayArea = GetDisplayAreaByCindex(CaretPosition);
+			Point caretLocation = CindexLocation(graphics, displayArea, CaretPosition);
 			graphics.DrawLine(pen, caretLocation.X, caretLocation.Y, caretLocation.X, caretLocation.Y + lineHeight);
 		}
 		
 		//returns the top left point of the character at Cindex, ie the space before the character
 		private Point CindexLocation(Graphics graphics, DisplayArea displayArea, Cindex cindex)
 		{
-			Line? line = displayArea.GetLine(cindex);
-			if(line == null && IsLastDisplayArea(displayArea))
-			{
-				line = displayArea.GetLine(cindex-1);
-				if(line == null)
-				{
-					return new Point(0,0);
-				}
-			}
+			if(!displayArea.ContainsCindex(cindex))
+				throw new Exception(String.Format("CindexLocation requires displayArea that contains provided cindex {0}.", cindex));
+			Line line = displayArea.GetLine(cindex).Value;
 			int lineHeight = StringHeight(graphics, "X");
 			int y = (displayArea.LineCountToCindex(cindex) - 1) * lineHeight;
 			string textToCaret = "";
-			if(line.Value.First < documentModel.Length && line.Value.First < cindex)
+			if(line.Length > 0 && line.First < cindex)
 			{
-				textToCaret = documentModel.SubString(line.Value.First, cindex-1);
+				textToCaret = documentModel.SubString(line.First, cindex-1);
 			}
 			SizeF textSize = MeasureString(graphics, textToCaret);
 			return new Point((int)Math.Ceiling(textSize.Width), y);
@@ -500,17 +500,15 @@ namespace Spire
 		//returns the bottom right point of the character at Cindex
 		private Point LetterEndLocation(Graphics graphics, DisplayArea displayArea, Cindex cindex)
 		{
-			Line? line = displayArea.GetLine(cindex);
-			if(line == null)
-			{
-				return new Point(0,0);
-			}
+			if(!displayArea.ContainsCindex(cindex))
+				throw new Exception(String.Format("LetterEndLocation requires displayArea that contains provided cindex {0}.", cindex));
+			Line line = displayArea.GetLine(cindex).Value;
 			int lineHeight = StringHeight(graphics, "X");
 			int y = displayArea.LineCountToCindex(cindex) * lineHeight;
 			string textToCaret = "";
-			if(line.Value.First < documentModel.Length && line.Value.First < cindex)
+			if(line.Length > 0 && line.First < cindex)
 			{
-				textToCaret = documentModel.SubString(line.Value.First, cindex);
+				textToCaret = documentModel.SubString(line.First, Math.Min(documentModel.Length-1, cindex));
 			}
 			SizeF textSize = MeasureString(graphics, textToCaret);
 			return new Point((int)Math.Ceiling(textSize.Width), y);
@@ -518,24 +516,13 @@ namespace Spire
 		
 		private SizeF MeasureString(Graphics graphics, string text)
 		{
-			return graphics.MeasureString(text.Replace("\t", Constants.TabEquivalent), Application.GlobalFont, new PointF(0,0), stringFormat);
+			text = text.Replace("\t", Constants.TabEquivalent);
+			return graphics.MeasureString(text, Application.GlobalFont, new PointF(0,0), stringFormat);
 		}
 		
 		private int StringHeight(Graphics graphics, string text)
 		{
 			return (int)Math.Ceiling(MeasureString(graphics, text).Height);
-		}
-
-		private bool IsLastDisplayArea(DisplayArea displayArea)
-		{
-			if(displayAreas.Count == 0) throw new Exception("No display areas found in DocumentView.");
-			DisplayArea lastDisplayArea = displayAreas[0];
-			foreach(DisplayArea	nextDisplayArea in displayAreas)
-			{
-				if(!nextDisplayArea.IsEmpty)
-					lastDisplayArea = nextDisplayArea;
-			}
-			return (displayArea == lastDisplayArea);
 		}
 		
 	}

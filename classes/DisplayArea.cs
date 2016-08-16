@@ -21,9 +21,10 @@ namespace Spire
 			_width = width;
 			_height = height;
 			_pageNumber = pageNumber;
+			_lineBreaks = new List<Cindex>();
 			Start = -1;
 			End = -1;
-			_lineBreaks = new List<Cindex>();
+			IncludesEndOfDocument = false;
 		}
 		
 		public int X
@@ -57,7 +58,13 @@ namespace Spire
 			set;
 		}
 		
-		public Cindex End
+		public Cindex End //can reach documentModel.Length to include end of document
+		{
+			get;
+			set;
+		}
+		
+		public bool IncludesEndOfDocument
 		{
 			get;
 			set;
@@ -92,8 +99,8 @@ namespace Spire
 			get
 			{
 				if(IsEmpty) return null;
-				if(_lineBreaks.Count == 0) return new Line(Start, End);
-				return new Line(_lineBreaks.Last() + 1, End);
+				if(_lineBreaks.Count == 0) return new Line(Start, End, IncludesEndOfDocument);
+				return new Line(_lineBreaks.Last() + 1, End, IncludesEndOfDocument);
 			}
 		}
 		
@@ -102,8 +109,8 @@ namespace Spire
 			get
 			{
 				if(IsEmpty) return null;
-				if(_lineBreaks.Count == 0) return new Line(Start, End);
-				return new Line(Start, _lineBreaks[0]);
+				if(_lineBreaks.Count == 0) return new Line(Start, End, IncludesEndOfDocument);
+				return new Line(Start, _lineBreaks[0], false);
 			}
 		}
 		
@@ -122,16 +129,16 @@ namespace Spire
 		public Line? GetLine(Cindex cindex)
 		{
 			if(!ContainsCindex(cindex)) return null;
-			if(_lineBreaks.Count == 0) return new Line(Start, End);
+			if(_lineBreaks.Count == 0) return new Line(Start, End, IncludesEndOfDocument);
 			for(int i=0; i<_lineBreaks.Count; i++)
 			{
 				if(_lineBreaks[i] >= cindex)
 				{
-					if(i == 0) return new Line(Start, _lineBreaks[0]);
-					return new Line(_lineBreaks[i-1]+1, _lineBreaks[i]);
+					if(i == 0) return new Line(Start, _lineBreaks[0], false);
+					return new Line(_lineBreaks[i-1]+1, _lineBreaks[i], false);
 				}
 			}
-			return new Line(_lineBreaks.Last()+1, End);
+			return new Line(_lineBreaks.Last()+1, End, IncludesEndOfDocument);
 		}
 		
 		public Line? GetIthLine(int lineNumber)
@@ -147,12 +154,12 @@ namespace Spire
 			Cindex start = Start;
 			foreach(Cindex lineBreak in _lineBreaks)
 			{
-				lines.Add(new Line(start, lineBreak));
+				lines.Add(new Line(start, lineBreak, false));
 				start = lineBreak + 1;
 			}
 			if(!IsEmpty && start <= End)
 			{
-				lines.Add(new Line(start, End));
+				lines.Add(new Line(start, End, IncludesEndOfDocument));
 			}
 			return lines;
 		}
@@ -173,6 +180,7 @@ namespace Spire
 		public void ClearThroughPreviousLine(Cindex cindex)
 		{
 			End = -1;
+			IncludesEndOfDocument = false;
 			while(_lineBreaks.Count > 0 && _lineBreaks.Last() > cindex)
 			{
 				_lineBreaks.RemoveAt(_lineBreaks.Count-1);
@@ -187,7 +195,13 @@ namespace Spire
 		{
 			End = -1;
 			Start = start;
+			IncludesEndOfDocument = false;
 			_lineBreaks.Clear();
+		}
+		
+		public void ResetBlank()
+		{
+			Reset(-1);
 		}
 		
 		public void AddLineBreak(Cindex cindex)
